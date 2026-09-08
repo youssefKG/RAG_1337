@@ -89,7 +89,7 @@ https://docs.weaviate.io/assets/images/bm25_operators_light-fe6a283b72823515e7f7
 
 ### Retrieval systems:
 
-https://nlp.stanford.edu/IR-book/?utm_source=chatgpt.com
+https://nlp.stanford.edu/IR-book/
 
 
 ## benchmark: more than 1h => 6:09 (without inserting the document terms) => 5:49(without inserting the document terms) => 4:15 => 1.30

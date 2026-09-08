@@ -24,7 +24,7 @@ class Indexer:
     def __init__(
         self,
         corpus_path: str,
-        max_chunk_size: int = 2000,
+        max_chunk_size: int = 1000,
         /,
         *,
         file_repository: FileRepositoryInterface,
@@ -67,18 +67,16 @@ class Indexer:
                     file=file, file_content=file_content, language=language
                 )
             else:
-                print("Not changed: ", file_path)
-        print("document to create length: ", len(self.__documents_to_create))
+                # print("Not changed: ", file_path)
+                pass
         created_documents: list[DocumentInterface] = (
             self.__document_repository.create_many(self.__documents_to_create)
         )
-        print("documents are created")
         terms_to_create = [
             (frequency, value, created_documents[document_id - 1].id)
             for frequency, value, document_id in self.__terms_to_create
         ]
         self.__document_term_repository.create_many(terms_to_create)
-        print("end")
 
     def __files_iter(
         self,

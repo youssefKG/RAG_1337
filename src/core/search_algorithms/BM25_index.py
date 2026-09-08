@@ -1,19 +1,29 @@
+from collections import defaultdict
 import math
 
 
-from src.server.entities import DocumentTermInterface
+from src.server.entities import DocumentTermInterface, DocumentInterface
 from src.server.repositories import (
     DocumentRepositoryInterface,
     DocumentTermRepositoryInterface,
 )
-from typing import Annotated
+from typing import Annotated, TypeAlias
+
+_Posting: TypeAlias = tuple[Annotated[int, "term frequency"], DocumentInterface]
+_InvertIndex: TypeAlias = dict[Annotated[str, "term value"], list[_Posting]]
+_TermIDFS: TypeAlias = dict[
+    Annotated[str, "term value"], Annotated[float, "idf(t) score"]
+]
+_DocumentScore: TypeAlias = tuple[
+    Annotated[int, "document id"], Annotated[float, "document score"]
+]
 
 
 class BM25Index:
     def __init__(
         self,
         *,
-        k: float = 1.2,
+        k: float = 1,
         b: float = 0.75,
         top_k: int = 5,
         document_term_repository: DocumentTermRepositoryInterface,
@@ -37,52 +47,70 @@ class BM25Index:
         self.__document_terms: list[DocumentTermInterface] = (
             self.__document_term_repository.get_by_values(self.__query_terms)
         )
-        # self.__conditate_documents: set[int] = {
-        #     doc_term.document.id for doc_term in self.__document_terms
-        # }
-        self.__document_scores: list[
-            tuple[Annotated[int, "document id"], Annotated[float, "document score"]]
-        ] = list()
-        self.__terms_idfs: dict[
-            Annotated[str, "term value"], Annotated[float, "idf(t) score"]
-        ] = dict()
-        self.__init_idf_terms()
+        self.__document_scores: list[_DocumentScore] = list()
+        self.__terms_idfs: _TermIDFS
+        self.__invert_index: _InvertIndex
+        self.__set_invert_index()
+        self.__set_idf_terms()
 
     def search(
         self,
     ) -> None:
         score: float = 0.0
         passed_ids: set[int] = set()
-        for doc in self.__document_terms:
-            if doc.document.id not in passed_ids:
-                for term_value in self.__query_terms:
-                    document_term: DocumentTermInterface | None = (
-                        self.get_document_term(doc.document.id, term_value)
-                    )
-                    if (
-                        document_term is None
-                        or term_value not in self.__terms_idfs.keys()
-                    ):
-                        continue
-                    score += self.__terms_idfs[term_value] * self.__tf(document_term)
-                self.__document_scores.append((doc.document.id, score))
-                # print(
-                #     f"{len(self.__document_scores)}/{len(self.__conditate_documents)}"
-                # )
-                passed_ids.add(doc.document.id)
-                score = 0.0
-        # self.__document_scores.sort(key=lambda element: element[1], reverse=True)
-        if len(self.__document_scores) > self.__top_k:
-            self.__document_scores = self.__document_scores[: self.__top_k]
-        print("document scores: ", self.__document_scores)
+        for doc_term in self.__document_terms:
+            if doc_term.document.id in passed_ids:
+                continue
+            for term_value in self.__query_terms:
+                document_info: (
+                    None
+                    | tuple[
+                        Annotated[int, "document length"],
+                        Annotated[int, "term frequency"],
+                    ]
+                ) = self.__get_document_info(doc_term.id, term_value)
 
-    def __tf(self, document_term: DocumentTermInterface) -> float:
-        doc_len: int = document_term.document.length
-        tf: int = document_term.frequency
-        dominator: float = tf + self.__k * (
+                if document_info is None:
+                    continue
+                doc_len, term_frequency = document_info
+                score += self.__terms_idfs[term_value] * self.__tf(
+                    doc_len, term_frequency
+                )
+            passed_ids.add(doc_term.document.id)
+            self.__document_scores.append((doc_term.document.id, score))
+            score = 0.0
+        self.__document_scores.sort(key=lambda element: element[1], reverse=True)
+        # if len(self.__document_scores) > self.__top_k:
+        # self.__document_scores = self.__document_scores[: self.__top_k]
+
+    def __tf(self, doc_len: int, term_frequency: int) -> float:
+        dominator: float = term_frequency + self.__k * (
             1 - self.__b + (self.__b * (doc_len / self.__avg_document_length))
         )
-        return tf / dominator
+        return term_frequency / dominator
+
+    def __get_document_info(
+        self, doc_id: int, term_value: str
+    ) -> (
+        tuple[Annotated[int, "length of document"], Annotated[int, "term frequency"]]
+        | None
+    ):
+        documents_list: list[
+            tuple[Annotated[int, "term frequency"], DocumentInterface]
+        ] = self.__invert_index[term_value]
+        if len(documents_list) == 0:
+            return None
+        for term_frequency, document in documents_list:
+            if document.id == doc_id:
+                return (document.length, term_frequency)
+        return None
+
+    def __set_invert_index(self) -> None:
+        self.__invert_index = defaultdict(list[_Posting])
+        for doc_term in self.__document_terms:
+            self.__invert_index[doc_term.value].append(
+                (doc_term.frequency, doc_term.document)
+            )
 
     def get_document_term(
         self, doc_id: int, term_value: str
@@ -95,11 +123,10 @@ class BM25Index:
                 return document_term
         return None
 
-    def __init_idf_terms(self) -> None:
+    def __set_idf_terms(self) -> None:
+        self.__terms_idfs = dict()
         for term in self.__query_terms:
-            number_of_document_contain_term: int = (
-                self.__get_number_of_documents_contain_term(term)
-            )
+            number_of_document_contain_term: int = len(self.__invert_index[term])
             nominator: float = (
                 self.__total_number_of_documents - number_of_document_contain_term + 0.5
             )
@@ -111,8 +138,3 @@ class BM25Index:
         self,
     ) -> list[Annotated[int, "document id"]]:
         return [doc_id for doc_id, _ in self.__document_scores]
-
-    def __get_number_of_documents_contain_term(self, term: str) -> int:
-        return sum(
-            [1 if doc_term.value == term else 0 for doc_term in self.__document_terms]
-        )

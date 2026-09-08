@@ -102,9 +102,7 @@ class TextSpliter:
         merged_splits.append("".join(current_merged_texts))
         return merged_splits
 
-    def __form_chunk(
-        self, chunk: str
-    ) -> tuple[
+    def __form_chunk(self, chunk: str) -> tuple[
         Annotated[str, "chunk"],
         Annotated[int, "start index"],
         Annotated[int, "end index"],
@@ -113,12 +111,11 @@ class TextSpliter:
         end: int = start + len(chunk)
         return (chunk, start, end)
 
-
     @property
     def __get_separators(self) -> list[str]:
         match self._language:
             case Language.PYTHON:
-                return  PYTHON_SEPARATORS
+                return PYTHON_SEPARATORS
             case Language.MARKDOWN:
                 return MARKDOWN_SPERATORS
             case Language.TEXT:

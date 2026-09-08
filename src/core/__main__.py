@@ -16,7 +16,7 @@ from src.server.repositories import (
 from src.server.entities import DocumentTermInterface, FileInterface, DocumentInterface
 from src.core.search_algorithms.BM25_index import BM25Index
 
-MAX_CHUNK_SIZE = 100
+MAX_CHUNK_SIZE = 1000
 CORPUS_PATH = "vllm-0.10.1"
 
 
@@ -74,10 +74,10 @@ def test_bm25() -> None:
     bm25_search: BM25Index = BM25Index(
         document_term_repository=document_term_repository,
         document_repository=document_repository,
-        top_k=10,
-        query="""What activation formats does the fused batched MoE layer return in vLLM?""",
+        top_k=20,
+        query="""What determines whether custom allreduce is enabled in vLLM's CudaCommunicator?""",
     )
-    # bm25_search.search()
+    bm25_search.search()
     condidate_documents = bm25_search.documents_score
     print(condidate_documents)
     documents: list[DocumentInterface] = document_repository.get_by_ids(
