@@ -1,0 +1,7 @@
+from enum import Enum
+
+
+class Language(str, Enum):
+    PYTHON = "python"
+    MARKDOWN = "markdown"
+    TEXT = "text"

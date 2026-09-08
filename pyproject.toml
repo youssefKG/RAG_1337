@@ -1,0 +1,18 @@
+[project]
+name = "rage-1337"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "astor>=0.8.1",
+    "django>=5.2.17",
+    "django-stubs>=6.0.9",
+    "pydantic>=2.13.4",
+    "pytest>=9.1.1",
+]
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "myproject.settings"
