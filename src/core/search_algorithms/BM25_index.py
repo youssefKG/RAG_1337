@@ -68,7 +68,7 @@ class BM25Index:
                         Annotated[int, "document length"],
                         Annotated[int, "term frequency"],
                     ]
-                ) = self.__get_document_info(doc_term.id, term_value)
+                ) = self.__get_document_info(doc_term.document.id, term_value)
 
                 if document_info is None:
                     continue
@@ -80,8 +80,8 @@ class BM25Index:
             self.__document_scores.append((doc_term.document.id, score))
             score = 0.0
         self.__document_scores.sort(key=lambda element: element[1], reverse=True)
-        # if len(self.__document_scores) > self.__top_k:
-        # self.__document_scores = self.__document_scores[: self.__top_k]
+        if len(self.__document_scores) > self.__top_k:
+            self.__document_scores = self.__document_scores[: self.__top_k]
 
     def __tf(self, doc_len: int, term_frequency: int) -> float:
         dominator: float = term_frequency + self.__k * (

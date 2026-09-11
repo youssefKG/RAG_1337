@@ -16,7 +16,7 @@ from src.server.repositories import (
 from src.server.entities import DocumentTermInterface, FileInterface, DocumentInterface
 from src.core.search_algorithms.BM25_index import BM25Index
 
-MAX_CHUNK_SIZE = 1000
+MAX_CHUNK_SIZE = 2000
 CORPUS_PATH = "vllm-0.10.1"
 
 
@@ -74,8 +74,8 @@ def test_bm25() -> None:
     bm25_search: BM25Index = BM25Index(
         document_term_repository=document_term_repository,
         document_repository=document_repository,
-        top_k=20,
-        query="""What determines whether custom allreduce is enabled in vLLM's CudaCommunicator?""",
+        top_k=10,
+        query="""You can use `lm_eval --model vllm --model_args pretrained=\"./path-to-quantized-model\",add_bos_token=true --tasks gsm8k --num_fewshot 5 --limit 250 --batch_size 'auto'` to evaluate quantized models in vLLM, making sure to include the `add_bos_token=True` argument as quantized models can be sensitive to the presence of the BOS token.""",
     )
     bm25_search.search()
     condidate_documents = bm25_search.documents_score
