@@ -1,6 +1,5 @@
 import os
 
-
 FILES: list[tuple[str, float]] = [
     ("/home/user/project/main.py", 1756281600.123),
     ("/home/user/project/config.py", 1756281665.456),

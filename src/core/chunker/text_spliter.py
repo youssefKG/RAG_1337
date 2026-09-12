@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 import re
 from typing import Annotated
 from .languages import Language

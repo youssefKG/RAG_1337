@@ -53,9 +53,7 @@ class BM25Index:
         self.__set_invert_index()
         self.__set_idf_terms()
 
-    def search(
-        self,
-    ) -> None:
+    def search(self) -> None:
         score: float = 0.0
         passed_ids: set[int] = set()
         for doc_term in self.__document_terms:
