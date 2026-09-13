@@ -49,9 +49,18 @@ class BM25Index:
         )
         self.__document_scores: list[_DocumentScore] = list()
         self.__terms_idfs: _TermIDFS
-        self.__invert_index: _InvertIndex
+        self.__invert_index: _InvertIndex = defaultdict(list[_Posting])
+        print("start build invert index")
         self.__set_invert_index()
+        print("end build invert index")
+        print("start idf score for query terms")
         self.__set_idf_terms()
+        print("end idf score for query terms")
+        counter: int = 0
+        for _, documents in self.__invert_index.items():
+            counter += len(documents)
+
+        print("number of conditate documents:  ", counter)
 
     def search(self) -> None:
         score: float = 0.0
@@ -67,7 +76,6 @@ class BM25Index:
                         Annotated[int, "term frequency"],
                     ]
                 ) = self.__get_document_info(doc_term.document.id, term_value)
-
                 if document_info is None:
                     continue
                 doc_len, term_frequency = document_info
@@ -82,8 +90,9 @@ class BM25Index:
             self.__document_scores = self.__document_scores[: self.__top_k]
 
     def __tf(self, doc_len: int, term_frequency: int) -> float:
-        dominator: float = term_frequency + self.__k * (
-            1 - self.__b + (self.__b * (doc_len / self.__avg_document_length))
+        dominator: float = term_frequency + (
+            self.__k
+            * (1 - self.__b + (self.__b * (doc_len / self.__avg_document_length)))
         )
         return term_frequency / dominator
 
@@ -104,22 +113,10 @@ class BM25Index:
         return None
 
     def __set_invert_index(self) -> None:
-        self.__invert_index = defaultdict(list[_Posting])
         for doc_term in self.__document_terms:
             self.__invert_index[doc_term.value].append(
                 (doc_term.frequency, doc_term.document)
             )
-
-    def get_document_term(
-        self, doc_id: int, term_value: str
-    ) -> DocumentTermInterface | None:
-        for document_term in self.__document_terms:
-            if (
-                document_term.document.id == doc_id
-                and document_term.value == term_value
-            ):
-                return document_term
-        return None
 
     def __set_idf_terms(self) -> None:
         self.__terms_idfs = dict()

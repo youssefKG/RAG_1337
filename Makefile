@@ -7,7 +7,7 @@ flush:
 	uv run python -m src.manage flush 
 
 run:
-	uv run python -m src.core
+	uv run python -m src
 
 clean: 
 	rm -rf ./src/server/migrations ./src/db.sqlite3

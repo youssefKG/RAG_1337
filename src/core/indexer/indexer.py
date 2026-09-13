@@ -61,7 +61,7 @@ class Indexer:
                 file_path=file_path, last_modified_at=last_modified_at
             )
             if is_changed:
-                print("Changed: ", file_path)
+                # print("Changed: ", file_path)
                 language: Language = self.__get_language(file_path)
                 self.__index_file(
                     file=file, file_content=file_content, language=language

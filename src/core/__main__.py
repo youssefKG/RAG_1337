@@ -75,7 +75,17 @@ def test_bm25() -> None:
         document_term_repository=document_term_repository,
         document_repository=document_repository,
         top_k=10,
-        query="""You can use `lm_eval --model vllm --model_args pretrained=\"./path-to-quantized-model\",add_bos_token=true --tasks gsm8k --num_fewshot 5 --limit 250 --batch_size 'auto'` to evaluate quantized models in vLLM, making sure to include the `add_bos_token=True` argument as quantized models can be sensitive to the presence of the BOS token.""",
+        query="""
+    @staticmethod
+    def _reshape_activation_tensor(
+            x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        num = x.size(0)
+        d = x.size(1) // 2
+        x = x.reshape(num, 2, d)
+        x1, x2 = torch.chunk(x, chunks=2, dim=1)
+        x1 = x1.reshape(num, d)
+        x2 = x2.reshape(num, d)
+        return x1, x2 """,
     )
     bm25_search.search()
     condidate_documents = bm25_search.documents_score
