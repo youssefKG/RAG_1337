@@ -4,7 +4,6 @@ from src.server.repositories.document_repository import DocumentRepository
 
 from src.server.models import DocumentTermModel
 from src.server.entities import DocumentTermInterface
-from django.db import transaction
 
 
 class DocumentTermRepository:
@@ -14,6 +13,7 @@ class DocumentTermRepository:
         document_repository: DocumentRepository,
     ) -> None:
         self.__model: type[DocumentTermModel] = DocumentTermModel
+        self.__all_terms = self.__model.objects.all()
 
     def create(
         self,
@@ -29,7 +29,7 @@ class DocumentTermRepository:
         return cast(DocumentTermInterface, cast(object, document_term_model))
 
     def delete_by_id(self, document_term_id: int) -> None:
-        _ = self.__model.objects.filter(value=document_term_id).delete()
+        _ = self.__model.objects.filter(id=document_term_id).delete()
 
     # TEST:
     def get_by_documet_id(self, document_id: int) -> list[DocumentTermInterface]:
@@ -39,11 +39,14 @@ class DocumentTermRepository:
         return cast(list[DocumentTermInterface], terms_models)
 
     def all(self) -> list[DocumentTermInterface]:
-        return cast(list[DocumentTermInterface], list(self.__model.objects.all()))
+        return [
+            cast(DocumentTermInterface, cast(object, document_term))
+            for document_term in self.__all_terms
+        ]
 
-    def get_by_values(self, values: list[str]) -> list[DocumentTermInterface]:
+    def get_by_values(self, values: set[str]) -> list[DocumentTermInterface]:
         document_term_models: list[DocumentTermModel] = list(
-            self.__model.objects.filter(value__in=values)
+            self.__all_terms.filter(value__in=values)
         )
 
         return cast(list[DocumentTermInterface], document_term_models)
@@ -58,18 +61,15 @@ class DocumentTermRepository:
             ]
         ],
     ) -> None:
-        print(len(terms_documents))
-        with transaction.atomic():
-            print("start creating")
-            documents_terms_model: list[DocumentTermModel] = [
-                DocumentTermModel(
-                    frequency=term_frequency, value=term_value, document_id=document_id
-                )
-                for term_frequency, term_value, document_id in terms_documents
-            ]
-            _: list[DocumentTermModel] = self.__model.objects.bulk_create(
-                documents_terms_model, batch_size=10000
+        documents_terms_model: list[DocumentTermModel] = [
+            DocumentTermModel(
+                frequency=term_frequency, value=term_value, document_id=document_id
             )
+            for term_frequency, term_value, document_id in terms_documents
+        ]
+        _: list[DocumentTermModel] = self.__model.objects.bulk_create(
+            documents_terms_model, batch_size=20000
+        )
 
     def get_document_term_value_and_document_id(
         self, document_id: int, term_value: str

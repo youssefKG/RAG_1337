@@ -76,14 +76,7 @@ class CLI:
 
 def main() -> None:
 
-    # _ = cast(None, fire.Fire(CLI))
-    english = "Hello World"
-    spanish = "Hola Mundo"
-
-    # hello wolrd
-    def hello():
-        pass
-
+    _ = fire.Fire(CLI)
     # display_files()
     # display_terms()
     # display_documents()

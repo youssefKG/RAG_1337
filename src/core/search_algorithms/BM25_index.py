@@ -50,12 +50,8 @@ class BM25Index:
         self.__document_scores: list[_DocumentScore] = list()
         self.__terms_idfs: _TermIDFS
         self.__invert_index: _InvertIndex = defaultdict(list[_Posting])
-        print("start build invert index")
         self.__set_invert_index()
-        print("end build invert index")
-        print("start idf score for query terms")
         self.__set_idf_terms()
-        print("end idf score for query terms")
         counter: int = 0
         for _, documents in self.__invert_index.items():
             counter += len(documents)

@@ -54,6 +54,7 @@ class Indexer:
             ]
         ] = list()
         self.unique_terms: set[tuple[str, int]] = set()
+        self.__total_terms: set[str] = set()
 
     def index(self) -> None:
         for file_path, file_content, last_modified_at in self.__files_iter():
@@ -61,13 +62,13 @@ class Indexer:
                 file_path=file_path, last_modified_at=last_modified_at
             )
             if is_changed:
-                # print("Changed: ", file_path)
+                print("Changed: ", file_path)
                 language: Language = self.__get_language(file_path)
                 self.__index_file(
                     file=file, file_content=file_content, language=language
                 )
             else:
-                # print("Not changed: ", file_path)
+                print("Not changed: ", file_path)
                 pass
         created_documents: list[DocumentInterface] = (
             self.__document_repository.create_many(self.__documents_to_create)
@@ -77,6 +78,7 @@ class Indexer:
             for frequency, value, document_id in self.__terms_to_create
         ]
         self.__document_term_repository.create_many(terms_to_create)
+        print(len(self.__total_terms))
 
     def __files_iter(
         self,
@@ -131,6 +133,7 @@ class Indexer:
 
         for chunk, start_index, end_index in chunks:
             terms: Counter[str] = self.__get_terms_freqeuncy(chunk)
+            self.__total_terms.update(set(terms.keys()))
             self.__documents_to_create.append(
                 (start_index, end_index, len(chunk), file.id)
             )
