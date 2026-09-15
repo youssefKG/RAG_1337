@@ -2,6 +2,9 @@ from typing import cast, Annotated
 import os
 import fire
 
+from src.data.questions import QUESTIONS
+from core.search_algorithms.invert_index import InvertIndex
+
 _ = os.environ.setdefault("DJANGO_SETTINGS_MODULE", "src.config.settings")
 
 import django
@@ -28,6 +31,9 @@ def get_term_by_id() -> None:
 
 
 class CLI:
+
+    def __init__(self, invert_index: InvertIndex) -> None:
+        self.__invert_index: InvertIndex = invert_index
 
     def index(self, max_chunk_size: int = 2000) -> None:
         if max_chunk_size == True:
@@ -75,8 +81,13 @@ class CLI:
 
 
 def main() -> None:
+    invert_index: InvertIndex = InvertIndex(
+        document_term_repository=document_term_repository,
+        document_repository=document_repository,
+    )
+    cli: CLI = CLI(invert_index=invert_index)
 
-    _ = fire.Fire(CLI)
+    _ = fire.Fire(cli)
     # display_files()
     # display_terms()
     # display_documents()

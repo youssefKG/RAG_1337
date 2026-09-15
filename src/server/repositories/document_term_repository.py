@@ -46,9 +46,8 @@ class DocumentTermRepository:
 
     def get_by_values(self, values: set[str]) -> list[DocumentTermInterface]:
         document_term_models: list[DocumentTermModel] = list(
-            self.__all_terms.filter(value__in=values)
+            self.__all_terms.filter(value__in=values).select_related("document")
         )
-
         return cast(list[DocumentTermInterface], document_term_models)
 
     def create_many(

@@ -8,6 +8,7 @@ from src.server.repositories import (
     DocumentTermRepositoryInterface,
 )
 from typing import Annotated, TypeAlias
+from .invert_index import InvertIndex, InvertIndexType, PostingType
 
 _Posting: TypeAlias = tuple[Annotated[int, "term frequency"], DocumentInterface]
 _InvertIndex: TypeAlias = dict[Annotated[str, "term value"], list[_Posting]]
@@ -29,6 +30,7 @@ class BM25Index:
         document_term_repository: DocumentTermRepositoryInterface,
         query: str,
         document_repository: DocumentRepositoryInterface,
+        invert_index: InvertIndexType,
     ) -> None:
         self.__query: str = query
         self.__k: float = k
@@ -49,14 +51,9 @@ class BM25Index:
         )
         self.__document_scores: list[_DocumentScore] = list()
         self.__terms_idfs: _TermIDFS
-        self.__invert_index: _InvertIndex = defaultdict(list[_Posting])
+        self.__invert_index: InvertIndexType = invert_index
         self.__set_invert_index()
         self.__set_idf_terms()
-        counter: int = 0
-        for _, documents in self.__invert_index.items():
-            counter += len(documents)
-
-        print("number of conditate documents:  ", counter)
 
     def search(self) -> None:
         score: float = 0.0

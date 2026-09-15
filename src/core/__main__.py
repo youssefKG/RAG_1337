@@ -5,6 +5,7 @@ _ = os.environ.setdefault("DJANGO_SETTINGS_MODULE", "src.config.settings")
 import django
 
 django.setup()
+from src.core.search_algorithms.invert_index import InvertIndex
 
 
 from src.core.indexer.indexer import Indexer
@@ -109,6 +110,19 @@ def get_term_by_id() -> None:
         print(term.value, term.document.id, term.document.file.path)
 
 
+def test_invert_index() -> None:
+    invert_index_lookup: InvertIndex = InvertIndex(
+        document_term_repository=document_term_repository,
+        document_repository=document_repository,
+    )
+    _ = invert_index_lookup(
+        "def _reshape_activation_tensor(x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:"
+    )
+    _ = invert_index_lookup(
+        "def _reshape_activation_tensor(x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:"
+    )
+
+
 def main() -> None:
     indexer: Indexer = Indexer(
         CORPUS_PATH,
@@ -118,13 +132,14 @@ def main() -> None:
         document_term_repository=document_term_repository,
     )
     indexer.index()
+    test_invert_index()
 
     # display_files()
     # display_terms()
     # display_documents()
     # print_document_has_term_value()
     # display_documents_terms()
-    test_bm25()
+    # test_bm25()
     # get_term_by_id()
 
 
