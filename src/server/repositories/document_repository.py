@@ -24,7 +24,7 @@ class DocumentRepository:
         )
         return cast(list[DocumentInterface], documents_models)
 
-    def get_has_terms(self, values: list[str]) -> list[DocumentInterface]:
+    def get_has_terms(self, values: set[str]) -> list[DocumentInterface]:
         documents_models: list[DocumentModel] = list(
             self.__model.objects.filter(documenttermmodel__value_in=values)
         )

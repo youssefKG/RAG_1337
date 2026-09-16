@@ -1,15 +1,14 @@
-from typing import cast, Annotated
+from typing import Annotated
 import os
 import fire
-
-from src.data.questions import QUESTIONS
-from core.search_algorithms.invert_index import InvertIndex
 
 _ = os.environ.setdefault("DJANGO_SETTINGS_MODULE", "src.config.settings")
 
 import django
 
 django.setup()
+from src.data.quetions import QUESTIONS
+from src.core.search_algorithms.invert_index import InvertIndex
 
 
 from src.core.indexer.indexer import Indexer
@@ -48,13 +47,19 @@ class CLI:
         indexer.index()
 
     def search(self, query: str, k: int = 5) -> None:
-        bm25: BM25Index = BM25Index(
+        invert_index: InvertIndex = InvertIndex(
             document_term_repository=document_term_repository,
             document_repository=document_repository,
-            top_k=k,
-            query=query,
         )
-        bm25.search()
+        for question in QUESTIONS:
+            bm25: BM25Index = BM25Index(
+                document_term_repository=document_term_repository,
+                document_repository=document_repository,
+                top_k=k,
+                query=query,
+                invert_index=invert_index(question),
+            )
+            bm25.search()
 
     def search_dataset(
         self,
@@ -80,7 +85,36 @@ class CLI:
         pass
 
 
+def test_invert_index_with_bm25() -> None:
+    indexer: Indexer = Indexer(
+        CORPUS_PATH,
+        MAX_CHUNK_SIZE,
+        file_repository=file_repository,
+        document_term_repository=document_term_repository,
+        document_repository=document_repository,
+    )
+    indexer.index()
+    invert_index: InvertIndex = InvertIndex(
+        document_term_repository=document_term_repository,
+        document_repository=document_repository,
+    )
+    k: int = 5
+
+    for question in QUESTIONS:
+        bm25: BM25Index = BM25Index(
+            document_term_repository=document_term_repository,
+            document_repository=document_repository,
+            top_k=k,
+            query=question,
+            invert_index=invert_index(question),
+        )
+        bm25.search()
+
+
 def main() -> None:
+    test_invert_index_with_bm25()
+    """
+
     invert_index: InvertIndex = InvertIndex(
         document_term_repository=document_term_repository,
         document_repository=document_repository,
@@ -88,6 +122,7 @@ def main() -> None:
     cli: CLI = CLI(invert_index=invert_index)
 
     _ = fire.Fire(cli)
+    """
     # display_files()
     # display_terms()
     # display_documents()

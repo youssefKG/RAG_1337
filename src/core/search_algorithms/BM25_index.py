@@ -3,12 +3,8 @@ import math
 
 
 from src.server.entities import DocumentTermInterface, DocumentInterface
-from src.server.repositories import (
-    DocumentRepositoryInterface,
-    DocumentTermRepositoryInterface,
-)
 from typing import Annotated, TypeAlias
-from .invert_index import InvertIndex, InvertIndexType, PostingType
+from .invert_index import InvertIndexType
 
 _Posting: TypeAlias = tuple[Annotated[int, "term frequency"], DocumentInterface]
 _InvertIndex: TypeAlias = dict[Annotated[str, "term value"], list[_Posting]]
@@ -27,40 +23,45 @@ class BM25Index:
         k: float = 1,
         b: float = 0.75,
         top_k: int = 5,
-        document_term_repository: DocumentTermRepositoryInterface,
+        avg_documents_length: int,
+        total_number_of_documents: int,
         query: str,
-        document_repository: DocumentRepositoryInterface,
         invert_index: InvertIndexType,
     ) -> None:
         self.__query: str = query
         self.__k: float = k
         self.__b: float = b
         self.__top_k: int = top_k
-        self.__document_term_repository: DocumentTermRepositoryInterface = (
-            document_term_repository
-        )
-        self.__document_repository: DocumentRepositoryInterface = document_repository
 
-        self.__avg_document_length: int = (
-            self.__document_repository.get_avg_document_length
-        )
-        self.__total_number_of_documents: int = self.__document_repository.count
-        self.__query_terms: list[str] = self.__query.split()
-        self.__document_terms: list[DocumentTermInterface] = (
-            self.__document_term_repository.get_by_values(self.__query_terms)
-        )
+        self.__avg_document_length: int = avg_documents_length
+        self.__total_number_of_documents: int = total_number_of_documents
+        self.__query_terms: set[str] = set(self.__query.split())
         self.__document_scores: list[_DocumentScore] = list()
-        self.__terms_idfs: _TermIDFS
         self.__invert_index: InvertIndexType = invert_index
-        self.__set_invert_index()
-        self.__set_idf_terms()
 
-    def search(self) -> None:
+    def __call__(
+        self, query: str, condidates_documents: list[DocumentInterface]
+    ) -> list[DocumentTermInterface]:
+        chosen_documents: list[DocumentTermInterface] = list()
+        for cond_doc in condidates_documents:
+            pass
+        return chosen_documents
+
+    def __score_document(
+        self,
+        query_terms: set[str],
+        condidate_document: DocumentInterface,
+        idfs_terms_score: _TermIDFS,
+    ) -> float:
         score: float = 0.0
-        passed_ids: set[int] = set()
-        for doc_term in self.__document_terms:
-            if doc_term.document.id in passed_ids:
-                continue
+        for term in query_terms:
+            idf_term: float = idfs_terms_score.get(term, 0.0)
+            tf_score: float = self.__tf(condidate_document.length)
+        return score
+
+    def search(self, condidate_documents: list[DocumentTermInterface]) -> None:
+        score: float = 0.0
+        for doc_term in condidate_documents:
             for term_value in self.__query_terms:
                 document_info: (
                     None
@@ -75,7 +76,6 @@ class BM25Index:
                 score += self.__terms_idfs[term_value] * self.__tf(
                     doc_len, term_frequency
                 )
-            passed_ids.add(doc_term.document.id)
             self.__document_scores.append((doc_term.document.id, score))
             score = 0.0
         self.__document_scores.sort(key=lambda element: element[1], reverse=True)
@@ -105,21 +105,17 @@ class BM25Index:
                 return (document.length, term_frequency)
         return None
 
-    def __set_invert_index(self) -> None:
-        for doc_term in self.__document_terms:
-            self.__invert_index[doc_term.value].append(
-                (doc_term.frequency, doc_term.document)
-            )
-
-    def __set_idf_terms(self) -> None:
-        self.__terms_idfs = dict()
-        for term in self.__query_terms:
+    def get_idf_terms(self, query_terms: set[str]) -> _TermIDFS:
+        idfs_terms: _TermIDFS = _TermIDFS()
+        for term in query_terms:
             number_of_document_contain_term: int = len(self.__invert_index[term])
             nominator: float = (
                 self.__total_number_of_documents - number_of_document_contain_term + 0.5
             )
             dominator: float = number_of_document_contain_term + 0.5
-            self.__terms_idfs[term] = math.log(nominator / dominator)
+            idf_term_score: float = math.log(nominator / dominator)
+            idfs_terms[term] = idf_term_score
+        return idfs_terms
 
     @property
     def documents_score(
