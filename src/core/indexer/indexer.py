@@ -69,7 +69,6 @@ class Indexer:
                 )
             else:
                 print("Not changed: ", file_path)
-                pass
         created_documents: list[DocumentInterface] = (
             self.__document_repository.create_many(self.__documents_to_create)
         )
@@ -132,7 +131,7 @@ class Indexer:
         chunks: list[ChunkType] = chunker.split_text()
 
         for chunk, start_index, end_index in chunks:
-            terms: Counter[str] = self.__get_terms_freqeuncy(chunk)
+            terms: Counter[str] = self.__get_terms_freqeuncy(chunk + file.path)
             self.__total_terms.update(set(terms.keys()))
             self.__documents_to_create.append(
                 (start_index, end_index, len(chunk), file.id)

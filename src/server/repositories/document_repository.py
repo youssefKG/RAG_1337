@@ -4,13 +4,16 @@ from src.server.repositories.errors import DBNotFoundError
 from src.server.models import DocumentModel, FileModel
 from src.server.entities import DocumentInterface
 from django.db import transaction
-from django.db.models import Avg
+from django.db.models import Avg, QuerySet
 
 
 class DocumentRepository:
     def __init__(self, file_repository: FileRepository) -> None:
         self.__model: type[DocumentModel] = DocumentModel
         self.__file_repository: FileRepository = FileRepository()
+        self.__all_documents: QuerySet[DocumentModel, DocumentModel] = (
+            self.__model.objects.all()
+        )
 
     def get_by_id(self, id: int) -> DocumentInterface | None:
         document_model: DocumentModel | None = DocumentModel.objects.filter(
@@ -24,9 +27,9 @@ class DocumentRepository:
         )
         return cast(list[DocumentInterface], documents_models)
 
-    def get_has_terms(self, values: set[str]) -> list[DocumentInterface]:
+    def get_by_terms_values(self, values: set[str]) -> list[DocumentInterface]:
         documents_models: list[DocumentModel] = list(
-            self.__model.objects.filter(documenttermmodel__value_in=values)
+            self.__all_documents.filter(documenttermmodel__value__in=values).distinct()
         )
         return cast(list[DocumentInterface], documents_models)
 

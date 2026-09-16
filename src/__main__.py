@@ -9,7 +9,7 @@ import django
 django.setup()
 from src.data.quetions import QUESTIONS
 from src.core.search_algorithms.invert_index import InvertIndex
-
+from src.server.entities import DocumentInterface
 
 from src.core.indexer.indexer import Indexer
 from src.server.repositories import (
@@ -47,19 +47,7 @@ class CLI:
         indexer.index()
 
     def search(self, query: str, k: int = 5) -> None:
-        invert_index: InvertIndex = InvertIndex(
-            document_term_repository=document_term_repository,
-            document_repository=document_repository,
-        )
-        for question in QUESTIONS:
-            bm25: BM25Index = BM25Index(
-                document_term_repository=document_term_repository,
-                document_repository=document_repository,
-                top_k=k,
-                query=query,
-                invert_index=invert_index(question),
-            )
-            bm25.search()
+        pass
 
     def search_dataset(
         self,
@@ -99,16 +87,22 @@ def test_invert_index_with_bm25() -> None:
         document_repository=document_repository,
     )
     k: int = 5
-
+    bm25: BM25Index = BM25Index(
+        top_k=k,
+        avg_documents_length=invert_index.avg_document_length,
+        total_number_of_documents=invert_index.total_number_of_documents,
+        invert_index=invert_index.invert_index,
+    )
     for question in QUESTIONS:
-        bm25: BM25Index = BM25Index(
-            document_term_repository=document_term_repository,
-            document_repository=document_repository,
-            top_k=k,
-            query=question,
-            invert_index=invert_index(question),
-        )
-        bm25.search()
+        query_terms: set[str] = set(question.split())
+        condidate_documents: list[DocumentInterface] = invert_index(query_terms)
+        print("Question: ", question)
+        print("len of condidate documents: ", len(condidate_documents))
+        high_score_documents: list[
+            tuple[Annotated[float, "document score"], DocumentInterface]
+        ] = bm25(query_terms, condidate_documents)
+        for score, cond_doc in high_score_documents:
+            print(score, cond_doc.file.path)
 
 
 def main() -> None:

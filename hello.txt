@@ -1,0 +1,693 @@
+Question:  What activation formats does the fused batched MoE layer return in vLLM?
+len of condidate documents:  100
+7.142511660021601 vllm-0.10.1/vllm/model_executor/models/llama4.py
+7.0956545875550905 vllm-0.10.1/vllm/model_executor/layers/quantization/compressed_tensors/utils.py
+6.727988457207387 vllm-0.10.1/vllm/model_executor/layers/fused_moe/fused_moe.py
+6.529268003267653 vllm-0.10.1/vllm/model_executor/layers/quantization/compressed_tensors/utils.py
+6.3453649552811555 vllm-0.10.1/docs/design/fused_moe_modular_kernel.md
+Question:  What are the default values for FP8_MIN and FP8_MAX constants in vLLM's triton_flash_attention module?
+len of condidate documents:  100
+6.139904057349346 vllm-0.10.1/vllm/config/__init__.py
+5.019810876964112 vllm-0.10.1/docs/features/prompt_embeds.md
+5.013380146452829 vllm-0.10.1/tests/models/language/generation/test_bart.py
+4.684937219977617 vllm-0.10.1/docs/contributing/README.md
+4.650837698329912 vllm-0.10.1/vllm/config/__init__.py
+Question:  What determines whether vLLM's sampler returns Pythonized results or deferred Pythonization arguments?
+len of condidate documents:  100
+22.64142030414134 vllm-0.10.1/vllm/model_executor/layers/sampler.py
+20.645066655106312 vllm-0.10.1/vllm/model_executor/layers/sampler.py
+10.770685993126476 vllm-0.10.1/vllm/model_executor/layers/sampler.py
+8.121403704944298 vllm-0.10.1/vllm/model_executor/layers/sampler.py
+7.69568394849377 vllm-0.10.1/vllm/model_executor/layers/sampler.py
+Question:  What's the default value of trust_remote_code in vLLM's LLM class constructor?
+len of condidate documents:  100
+7.200221857434273 vllm-0.10.1/vllm/transformers_utils/config.py
+6.853370579446235 vllm-0.10.1/docs/getting_started/quickstart.md
+5.772216645425022 vllm-0.10.1/docs/design/plugin_system.md
+5.7655710484194875 vllm-0.10.1/vllm/config/cache.py
+5.357588506665902 vllm-0.10.1/docs/getting_started/installation/cpu.md
+Question:  What determines the values in cudagraph_inputs_embeds when capturing CUDA graph shapes in vLLM's ModelRunner?
+len of condidate documents:  100
+10.75588361523767 vllm-0.10.1/vllm/distributed/parallel_state.py
+9.006837864417243 vllm-0.10.1/vllm/config/__init__.py
+8.969607203955245 vllm-0.10.1/vllm/entrypoints/llm.py
+7.481359081348143 vllm-0.10.1/vllm/compilation/cuda_graph.py
+7.026523659433233 vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md
+Question:  What conditions must be met for vLLM's ModelRunner to use CUDA graphs instead of the regular model?
+len of condidate documents:  100
+7.332269910251303 vllm-0.10.1/tests/models/language/generation/test_bart.py
+6.508784216100334 vllm-0.10.1/vllm/entrypoints/llm.py
+6.359828968479949 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+6.207554635299911 vllm-0.10.1/docs/design/prefix_caching.md
+6.170803542586594 vllm-0.10.1/vllm/entrypoints/llm.py
+Question:  What is the default timeout value for vLLM RPC operations?
+len of condidate documents:  100
+6.793596795610296 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+6.304000961480213 vllm-0.10.1/vllm/config/cache.py
+5.999356744638641 vllm-0.10.1/docs/getting_started/installation/cpu.md
+4.748554953515908 vllm-0.10.1/docs/contributing/README.md
+4.48741867559351 vllm-0.10.1/docs/design/prefix_caching.md
+Question:  What does the Gemma3ForCausalLM constructor assert about the tie_word_embeddings configuration?
+len of condidate documents:  100
+5.368581383437447 vllm-0.10.1/tests/lora/test_llama_tp.py
+4.031920587687657 vllm-0.10.1/tests/lora/test_llama_tp.py
+3.43694484679425 vllm-0.10.1/vllm/device_allocator/cumem.py
+3.413452764827041 vllm-0.10.1/vllm/v1/core/sched/output.py
+3.1808043100431647 vllm-0.10.1/docs/contributing/README.md
+Question:  What value is passed for ngroups when has_groups is False in the _bmm_chunk_fwd_kernel call?
+len of condidate documents:  100
+5.719070076791454 vllm-0.10.1/docs/getting_started/installation/cpu.md
+5.433523202415463 vllm-0.10.1/docs/getting_started/installation/gpu/rocm.inc.md
+4.762627523331763 vllm-0.10.1/docs/contributing/README.md
+4.1713380801110445 vllm-0.10.1/vllm/model_executor/layers/quantization/utils/marlin_utils_test_24.py
+4.058087950131156 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+Question:  What is the default cudagraph_support value for TritonAttentionMetadataBuilder?
+len of condidate documents:  100
+5.667585776745389 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+5.5365726546833605 vllm-0.10.1/tests/lora/test_llama_tp.py
+5.099221201163058 vllm-0.10.1/vllm/config/cache.py
+4.243893790249318 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+4.1723688662519285 vllm-0.10.1/tests/lora/test_llama_tp.py
+Question:  What does the get_num_new_matched_tokens method in NIXLConnector return?
+len of condidate documents:  100
+4.35960468628646 vllm-0.10.1/docs/design/fused_moe_modular_kernel.md
+4.031920587687657 vllm-0.10.1/tests/lora/test_llama_tp.py
+3.6500761439213734 vllm-0.10.1/vllm/entrypoints/utils.py
+3.2470426208550336 vllm-0.10.1/docs/contributing/README.md
+3.082602868061601 vllm-0.10.1/docs/features/prompt_embeds.md
+Question:  What types are supported as containers in vLLM's JSONTree type definition?
+len of condidate documents:  100
+9.749211216442822 vllm-0.10.1/docs/usage/troubleshooting.md
+8.838574200199638 vllm-0.10.1/vllm/scalar_type.py
+8.429628775974047 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+7.075984075972671 vllm-0.10.1/docs/features/prompt_embeds.md
+7.022269334453279 vllm-0.10.1/vllm/model_executor/layers/quantization/kernels/mixed_precision/machete.py
+Question:  What value does _MAX_IMAGE_SIZE use in vLLM's keye model for determining the image size with most features?
+len of condidate documents:  100
+9.675391201879684 vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md
+9.464292715458086 vllm-0.10.1/docs/models/supported_models.md
+8.664785838682075 vllm-0.10.1/docs/usage/troubleshooting.md
+8.17397744806596 vllm-0.10.1/vllm/config/cache.py
+8.014110878914272 vllm-0.10.1/tests/models/language/generation/test_bart.py
+Question:  What is the default language value when None is passed to Whisper's validate_language method?
+len of condidate documents:  100
+6.8984501202690325 vllm-0.10.1/vllm/transformers_utils/configs/nemotron.py
+6.283651118493561 vllm-0.10.1/vllm/transformers_utils/configs/arctic.py
+6.175749195683936 vllm-0.10.1/vllm/config/cache.py
+6.057418137458251 vllm-0.10.1/vllm/config/__init__.py
+6.008867500306294 vllm-0.10.1/vllm/config/__init__.py
+Question:  What condition determines whether batch reordering is skipped in GPUModelRunner's update_batch_order method?
+len of condidate documents:  100
+5.696514517001837 vllm-0.10.1/vllm/v1/worker/tpu_model_runner.py
+5.523703956995314 vllm-0.10.1/vllm/v1/worker/gpu_model_runner.py
+4.9998105415969825 vllm-0.10.1/vllm/model_executor/models/ultravox.py
+4.102818424796991 vllm-0.10.1/docs/features/disagg_prefill.md
+3.5125245446036515 vllm-0.10.1/vllm/v1/engine/core.py
+Question:  What are the default values for tensor fields in vLLM's AiterMLAMetadata class?
+len of condidate documents:  100
+5.9830187378328645 vllm-0.10.1/docs/features/prompt_embeds.md
+5.626885757083324 vllm-0.10.1/vllm/config/__init__.py
+4.947541272473673 vllm-0.10.1/docs/design/torch_compile.md
+4.766034761812548 vllm-0.10.1/docs/features/sleep_mode.md
+4.576852705046213 vllm-0.10.1/tests/models/language/generation/test_bart.py
+Question:  What error is raised when full attention group ids and other attention group ids interleave in HybridKVCacheCoordinator?
+len of condidate documents:  100
+14.712198680092563 vllm-0.10.1/vllm/v1/core/kv_cache_coordinator.py
+9.292637732577342 vllm-0.10.1/vllm/v1/core/kv_cache_utils.py
+8.869636402541117 vllm-0.10.1/vllm/v1/core/kv_cache_utils.py
+8.663552347647789 vllm-0.10.1/vllm/v1/kv_cache_interface.py
+8.221286834348769 vllm-0.10.1/vllm/core/block/prefix_caching_block.py
+Question:  What is the shape and structure of the array returned by the KV cache mapping metadata computation function in TPUModelRunner?
+len of condidate documents:  100
+11.652232653086353 vllm-0.10.1/docs/design/torch_compile.md
+11.27445207724538 vllm-0.10.1/tests/kernels/attention/test_encoder_decoder_attn.py
+9.700917312834664 vllm-0.10.1/docs/design/torch_compile.md
+9.239776021299207 vllm-0.10.1/docs/features/automatic_prefix_caching.md
+9.090685868909421 vllm-0.10.1/vllm/v1/core/kv_cache_utils.py
+Question:  What is the default value of the z parameter in the selective_state_update function call in vLLM's mamba_mixer2.py?
+len of condidate documents:  100
+10.480362682049323 vllm-0.10.1/docs/features/tool_calling.md
+7.932381698853368 vllm-0.10.1/docs/design/plugin_system.md
+7.500520944448785 vllm-0.10.1/docs/getting_started/installation/cpu.md
+6.563171363924799 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+6.126989927790128 vllm-0.10.1/docs/design/torch_compile.md
+Question:  What block size divisibility requirement does HybridKVCacheCoordinator enforce when caching is enabled?
+len of condidate documents:  100
+8.553086226252088 vllm-0.10.1/vllm/core/block/naive_block.py
+7.6704002459810114 vllm-0.10.1/docs/design/prefix_caching.md
+7.303380891748836 vllm-0.10.1/docs/design/prefix_caching.md
+7.160518706221274 vllm-0.10.1/vllm/sequence.py
+7.0052210624508096 vllm-0.10.1/docs/design/multiprocessing.md
+Question:  What is the default value for min_dynamic_patch parameter in NemotronVL model initialization?
+len of condidate documents:  100
+6.690712195308106 vllm-0.10.1/vllm/config/cache.py
+6.638031536948486 vllm-0.10.1/docs/features/tool_calling.md
+6.106484442232115 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+5.667585776745389 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+5.549466916666324 vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md
+Question:  What exception is raised when pixel_values has incorrect number of channels in InternS1VisionEmbeddings forward method?
+len of condidate documents:  100
+8.776107994199526 vllm-0.10.1/tests/core/block/e2e/test_correctness.py
+8.584645208444407 vllm-0.10.1/tests/core/block/e2e/test_correctness.py
+7.129754871432796 vllm-0.10.1/vllm/model_executor/models/internvl.py
+6.960796679185762 vllm-0.10.1/docs/serving/data_parallel_deployment.md
+6.767367819144962 vllm-0.10.1/vllm/core/block_manager.py
+Question:  What does the HunyuanA13BReasoningParser return when reasoning_content or response_content has zero length?
+len of condidate documents:  100
+7.957384334859656 vllm-0.10.1/vllm/reasoning/granite_reasoning_parser.py
+6.642489345653991 vllm-0.10.1/docs/design/multiprocessing.md
+5.932470507892285 vllm-0.10.1/docs/contributing/README.md
+5.368581383437447 vllm-0.10.1/tests/lora/test_llama_tp.py
+5.216911099093494 vllm-0.10.1/vllm/model_executor/layers/sampler.py
+Question:  What are the input tensor shapes and types used in MiddleAllReduceRMSNormPattern's get_inputs method?
+len of condidate documents:  100
+8.54810680299477 vllm-0.10.1/docs/configuration/tpu.md
+7.595330476079423 vllm-0.10.1/docs/features/prompt_embeds.md
+7.278538434303907 vllm-0.10.1/docs/design/fused_moe_modular_kernel.md
+7.17678868675741 vllm-0.10.1/docs/contributing/model/basic.md
+7.157224664175028 vllm-0.10.1/vllm/v1/worker/tpu_model_runner.py
+Question:  What are all the registered KV connector names in vLLM's KVConnectorFactory?
+len of condidate documents:  100
+8.903712108625138 vllm-0.10.1/vllm/distributed/kv_transfer/README.md
+8.642396328929456 vllm-0.10.1/vllm/distributed/kv_transfer/kv_connector/v1/base.py
+8.614301352668267 vllm-0.10.1/vllm/config/__init__.py
+7.657423637319341 vllm-0.10.1/docs/features/disagg_prefill.md
+7.6465767028331015 vllm-0.10.1/vllm/distributed/kv_transfer/kv_connector/v1/shared_storage_connector.py
+Question:  What is the default value of the kv_states parameter in HunYuanModel's forward method?
+len of condidate documents:  100
+7.500520944448785 vllm-0.10.1/docs/getting_started/installation/cpu.md
+7.160123051328709 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+6.411649289754704 vllm-0.10.1/docs/features/tool_calling.md
+5.958898106149611 vllm-0.10.1/vllm/compilation/decorators.py
+5.909558796766827 vllm-0.10.1/vllm/config/cache.py
+Question:  What is the default value for mlp_bias in ExaoneGatedMLP initialization?
+len of condidate documents:  100
+5.667585776745389 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+5.19562542389821 vllm-0.10.1/vllm/config/cache.py
+4.2209185918289664 vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md
+3.8373968773926794 vllm-0.10.1/docs/design/prefix_caching.md
+3.76552693228058 vllm-0.10.1/vllm/config/__init__.py
+Question:  What happens when depths parameter is passed as a string in OvisConfig?
+len of condidate documents:  100
+9.712118696730995 vllm-0.10.1/docs/features/prompt_embeds.md
+6.535072919229281 vllm-0.10.1/tests/lora/test_llama_tp.py
+6.4238001814791135 vllm-0.10.1/docs/usage/reproducibility.md
+6.304802850885715 vllm-0.10.1/vllm/core/block/prefix_caching_block.py
+5.74951427005254 vllm-0.10.1/vllm/model_executor/models/llama4.py
+Question:  What hyperparameters must be shared across all layers in vLLM's FlashInfer backend according to infer_global_hyperparameters?
+len of condidate documents:  100
+11.228799398290462 vllm-0.10.1/docs/serving/data_parallel_deployment.md
+10.565731450243522 vllm-0.10.1/vllm/v1/core/kv_cache_utils.py
+8.4815129734722 vllm-0.10.1/docs/configuration/optimization.md
+8.44493520350314 vllm-0.10.1/vllm/v1/core/kv_cache_utils.py
+7.097340506306036 vllm-0.10.1/docs/design/paged_attention.md
+Question:  What is the return type annotation for the _apply_matches function in vLLM's multimodal processing module?
+len of condidate documents:  100
+5.81268322719089 vllm-0.10.1/vllm/model_executor/models/interfaces.py
+5.466820214852747 vllm-0.10.1/vllm/compilation/decorators.py
+5.464015869898326 vllm-0.10.1/docs/design/torch_compile.md
+5.273969140227013 vllm-0.10.1/docs/design/plugin_system.md
+5.175119114544376 vllm-0.10.1/docs/design/plugin_system.md
+Question:  What are the default percentiles calculated for ITL and E2EL metrics in vLLM's serve benchmark?
+len of condidate documents:  100
+7.341083648654594 vllm-0.10.1/docs/design/metrics.md
+6.1603850874984065 vllm-0.10.1/docs/design/torch_compile.md
+5.801920136382822 vllm-0.10.1/docs/design/torch_compile.md
+5.567715320944224 vllm-0.10.1/docs/features/structured_outputs.md
+5.019810876964112 vllm-0.10.1/docs/features/prompt_embeds.md
+Question:  What happens when min_dynamic_patch is None in InternVL's initialization?
+len of condidate documents:  100
+5.8584411320601255 vllm-0.10.1/vllm/distributed/device_communicators/cuda_communicator.py
+5.303789075851121 vllm-0.10.1/vllm/worker/worker_base.py
+4.321527795794011 vllm-0.10.1/vllm/platforms/__init__.py
+3.626959530925205 vllm-0.10.1/vllm/attention/backends/rocm_flash_attn.py
+3.621450364288103 vllm-0.10.1/vllm/config/__init__.py
+Question:  What is the default value of _is_remote_reader in vLLM's shared memory broadcast implementation?
+len of condidate documents:  100
+8.560791205354136 vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md
+8.38395084491527 vllm-0.10.1/vllm/config/cache.py
+8.216576877964616 vllm-0.10.1/docs/getting_started/installation/cpu.md
+7.53577794562474 vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md
+5.915939316217478 vllm-0.10.1/docs/design/plugin_system.md
+Question:  What are the default values for alpha and limit parameters in vLLM's SwiGLUOAI activation layer?
+len of condidate documents:  100
+10.248180404642445 vllm-0.10.1/docs/usage/troubleshooting.md
+9.667826005800066 vllm-0.10.1/docs/getting_started/quickstart.md
+9.229827585523603 vllm-0.10.1/docs/getting_started/installation/cpu.md
+7.186649319168948 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+6.601687584946594 vllm-0.10.1/docs/models/supported_models.md
+Question:  What's the default value of the image_mode parameter in vLLM's fetch_video_async method?
+len of condidate documents:  100
+7.34247070516324 vllm-0.10.1/docs/getting_started/installation/cpu.md
+6.252321464552725 vllm-0.10.1/docs/features/tool_calling.md
+5.8546378181773155 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+5.772216645425022 vllm-0.10.1/docs/design/plugin_system.md
+5.7655710484194875 vllm-0.10.1/vllm/config/cache.py
+Question:  What happens if you try to call patch_tensor_parallel_group when the tensor parallel state is already patched?
+len of condidate documents:  100
+11.599421284439797 vllm-0.10.1/vllm/distributed/parallel_state.py
+9.278305554889615 vllm-0.10.1/vllm/distributed/parallel_state.py
+9.249522877770968 vllm-0.10.1/docs/configuration/optimization.md
+8.494617300089914 vllm-0.10.1/docs/serving/parallelism_scaling.md
+8.147620825448108 vllm-0.10.1/docs/serving/parallelism_scaling.md
+Question:  What does the MessageQueue.create_from_handle method return after calling wait_until_ready in vLLM's shared memory broadcast implementation?
+len of condidate documents:  100
+6.386859237144413 vllm-0.10.1/vllm/device_allocator/cumem.py
+6.289538516775593 vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md
+6.069414206672273 vllm-0.10.1/docs/design/torch_compile.md
+6.02785124606982 vllm-0.10.1/tests/models/language/generation/test_bart.py
+6.01956674933931 vllm-0.10.1/docs/design/fused_moe_modular_kernel.md
+Question:  What happens when cudagraph_capture_sizes is already set in vLLM's init_with_cudagraph_sizes method?
+len of condidate documents:  100
+8.363501099451184 vllm-0.10.1/tests/models/language/generation/test_bart.py
+5.710406673975827 vllm-0.10.1/vllm/worker/worker_base.py
+4.909452238178947 vllm-0.10.1/vllm/envs.py
+4.480202468542014 vllm-0.10.1/docs/design/plugin_system.md
+4.461864001119188 vllm-0.10.1/docs/design/plugin_system.md
+Question:  What is the requires_grad value set for parameters in GPTQMarlin24's process_weights_after_loading method?
+len of condidate documents:  100
+6.327497157288366 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+5.570291884733018 vllm-0.10.1/docs/getting_started/quickstart.md
+5.037145293654808 vllm-0.10.1/vllm/config/cache.py
+5.004357031863257 vllm-0.10.1/docs/getting_started/installation/cpu.md
+4.6937235572948195 vllm-0.10.1/vllm/entrypoints/llm.py
+Question:  What happens when encoder_inputs is None in the encoder_seq creation in LLMEngine?
+len of condidate documents:  100
+6.189052544878824 vllm-0.10.1/docs/design/prefix_caching.md
+5.254654166097068 vllm-0.10.1/vllm/worker/worker_base.py
+4.734973049364584 vllm-0.10.1/docs/contributing/README.md
+3.787668688219634 vllm-0.10.1/docs/design/huggingface_integration.md
+3.360953891142983 vllm-0.10.1/vllm/sequence.py
+Question:  What assertion is made about vocab_size and tp_size when loading fairseq2 LLaMA embedding weights?
+len of condidate documents:  100
+5.787139414344531 vllm-0.10.1/docs/contributing/model/basic.md
+5.250694440410234 vllm-0.10.1/docs/contributing/README.md
+4.899496044952679 vllm-0.10.1/docs/usage/troubleshooting.md
+4.87040226593248 vllm-0.10.1/docs/serving/data_parallel_deployment.md
+3.676768831371679 vllm-0.10.1/vllm/v1/worker/tpu_model_runner.py
+Question:  What is the default max_threads value used when creating the GrammarCompiler in vLLM's XGrammar backend?
+len of condidate documents:  100
+7.1142628424326855 vllm-0.10.1/vllm/utils/__init__.py
+6.80720869773253 vllm-0.10.1/tests/models/language/generation/test_bart.py
+6.303662919930542 vllm-0.10.1/vllm/config/cache.py
+6.145039730528999 vllm-0.10.1/docs/getting_started/installation/gpu/rocm.inc.md
+6.052668665236567 vllm-0.10.1/vllm/config/__init__.py
+Question:  What does the usage property return in vLLM's KV cache manager?
+len of condidate documents:  100
+8.738716194140506 vllm-0.10.1/vllm/distributed/kv_transfer/kv_connector/v1/shared_storage_connector.py
+8.44801389755244 vllm-0.10.1/vllm/distributed/kv_transfer/kv_connector/v1/base.py
+7.526712966692549 vllm-0.10.1/vllm/distributed/kv_transfer/README.md
+7.260987992501891 vllm-0.10.1/docs/features/sleep_mode.md
+6.999989066841534 vllm-0.10.1/vllm/v1/core/block_pool.py
+Question:  What is the default value of the stream parameter in vLLM's OpenAI protocol translation parameters?
+len of condidate documents:  100
+7.500520944448785 vllm-0.10.1/docs/getting_started/installation/cpu.md
+6.6247744059795854 vllm-0.10.1/vllm/distributed/parallel_state.py
+6.411649289754704 vllm-0.10.1/docs/features/tool_calling.md
+6.255817089758993 vllm-0.10.1/vllm/config/__init__.py
+5.991641268729822 vllm-0.10.1/vllm/sampling_params.py
+Question:  What is the default value for the multimodal_embeddings parameter in the get_input_embeddings method of the Molmo model?
+len of condidate documents:  100
+7.5208170961706715 vllm-0.10.1/docs/getting_started/installation/cpu.md
+7.002399858608468 vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md
+6.435392587026203 vllm-0.10.1/docs/features/tool_calling.md
+6.000130007677885 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+5.938461000172372 vllm-0.10.1/vllm/config/cache.py
+Question:  What are the supported bit values for W4A16Sparse24 quantization in vLLM's compressed tensors?
+len of condidate documents:  100
+8.632657837017206 vllm-0.10.1/docs/features/quantization/fp8.md
+5.992401524837844 vllm-0.10.1/docs/features/prompt_embeds.md
+5.670389201813696 vllm-0.10.1/docs/design/plugin_system.md
+5.643629152925504 vllm-0.10.1/vllm/platforms/interface.py
+5.558700978109512 vllm-0.10.1/vllm/sampling_params.py
+Question:  What class does TritonScaledMMLinearKernel inherit from in vLLM's quantization kernels?
+len of condidate documents:  100
+3.4864758235721136 vllm-0.10.1/vllm/model_executor/layers/quantization/__init__.py
+2.7699223013086556 vllm-0.10.1/tests/v1/engine/test_engine_core_client.py
+2.2540959725044174 vllm-0.10.1/vllm/v1/engine/utils.py
+2.1790164131499585 vllm-0.10.1/vllm/model_executor/layers/pooler.py
+2.1123439354174383 vllm-0.10.1/vllm/model_executor/models/minimax_vl_01.py
+Question:  What quantization methods are supported for Mixtral models in vLLM?
+len of condidate documents:  100
+8.632909143986145 vllm-0.10.1/docs/features/quantization/fp8.md
+7.693216073679043 vllm-0.10.1/docs/features/quantization/auto_round.md
+7.514642411007684 vllm-0.10.1/docs/features/prompt_embeds.md
+7.110635664685914 vllm-0.10.1/vllm/model_executor/layers/fused_moe/layer.py
+6.816350592989106 vllm-0.10.1/vllm/model_executor/layers/quantization/compressed_tensors/compressed_tensors.py
+Question:  How many bytes are allocated for the internal field in ncclUniqueId structure in vLLM's PyNCCL wrapper?
+len of condidate documents:  100
+8.390105375475402 vllm-0.10.1/vllm/config/__init__.py
+5.549104374894858 vllm-0.10.1/docs/design/plugin_system.md
+5.372945533756766 vllm-0.10.1/vllm/v1/core/sched/interface.py
+5.094891586835007 vllm-0.10.1/vllm/core/block_manager.py
+5.073507098185712 vllm-0.10.1/docs/design/paged_attention.md
+Question:  What is the default value of pp_locks in RayDistributedExecutor?
+len of condidate documents:  100
+5.909558796766827 vllm-0.10.1/vllm/config/cache.py
+5.515638745951446 vllm-0.10.1/docs/getting_started/installation/cpu.md
+5.110943334188266 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+5.008825373092098 vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md
+4.5953033395690515 vllm-0.10.1/docs/design/prefix_caching.md
+Question:  What does the extract_tool_calls method in MistralToolParser return when the bot_token is not present in the model output?
+len of condidate documents:  100
+7.500968948602817 vllm-0.10.1/docs/design/multiprocessing.md
+7.068098927543956 vllm-0.10.1/vllm/worker/worker_base.py
+5.912258450930173 vllm-0.10.1/vllm/config/__init__.py
+5.704911377548854 vllm-0.10.1/vllm/executor/executor_base.py
+5.443485530518346 vllm-0.10.1/vllm/config/__init__.py
+Question:  What happens when key is None in the CPU attention backend's reshape logic?
+len of condidate documents:  100
+5.917025775153413 vllm-0.10.1/tests/kernels/attention/test_encoder_decoder_attn.py
+5.434997618708603 vllm-0.10.1/docs/usage/troubleshooting.md
+5.271003124017903 vllm-0.10.1/docs/getting_started/installation/cpu.md
+5.254654166097068 vllm-0.10.1/vllm/worker/worker_base.py
+5.2209781391027095 vllm-0.10.1/vllm/v1/attention/backends/cpu_attn.py
+Question:  What is the default data type for indices_type parameter in the routing simulator's expert selection method?
+len of condidate documents:  100
+6.7672214283148815 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+6.192491203878286 vllm-0.10.1/vllm/model_executor/models/llama4.py
+6.108066815587963 vllm-0.10.1/vllm/scalar_type.py
+5.681735820367489 vllm-0.10.1/docs/features/tool_calling.md
+5.596075137214508 vllm-0.10.1/vllm/config/cache.py
+Question:  What dimension handling does vLLM's transformers model apply to vision embeddings when they are 2D tensors?
+len of condidate documents:  100
+9.91357952650018 vllm-0.10.1/docs/features/prompt_embeds.md
+9.006663664595155 vllm-0.10.1/docs/design/plugin_system.md
+8.677649925062969 vllm-0.10.1/docs/features/lora.md
+8.162816921777724 vllm-0.10.1/vllm/config/__init__.py
+8.034755497029947 vllm-0.10.1/tests/models/language/generation/test_bart.py
+Question:  What is the default value of the pin_memory parameter in MultiModalKwargs._try_stack method?
+len of condidate documents:  100
+7.500520944448785 vllm-0.10.1/docs/getting_started/installation/cpu.md
+6.411649289754704 vllm-0.10.1/docs/features/tool_calling.md
+5.909558796766827 vllm-0.10.1/vllm/config/cache.py
+5.74801895908439 vllm-0.10.1/docs/usage/reproducibility.md
+5.504898998907711 vllm-0.10.1/vllm/entrypoints/openai/protocol.py
+Question:  What are all possible values for the QuickReduceRegime enum in vLLM's distributed communication?
+len of condidate documents:  100
+6.207172579784735 vllm-0.10.1/vllm/model_executor/layers/quantization/utils/marlin_utils_test_24.py
+5.795238113040569 vllm-0.10.1/docs/contributing/README.md
+5.777002356901766 vllm-0.10.1/vllm/sampling_params.py
+5.466212928564408 vllm-0.10.1/docs/design/multiprocessing.md
+5.285102036735442 vllm-0.10.1/docs/features/sleep_mode.md
+Question:  What's the default value of max_position_embeddings in ChameleonSwinDecoderLayer?
+len of condidate documents:  100
+5.984360787411743 vllm-0.10.1/vllm/transformers_utils/configs/arctic.py
+5.7655710484194875 vllm-0.10.1/vllm/config/cache.py
+5.357588506665902 vllm-0.10.1/docs/getting_started/installation/cpu.md
+4.9586817489439134 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+4.873289384446326 vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md
+Question:  What happens when the residual parameter is None in Gemma2DecoderLayer's forward method?
+len of condidate documents:  100
+5.299573670549385 vllm-0.10.1/vllm/sequence.py
+5.254654166097068 vllm-0.10.1/vllm/worker/worker_base.py
+4.845798044199004 vllm-0.10.1/docs/usage/reproducibility.md
+4.791637695955377 vllm-0.10.1/vllm/sampling_params.py
+4.737431516222509 vllm-0.10.1/vllm/model_executor/parameter.py
+Question:  What is the default value of the spec_step_index parameter in DeepSeekMultiTokenPredictor's forward method?
+len of condidate documents:  100
+7.500520944448785 vllm-0.10.1/docs/getting_started/installation/cpu.md
+7.160123051328709 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+6.411649289754704 vllm-0.10.1/docs/features/tool_calling.md
+5.958898106149611 vllm-0.10.1/vllm/compilation/decorators.py
+5.909558796766827 vllm-0.10.1/vllm/config/cache.py
+Question:  What happens when a reshape operation in vLLM's noop elimination has more than one -1 in the shape parameter?
+len of condidate documents:  100
+11.23605918993541 vllm-0.10.1/docs/design/torch_compile.md
+10.963350172484745 vllm-0.10.1/tests/models/language/generation/test_bart.py
+10.242490890266257 vllm-0.10.1/docs/design/torch_compile.md
+9.812819426205213 vllm-0.10.1/docs/design/torch_compile.md
+9.568175676987842 vllm-0.10.1/tests/models/language/pooling/test_reward.py
+Question:  What is the default value for the use_bitsandbytes_4bit attribute when it's not present on a parameter object in vLLM's linear layer?
+len of condidate documents:  100
+12.113988182146647 vllm-0.10.1/docs/features/tool_calling.md
+10.817245793185904 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+9.846939954108453 vllm-0.10.1/docs/getting_started/installation/cpu.md
+8.974917716827251 vllm-0.10.1/docs/getting_started/installation/cpu.md
+8.8796628103728 vllm-0.10.1/vllm/distributed/parallel_state.py
+Question:  What conditions must be met for use_aiter_and_is_supported to be True in vLLM's FP8 quantization?
+len of condidate documents:  100
+6.0616810963278756 vllm-0.10.1/vllm/envs.py
+5.545817848886805 vllm-0.10.1/tests/models/language/generation/test_bart.py
+4.596384397948573 vllm-0.10.1/docs/contributing/README.md
+4.5355922400513515 vllm-0.10.1/docs/features/quantization/fp8.md
+4.322299110852392 vllm-0.10.1/vllm/sampling_params.py
+Question:  What are the supported spatial pooling modes in LlavaNextVideoPooler?
+len of condidate documents:  100
+5.97749829831087 vllm-0.10.1/docs/features/prompt_embeds.md
+5.857445420237306 vllm-0.10.1/vllm/config/compilation.py
+5.4334287870427715 vllm-0.10.1/vllm/entrypoints/llm.py
+5.049670913701025 vllm-0.10.1/docs/models/pooling_models.md
+4.726463011965609 vllm-0.10.1/vllm/config/__init__.py
+Question:  What is the default value for apply_router_weight_on_input parameter in the DeepGemm MoE kernel function call?
+len of condidate documents:  100
+8.536522991330513 vllm-0.10.1/vllm/model_executor/models/phi4mm_utils.py
+8.150113035747996 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+8.070724922658389 vllm-0.10.1/docs/features/tool_calling.md
+7.483033069316281 vllm-0.10.1/docs/getting_started/installation/cpu.md
+6.52133500476959 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+Question:  What are the compilation levels that cause do_not_compile to be set to True in vLLM's compilation decorator?
+len of condidate documents:  100
+11.559111397517833 vllm-0.10.1/docs/design/torch_compile.md
+11.059461244777244 vllm-0.10.1/vllm/config/compilation.py
+8.405966348596776 vllm-0.10.1/docs/contributing/model/tests.md
+7.753595564200873 vllm-0.10.1/vllm/sampling_params.py
+7.461933323269324 vllm-0.10.1/docs/features/sleep_mode.md
+Question:  What is the default value of inputs_embeds parameter in DeepSeek model's forward method?
+len of condidate documents:  100
+8.628125253836917 vllm-0.10.1/docs/features/tool_calling.md
+7.500520944448785 vllm-0.10.1/docs/getting_started/installation/cpu.md
+7.160123051328709 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+6.536437782097635 vllm-0.10.1/vllm/entrypoints/openai/protocol.py
+6.495720769815278 vllm-0.10.1/vllm/model_executor/model_loader/weight_utils.py
+Question:  What prefixes does the AutoWeightsLoader skip in MiniCPM Eagle model when tie_word_embeddings is True?
+len of condidate documents:  100
+6.149882773788606 vllm-0.10.1/vllm/transformers_utils/configs/nemotron_h.py
+5.211111252575104 vllm-0.10.1/docs/usage/troubleshooting.md
+5.16637385519184 vllm-0.10.1/vllm/sampling_params.py
+5.0795264499045105 vllm-0.10.1/vllm/entrypoints/llm.py
+5.078081562900115 vllm-0.10.1/vllm/config/__init__.py
+Question:  What are all the NVML GPU instance profile constants defined in vLLM's pynvml module?
+len of condidate documents:  100
+8.21087356789988 vllm-0.10.1/docs/design/p2p_nccl_connector.md
+7.565671249612743 vllm-0.10.1/tools/profiler/nsys_profile_tools/README.md
+6.647345381201174 vllm-0.10.1/vllm/device_allocator/cumem.py
+6.358024053717843 vllm-0.10.1/docs/features/sleep_mode.md
+5.767583639073389 vllm-0.10.1/docs/contributing/README.md
+Question:  What are the shard_id values used in the stacked_params_mapping for gate_up_proj in vLLM's step3_text model?
+len of condidate documents:  100
+5.205408106964796 vllm-0.10.1/vllm/model_executor/layers/quantization/utils/marlin_utils_test_24.py
+4.70242400311048 vllm-0.10.1/vllm/scalar_type.py
+4.648292741062823 vllm-0.10.1/vllm/config/__init__.py
+4.6343783783784085 vllm-0.10.1/docs/features/prompt_embeds.md
+4.6077653322054815 vllm-0.10.1/docs/features/sleep_mode.md
+Question:  What is the default value of tie_word_embeddings in vLLM's FalconForCausalLM class when the config doesn't specify it?
+len of condidate documents:  100
+8.19216040098215 vllm-0.10.1/docs/getting_started/quickstart.md
+8.078186504787764 vllm-0.10.1/docs/getting_started/installation/cpu.md
+7.375040742159931 vllm-0.10.1/tests/models/language/generation/test_bart.py
+7.159994526785453 vllm-0.10.1/vllm/config/cache.py
+6.815050102886862 vllm-0.10.1/vllm/config/__init__.py
+Question:  What is the default value for engine_id when creating connectors in MultiKVConnector?
+len of condidate documents:  100
+5.667585776745389 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+5.19562542389821 vllm-0.10.1/vllm/config/cache.py
+5.034242702807277 vllm-0.10.1/docs/getting_started/installation/gpu/rocm.inc.md
+4.94316037032315 vllm-0.10.1/vllm/config/__init__.py
+4.777034228151473 vllm-0.10.1/vllm/utils/__init__.py
+Question:  What datasets are supported by ASRDataset and MLPerfDataset in vLLM benchmarks?
+len of condidate documents:  100
+6.965760463299248 vllm-0.10.1/docs/features/tool_calling.md
+6.754212619627737 vllm-0.10.1/docs/models/supported_models.md
+6.56091317764486 vllm-0.10.1/docs/models/supported_models.md
+6.4113495599567045 vllm-0.10.1/docs/features/prompt_embeds.md
+5.630409444359235 vllm-0.10.1/vllm/model_executor/layers/quantization/compressed_tensors/compressed_tensors.py
+Question:  What are some of the test model names used in vLLM's test_utils.py for testing different model types and quantization methods?
+len of condidate documents:  100
+10.36282571615525 vllm-0.10.1/docs/features/quantization/fp8.md
+10.174844818588038 vllm-0.10.1/vllm/v1/core/kv_cache_utils.py
+9.951201295307222 vllm-0.10.1/vllm/config/__init__.py
+9.566164376125665 vllm-0.10.1/tests/models/multimodal/generation/test_common.py
+9.378267852288174 vllm-0.10.1/tools/profiler/nsys_profile_tools/README.md
+Question:  What is the default value of global_num_experts parameter in the forward_xpu method of vLLM's fused MOE layer?
+len of condidate documents:  100
+7.500520944448785 vllm-0.10.1/docs/getting_started/installation/cpu.md
+7.271262109429614 vllm-0.10.1/vllm/model_executor/models/llama4.py
+6.411649289754704 vllm-0.10.1/docs/features/tool_calling.md
+6.198577216750013 vllm-0.10.1/vllm/model_executor/layers/fused_moe/flashinfer_cutlass_moe.py
+5.915939316217478 vllm-0.10.1/docs/design/plugin_system.md
+Question:  What is the default value for the intermediate_tensors parameter in GranitemoehybridForCausalLM's forward method?
+len of condidate documents:  100
+6.425146631392572 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+5.681735820367489 vllm-0.10.1/docs/features/tool_calling.md
+5.667585776745389 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+5.19562542389821 vllm-0.10.1/vllm/config/cache.py
+5.176828189737777 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+Question:  What is the default value of the dst parameter in tensor_model_parallel_gather function?
+len of condidate documents:  100
+7.500520944448785 vllm-0.10.1/docs/getting_started/installation/cpu.md
+6.411649289754704 vllm-0.10.1/docs/features/tool_calling.md
+5.909558796766827 vllm-0.10.1/vllm/config/cache.py
+5.74801895908439 vllm-0.10.1/docs/usage/reproducibility.md
+5.504898998907711 vllm-0.10.1/vllm/entrypoints/openai/protocol.py
+Question:  What value is used for m_j when the computed maximum is negative infinity in vLLM's Triton attention implementation?
+len of condidate documents:  100
+8.41227415211593 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+8.026321765563639 vllm-0.10.1/vllm/distributed/kv_transfer/kv_connector/v1/base.py
+6.795710071914251 vllm-0.10.1/vllm/config/compilation.py
+6.599922904745653 vllm-0.10.1/vllm/model_executor/models/phi4mm_utils.py
+6.530922143457178 vllm-0.10.1/docs/design/torch_compile.md
+Question:  What is the default value of the pad_to parameter in vLLM's pad_vocab_size function?
+len of condidate documents:  100
+7.500520944448785 vllm-0.10.1/docs/getting_started/installation/cpu.md
+6.411649289754704 vllm-0.10.1/docs/features/tool_calling.md
+5.915939316217478 vllm-0.10.1/docs/design/plugin_system.md
+5.909558796766827 vllm-0.10.1/vllm/config/cache.py
+5.74801895908439 vllm-0.10.1/docs/usage/reproducibility.md
+Question:  What is the default lora_int_id value when lora_request is None in vLLM's sequence?
+len of condidate documents:  100
+7.726295462722719 vllm-0.10.1/tests/models/language/generation/test_bart.py
+6.078334759136334 vllm-0.10.1/vllm/config/cache.py
+5.856895153064599 vllm-0.10.1/vllm/config/__init__.py
+5.705086665220803 vllm-0.10.1/vllm/config/__init__.py
+5.686000502335796 vllm-0.10.1/vllm/envs.py
+Question:  What condition must be met for prompt_tokens_details to be included in the final usage info in vLLM's completion serving?
+len of condidate documents:  100
+7.885242106315063 vllm-0.10.1/vllm/config/__init__.py
+6.848384617490888 vllm-0.10.1/vllm/model_executor/layers/fused_moe/flashinfer_cutlass_moe.py
+6.604722547060847 vllm-0.10.1/vllm/model_executor/layers/fused_moe/modular_kernel.py
+5.985440412913789 vllm-0.10.1/vllm/config/__init__.py
+5.495700196399826 vllm-0.10.1/tests/models/language/generation/test_bart.py
+Question:  What happens to input_ids when inputs_embeds is None in LlaVA-NeXT-Video's forward pass?
+len of condidate documents:  100
+9.382551640442792 vllm-0.10.1/vllm/model_executor/models/llava_onevision.py
+7.847330873188659 vllm-0.10.1/vllm/model_executor/models/glm4_1v.py
+7.76248252035246 vllm-0.10.1/vllm/model_executor/models/skyworkr1v.py
+7.707961809175269 vllm-0.10.1/vllm/model_executor/models/internvl.py
+7.589324182877295 vllm-0.10.1/vllm/model_executor/models/qwen2_vl.py
+Question:  What environment variable does vLLM's collect_env.py check as a fallback when CUDNN library detection fails?
+len of condidate documents:  100
+12.401512466874678 vllm-0.10.1/docs/usage/troubleshooting.md
+10.879071330355268 vllm-0.10.1/vllm/platforms/interface.py
+9.93896783699878 vllm-0.10.1/docs/getting_started/installation/gpu/cuda.inc.md
+9.013073722314285 vllm-0.10.1/docs/contributing/profiling.md
+8.927734280141655 vllm-0.10.1/docs/design/multiprocessing.md
+Question:  What parameter value is set for requires_grad when creating Parameter objects in _load_weights_from_qkv_linear method?
+len of condidate documents:  100
+8.246149173569712 vllm-0.10.1/docs/getting_started/installation/cpu.md
+7.655502749968342 vllm-0.10.1/docs/usage/reproducibility.md
+6.449089434349447 vllm-0.10.1/docs/getting_started/installation/cpu.md
+5.733285233641442 vllm-0.10.1/vllm/v1/core/kv_cache_utils.py
+5.673035243885011 vllm-0.10.1/vllm/envs.py
+Question:  What are the dimensions and data types of the tensors returned by get_inputs method in LastAllReduceRMSNormPattern?
+len of condidate documents:  100
+9.424800560704396 vllm-0.10.1/docs/features/prompt_embeds.md
+9.033948954471722 vllm-0.10.1/vllm/compilation/decorators.py
+8.834217386572256 vllm-0.10.1/tests/kernels/attention/test_encoder_decoder_attn.py
+7.5683366033307395 vllm-0.10.1/vllm/config/__init__.py
+7.334545087754612 vllm-0.10.1/vllm/device_allocator/cumem.py
+Question:  Can draft_probs be None in vLLM's rejection sampler and when does this happen?
+len of condidate documents:  100
+9.99225533192175 vllm-0.10.1/tests/models/language/generation/test_bart.py
+8.454132237018637 vllm-0.10.1/vllm/model_executor/model_loader/tensorizer.py
+7.4110483288317175 vllm-0.10.1/vllm/v1/worker/tpu_model_runner.py
+7.00103907056487 vllm-0.10.1/docs/models/supported_models.md
+6.874282137822561 vllm-0.10.1/vllm/config/__init__.py
+Question:  What parameter type does the copy_operation parameter accept in NixlConnector's set_host_xfer_buffer_ops method?
+len of condidate documents:  100
+5.525581471584927 vllm-0.10.1/docs/usage/reproducibility.md
+4.811345716882533 vllm-0.10.1/docs/features/tool_calling.md
+4.59203084296106 vllm-0.10.1/benchmarks/auto_tune/README.md
+4.533162236739662 vllm-0.10.1/vllm/scalar_type.py
+4.2324318712230165 vllm-0.10.1/vllm/model_executor/models/llama4.py
+Question:  What value is used for the num_kv_heads parameter when calling get_mla_metadata in FlashMLAState's graph_capture method?
+len of condidate documents:  100
+7.444496084060897 vllm-0.10.1/docs/usage/reproducibility.md
+7.363988762795551 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+6.915479239463652 vllm-0.10.1/docs/getting_started/installation/gpu/rocm.inc.md
+5.856737516664334 vllm-0.10.1/docs/features/tool_calling.md
+5.8393707657512675 vllm-0.10.1/vllm/entrypoints/openai/protocol.py
+Question:  What is the default value of the bias parameter in the __init__ method of vLLM's mllama model convolution class?
+len of condidate documents:  100
+8.461712629252133 vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md
+8.13883046644477 vllm-0.10.1/docs/usage/troubleshooting.md
+8.116709865992465 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+7.500520944448785 vllm-0.10.1/docs/getting_started/installation/cpu.md
+7.404645568176723 vllm-0.10.1/vllm/config/cache.py
+Question:  What is the constant value for NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_TOTAL in vLLM's pynvml module?
+len of condidate documents:  100
+5.166602417713285 vllm-0.10.1/docs/design/plugin_system.md
+3.444204077895881 vllm-0.10.1/docs/contributing/README.md
+3.3243537459059653 vllm-0.10.1/docs/design/torch_compile.md
+3.2069949145754375 vllm-0.10.1/tests/models/language/generation/test_bart.py
+3.0888801096328655 vllm-0.10.1/vllm/model_executor/layers/sampler.py
+Question:  What are the expected tensor dimensions for w13_weight_scale in vLLM's MXFP4 quantization layer?
+len of condidate documents:  100
+7.139614664659042 vllm-0.10.1/vllm/model_executor/models/llama4.py
+5.9830187378328645 vllm-0.10.1/docs/features/prompt_embeds.md
+5.315796206129566 vllm-0.10.1/vllm/model_executor/layers/fused_moe/moe_align_block_size.py
+5.3010529855660815 vllm-0.10.1/csrc/quantization/cutlass_w8a8/Epilogues.md
+4.947541272473673 vllm-0.10.1/docs/design/torch_compile.md
+Question:  What's the default value of min_stats_update_interval_ms in DPCoordinatorProc's __init__ method?
+len of condidate documents:  100
+5.7655710484194875 vllm-0.10.1/vllm/config/cache.py
+5.357588506665902 vllm-0.10.1/docs/getting_started/installation/cpu.md
+4.9586817489439134 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+4.873289384446326 vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md
+4.460227168248352 vllm-0.10.1/docs/design/prefix_caching.md
+Question:  What does the simple_buffer module return when tokens_recver is None in the KV lookup buffer?
+len of condidate documents:  100
+10.390920106197763 vllm-0.10.1/vllm/distributed/kv_transfer/README.md
+9.688644845135057 vllm-0.10.1/vllm/distributed/kv_transfer/kv_lookup_buffer/base.py
+6.158543559986956 vllm-0.10.1/vllm/config/__init__.py
+5.880439705957765 vllm-0.10.1/vllm/distributed/kv_transfer/kv_connector/v1/base.py
+5.633895031717117 vllm-0.10.1/docs/design/prefix_caching.md
+Question:  What is the default value of the cutlass_block_fp8_supported parameter in apply_w8a8_block_fp8_linear?
+len of condidate documents:  100
+7.500520944448785 vllm-0.10.1/docs/getting_started/installation/cpu.md
+6.411649289754704 vllm-0.10.1/docs/features/tool_calling.md
+5.909558796766827 vllm-0.10.1/vllm/config/cache.py
+5.74801895908439 vllm-0.10.1/docs/usage/reproducibility.md
+5.504898998907711 vllm-0.10.1/vllm/entrypoints/openai/protocol.py
+Question:  What is the default value of BLOCK_TABLE_EXTENDER in MLACommonMetadataBuilder?
+len of condidate documents:  100
+5.909558796766827 vllm-0.10.1/vllm/config/cache.py
+5.515638745951446 vllm-0.10.1/docs/getting_started/installation/cpu.md
+5.110943334188266 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+5.008825373092098 vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md
+4.5953033395690515 vllm-0.10.1/docs/design/prefix_caching.md
+Question:  What condition prevents tensors from being moved to device in FlashInfer attention backend's prepare method?
+len of condidate documents:  100
+4.991476892841814 vllm-0.10.1/docs/contributing/ci/update_pytorch_version.md
+4.1583197019005915 vllm-0.10.1/docs/features/prompt_embeds.md
+3.9403660383446852 vllm-0.10.1/docs/design/torch_compile.md
+3.650873232581754 vllm-0.10.1/docs/design/torch_compile.md
+2.829563737269365 vllm-0.10.1/vllm/transformers_utils/configs/jais.py
+Question:  What's the default value of the gpu parameter in vLLM's get_max_shared_memory_bytes function?
+len of condidate documents:  100
+7.34247070516324 vllm-0.10.1/docs/getting_started/installation/cpu.md
+6.252321464552725 vllm-0.10.1/docs/features/tool_calling.md
+5.8546378181773155 vllm-0.10.1/vllm/model_executor/models/phi4mm_audio.py
+5.772216645425022 vllm-0.10.1/docs/design/plugin_system.md
+5.7655710484194875 vllm-0.10.1/vllm/config/cache.py
+Question:  What is the type hint for the kv_range_for_decode parameter in the _attention_with_mask method?
+len of condidate documents:  100
+3.694461006950155 vllm-0.10.1/docs/usage/reproducibility.md
+3.5405778499467875 vllm-0.10.1/vllm/model_executor/model_loader/weight_utils.py
+3.506454374975682 vllm-0.10.1/docs/features/tool_calling.md
+3.444204077895881 vllm-0.10.1/docs/contributing/README.md
+3.3286760879259014 vllm-0.10.1/docs/design/p2p_nccl_connector.md
+Question:  What is the default timeout value for VLLM_RPC_TIMEOUT environment variable?
+len of condidate documents:  100
+9.209645018097971 vllm-0.10.1/docs/contributing/profiling.md
+7.638966562188965 vllm-0.10.1/.buildkite/nightly-benchmarks/README.md
+7.440982345465022 vllm-0.10.1/docs/features/quantization/inc.md
+5.5365726546833605 vllm-0.10.1/tests/lora/test_llama_tp.py
+5.099221201163058 vllm-0.10.1/vllm/config/cache.py
+Question:  What determines whether custom allreduce is enabled in vLLM's CudaCommunicator?
+len of condidate documents:  100
+8.593867359356636 vllm-0.10.1/vllm/distributed/device_communicators/custom_all_reduce.py
+8.100546988280731 vllm-0.10.1/vllm/envs.py
+7.946080298439097 vllm-0.10.1/vllm/distributed/device_communicators/quick_all_reduce.py
+6.774230010500155 vllm-0.10.1/vllm/distributed/device_communicators/quick_all_reduce.py
+6.559622053210196 vllm-0.10.1/vllm/config/compilation.py
