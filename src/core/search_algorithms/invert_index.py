@@ -31,8 +31,8 @@ class InvertIndex:
             self.__document_repository.get_avg_document_length
         )
 
-    def __call__(self, query_terms: set[str]) -> list[DocumentInterface]:
-        new_terms: set[str] = query_terms - set(self.__invert_index.keys())
+    def __call__(self, query_terms: list[str]) -> list[DocumentInterface]:
+        new_terms: set[str] = set(query_terms) - set(self.__invert_index.keys())
         terms_documents: list[DocumentTermInterface] = (
             self.__document_term_repository.get_by_terms_values(new_terms)
         )
@@ -43,7 +43,7 @@ class InvertIndex:
                 )
         # TODO: test this with conditates documents from db if is slow try take document conditates from the invert invert index
         conditates_documents: list[DocumentInterface] = self.__get_condidates_documents(
-            query_terms
+            new_terms
         )
         return conditates_documents
 
@@ -79,4 +79,4 @@ class InvertIndex:
                     )
         condidate = list(condidates_documents.values())
         condidate.sort(key=lambda x: x[1], reverse=True)
-        return [doc for doc, _ in condidate][:100]
+        return [doc for doc, _ in condidate]

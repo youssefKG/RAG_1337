@@ -119,7 +119,7 @@ def main() -> None:
         document_term_repository=document_term_repository,
     )
     indexer.index()
-    test_invert_index()
+    # test_invert_index()
 
     # display_files()
     # display_terms()

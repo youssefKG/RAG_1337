@@ -1,6 +1,7 @@
 from collections.abc import Generator
-from typing import Annotated, TypeAlias
+from typing import Annotated, TypeAlias, cast
 
+from .stop_words import STOP_WORDS
 from src.core.chunker.languages import Language
 from src.core.chunker.text_spliter import TextSpliter
 from src.server.entities import DocumentInterface, FileInterface
@@ -9,6 +10,7 @@ from src.server.repositories import (
     DocumentRepositoryInterface,
     DocumentTermRepositoryInterface,
 )
+import re
 
 from collections import Counter
 import os
@@ -77,7 +79,7 @@ class Indexer:
             for frequency, value, document_id in self.__terms_to_create
         ]
         self.__document_term_repository.create_many(terms_to_create)
-        print(len(self.__total_terms))
+        print(len(self.__terms_to_create))
 
     def __files_iter(
         self,
@@ -131,7 +133,7 @@ class Indexer:
         chunks: list[ChunkType] = chunker.split_text()
 
         for chunk, start_index, end_index in chunks:
-            terms: Counter[str] = self.__get_terms_freqeuncy(chunk + file.path)
+            terms: Counter[str] = self.__get_terms_freqeuncy(chunk)
             self.__total_terms.update(set(terms.keys()))
             self.__documents_to_create.append(
                 (start_index, end_index, len(chunk), file.id)
@@ -154,6 +156,13 @@ class Indexer:
         return Language.TEXT
 
     def __get_terms_freqeuncy(self, document: str) -> Counter[str]:
-        tokens: list[str] = document.split()
-        term_frequency: Counter[str] = Counter(tokens)
+        document_terms: list[str] = [
+            word
+            for word in cast(
+                list[str],
+                re.findall(r"\b[a-zA-Z0-9]+\b", document.lower()),
+            )
+            if word not in STOP_WORDS
+        ]
+        term_frequency: Counter[str] = Counter(document_terms)
         return term_frequency

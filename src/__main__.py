@@ -1,6 +1,7 @@
-from typing import Annotated
+from typing import Annotated, cast
 import os
 import fire
+import re
 
 _ = os.environ.setdefault("DJANGO_SETTINGS_MODULE", "src.config.settings")
 
@@ -18,6 +19,7 @@ from src.server.repositories import (
     file_repository,
 )
 from src.core.search_algorithms.BM25_index import BM25Index
+from src.core.indexer.stop_words import STOP_WORDS
 
 MAX_CHUNK_SIZE = 2000
 CORPUS_PATH = "vllm-0.10.1"
@@ -74,14 +76,6 @@ class CLI:
 
 
 def test_invert_index_with_bm25() -> None:
-    indexer: Indexer = Indexer(
-        CORPUS_PATH,
-        MAX_CHUNK_SIZE,
-        file_repository=file_repository,
-        document_term_repository=document_term_repository,
-        document_repository=document_repository,
-    )
-    indexer.index()
     invert_index: InvertIndex = InvertIndex(
         document_term_repository=document_term_repository,
         document_repository=document_repository,
@@ -94,7 +88,14 @@ def test_invert_index_with_bm25() -> None:
         invert_index=invert_index.invert_index,
     )
     for question in QUESTIONS:
-        query_terms: set[str] = set(question.split())
+        query_terms: list[str] = [
+            word
+            for word in cast(
+                list[str],
+                re.findall(r"\b[a-zA-Z0-9]+\b", question.lower()),
+            )
+            if word not in STOP_WORDS
+        ]
         condidate_documents: list[DocumentInterface] = invert_index(query_terms)
         print("Question: ", question)
         print("len of condidate documents: ", len(condidate_documents))
@@ -106,6 +107,14 @@ def test_invert_index_with_bm25() -> None:
 
 
 def main() -> None:
+    indexer: Indexer = Indexer(
+        CORPUS_PATH,
+        MAX_CHUNK_SIZE,
+        file_repository=file_repository,
+        document_term_repository=document_term_repository,
+        document_repository=document_repository,
+    )
+    indexer.index()
     test_invert_index_with_bm25()
     """
 

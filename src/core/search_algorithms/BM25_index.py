@@ -34,7 +34,7 @@ class BM25Index:
         self.__invert_index: InvertIndexType = invert_index
 
     def __call__(
-        self, query_terms: set[str], condidates_documents: list[DocumentInterface]
+        self, query_terms: list[str], condidates_documents: list[DocumentInterface]
     ) -> list[tuple[Annotated[float, "document score"], DocumentInterface]]:
 
         chosen_documents: list[
@@ -50,7 +50,7 @@ class BM25Index:
 
     def __score_document(
         self,
-        query_terms: set[str],
+        query_terms: list[str],
         condidate_document: DocumentInterface,
         idfs_terms_score: _TermIDFS,
     ) -> float:
