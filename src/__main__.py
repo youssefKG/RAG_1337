@@ -97,16 +97,20 @@ def test_invert_index_with_bm25() -> None:
             if word not in STOP_WORDS
         ]
         condidate_documents: list[DocumentInterface] = invert_index(query_terms)
-        print("Question: ", question)
-        print("len of condidate documents: ", len(condidate_documents))
-        high_score_documents: list[
-            tuple[Annotated[float, "document score"], DocumentInterface]
-        ] = bm25(query_terms, condidate_documents)
+        _: list[tuple[Annotated[float, "document score"], DocumentInterface]] = bm25(
+            query_terms, condidate_documents
+        )
+        """
         for score, cond_doc in high_score_documents:
             print(score, cond_doc.file.path)
+        """
+
+    print(len(QUESTIONS))
 
 
 def main() -> None:
+    """
+
     indexer: Indexer = Indexer(
         CORPUS_PATH,
         MAX_CHUNK_SIZE,
@@ -115,6 +119,7 @@ def main() -> None:
         document_repository=document_repository,
     )
     indexer.index()
+    """
     test_invert_index_with_bm25()
     """
 

@@ -64,13 +64,10 @@ class Indexer:
                 file_path=file_path, last_modified_at=last_modified_at
             )
             if is_changed:
-                print("Changed: ", file_path)
                 language: Language = self.__get_language(file_path)
                 self.__index_file(
                     file=file, file_content=file_content, language=language
                 )
-            else:
-                print("Not changed: ", file_path)
         created_documents: list[DocumentInterface] = (
             self.__document_repository.create_many(self.__documents_to_create)
         )
@@ -162,7 +159,7 @@ class Indexer:
                 list[str],
                 re.findall(r"\b[a-zA-Z0-9]+\b", document.lower()),
             )
-            if word not in STOP_WORDS
+            if word.strip() not in STOP_WORDS and not word.strip().isdigit()
         ]
         term_frequency: Counter[str] = Counter(document_terms)
         return term_frequency
