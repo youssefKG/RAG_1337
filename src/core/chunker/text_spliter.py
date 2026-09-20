@@ -1,7 +1,7 @@
 import re
 from typing import Annotated
 from .languages import Language
-from .separators import PYTHON_SEPARATORS, MARKDOWN_SPERATORS
+from .separators import PYTHON_SEPARATORS, MARKDOWN_SPERATORS, TEXT_SEPARATORS
 
 
 class TextSpliter:
@@ -119,4 +119,4 @@ class TextSpliter:
             case Language.MARKDOWN:
                 return MARKDOWN_SPERATORS
             case Language.TEXT:
-                return []
+                return TEXT_SEPARATORS

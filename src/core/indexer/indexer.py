@@ -55,8 +55,6 @@ class Indexer:
                 Annotated[int, "document id"],
             ]
         ] = list()
-        self.unique_terms: set[tuple[str, int]] = set()
-        self.__total_terms: set[str] = set()
 
     def index(self) -> None:
         for file_path, file_content, last_modified_at in self.__files_iter():
@@ -90,7 +88,7 @@ class Indexer:
         for dirpath, _, filenames in os.walk(self.__corpus_path):
             for file_name in filenames:
                 file_path: str = os.path.join(dirpath, file_name)
-                if not file_path.endswith((".py", ".md")):
+                if not file_path.endswith((".py", ".md", ".txt")):
                     continue
                 try:
                     last_modified_time: float = os.path.getmtime(file_path)
@@ -119,7 +117,7 @@ class Indexer:
         self, *, file: FileInterface, file_content: str, language: Language
     ) -> None:
         # delete documents for this file
-        self.__document_repository.delete_by_file_id(file.id)
+        # self.__document_repository.delete_by_file_id(file.id)
         # delete terms for this file
         chunker: TextSpliter = TextSpliter(
             source=file_content,
@@ -128,22 +126,18 @@ class Indexer:
             language=language,
         )
         chunks: list[ChunkType] = chunker.split_text()
-
         for chunk, start_index, end_index in chunks:
             terms: Counter[str] = self.__get_terms_freqeuncy(chunk)
-            self.__total_terms.update(set(terms.keys()))
             self.__documents_to_create.append(
-                (start_index, end_index, len(chunk), file.id)
+                (start_index, end_index, sum(terms.values()), file.id)
             )
             for (
                 term,
                 frequency,
             ) in terms.items():
-                if (term, len(self.__documents_to_create)) not in self.unique_terms:
-                    self.__terms_to_create.append(
-                        (frequency, term, len(self.__documents_to_create))
-                    )
-                    self.unique_terms.add((term, len(self.__documents_to_create)))
+                self.__terms_to_create.append(
+                    (frequency, term.lower(), len(self.__documents_to_create))
+                )
 
     def __get_language(self, file_path: str) -> Language:
         if file_path.endswith(".py"):
@@ -154,12 +148,12 @@ class Indexer:
 
     def __get_terms_freqeuncy(self, document: str) -> Counter[str]:
         document_terms: list[str] = [
-            word
+            word.strip()
             for word in cast(
                 list[str],
-                re.findall(r"\b[a-zA-Z0-9]+\b", document.lower()),
+                re.findall(r"[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*", document.lower()),
             )
-            if word.strip() not in STOP_WORDS and not word.strip().isdigit()
+            if word.strip() not in STOP_WORDS
         ]
         term_frequency: Counter[str] = Counter(document_terms)
         return term_frequency

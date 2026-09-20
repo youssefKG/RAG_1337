@@ -30,15 +30,15 @@ def display_files() -> None:
         )
 
 
-def display_documents() -> None:
-    documents: list[DocumentInterface] = document_repository.all()
-    print("*" * 10, "DOCUMENT TABLE", "*" * 10)
-    for doc in documents:
-        print("document id: ", doc.id)
-        print("start index ", doc.start_index)
-        print("end index ", doc.end_index)
-        print("document length: ", doc.length)
-        print("_" * 10)
+# def display_documents() -> None:
+#     documents: list[DocumentInterface] = document_repository.all()
+#     print("*" * 10, "DOCUMENT TABLE", "*" * 10)
+#     for doc in documents:
+#         print("document id: ", doc.id)
+#         print("start index ", doc.start_index)
+#         print("end index ", doc.end_index)
+#         print("document length: ", doc.length)
+#         print("_" * 10)
 
 
 def display_documents_terms() -> None:
@@ -58,17 +58,17 @@ def display() -> None:
         print("document frequency: ", document.frequency)
 
 
-def print_document_has_term_value() -> None:
-    documents: list[DocumentInterface] = (
-        document_repository.get_documents_has_term_value("name")
-    )
-    for document in documents:
-        print("document id: ", document.id)
-        # print("document term value: ", document.value)
-        # print("document frequency: ", document.frequency)
-        print("file path: ", document.file.path)
-        print("start_index: ", document.start_index)
-        print("end_index: ", document.end_index)
+# def print_document_has_term_value() -> None:
+#     documents: list[DocumentInterface] = (
+#         document_repository.get_documents_has_term_value("name")
+#     )
+#     for document in documents:
+#         print("document id: ", document.id)
+#         # print("document term value: ", document.value)
+#         # print("document frequency: ", document.frequency)
+#         print("file path: ", document.file.path)
+#         print("start_index: ", document.start_index)
+#         print("end_index: ", document.end_index)
 
 
 # def test_bm25() -> None:

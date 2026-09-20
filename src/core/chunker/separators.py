@@ -7,7 +7,6 @@ PYTHON_SEPARATORS: list[str] = [
     "\n\n",
     "\n",
     " ",
-    "",
 ]
 
 
@@ -30,3 +29,5 @@ MARKDOWN_SPERATORS: list[str] = [
     " ",
     "",
 ]
+
+TEXT_SEPARATORS: list[str] = ["\n\n", "\n", " ", ""]

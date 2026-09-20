@@ -15,11 +15,6 @@ class DocumentScore:
     document: DocumentInterface
     score: float = 0
 
-    def __lt__(self, object: object) -> bool:
-        if not isinstance(object, DocumentScore):
-            return False
-        return True
-
 
 _DocumentScore: TypeAlias = dict[Annotated[int, "document id"], DocumentScore]
 
@@ -28,15 +23,15 @@ class BM25Index:
     def __init__(
         self,
         *,
-        k: float = 1,
+        k: float = 1.2,
         b: float = 0.75,
-        avg_documents_length: int,
+        avg_documents_length: float,
         total_number_of_documents: int,
         invert_index: InvertIndexType,
     ) -> None:
         self.__k: float = k
         self.__b: float = b
-        self.__avg_document_length: int = avg_documents_length
+        self.__avg_document_length: float = avg_documents_length
         self.__total_number_of_documents: int = total_number_of_documents
         self.__invert_index: InvertIndexType = invert_index
         self.__idfs_score: _TermIDFS = _TermIDFS()
@@ -45,7 +40,7 @@ class BM25Index:
         chosen_documents: _DocumentScore = _DocumentScore()
 
         # score the condidtate documents
-        for term in set(query_terms):
+        for term in query_terms:
             if term in self.__invert_index:
                 posting: PostingType = self.__invert_index[term]
                 for document_id, (document, term_frequency) in posting.items():
@@ -59,9 +54,6 @@ class BM25Index:
         return sorted(chosen_documents.values(), key=lambda x: x.score, reverse=True)[
             :top_k
         ]
-        # scored_documents: list[DocumentScore] = list(chosen_documents.values())
-        # heapq.heapify(scored_documents)
-        # return scored_documents
 
     def __score_document(
         self,

@@ -1,6 +1,5 @@
 from typing import TypeAlias, Annotated
 from src.server.repositories import (
-    DocumentRepositoryInterface,
     DocumentTermRepositoryInterface,
 )
 from collections import defaultdict
@@ -20,17 +19,11 @@ class InvertIndex:
         /,
         *,
         document_term_repository: DocumentTermRepositoryInterface,
-        document_repository: DocumentRepositoryInterface,
     ) -> None:
         self.__document_term_repository: DocumentTermRepositoryInterface = (
             document_term_repository
         )
-        self.__document_repository: DocumentRepositoryInterface = document_repository
         self.__invert_index: InvertIndexType = defaultdict(PostingType)
-        self.total_number_of_documents: int = self.__document_repository.count
-        self.avg_document_length: int = (
-            self.__document_repository.get_avg_document_length
-        )
 
     def __call__(self, query_terms: list[str]) -> None:
         # add new terms to invert index from user query
