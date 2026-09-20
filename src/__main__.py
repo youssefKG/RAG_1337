@@ -9,8 +9,7 @@ import django
 
 django.setup()
 from src.data.quetions import QUESTIONS
-from src.core.search_algorithms.invert_index import InvertIndex
-from src.server.entities import DocumentInterface
+from src.core.search_algorithms import invert_index, bm25
 
 from src.core.indexer.indexer import Indexer
 from src.server.repositories import (
@@ -18,7 +17,6 @@ from src.server.repositories import (
     document_repository,
     file_repository,
 )
-from src.core.search_algorithms.BM25_index import BM25Index
 from src.core.indexer.stop_words import STOP_WORDS
 
 MAX_CHUNK_SIZE = 2000
@@ -32,9 +30,6 @@ def get_term_by_id() -> None:
 
 
 class CLI:
-
-    def __init__(self, invert_index: InvertIndex) -> None:
-        self.__invert_index: InvertIndex = invert_index
 
     def index(self, max_chunk_size: int = 2000) -> None:
         if max_chunk_size == True:
@@ -76,17 +71,6 @@ class CLI:
 
 
 def test_invert_index_with_bm25() -> None:
-    invert_index: InvertIndex = InvertIndex(
-        document_term_repository=document_term_repository,
-        document_repository=document_repository,
-    )
-    k: int = 5
-    bm25: BM25Index = BM25Index(
-        top_k=k,
-        avg_documents_length=invert_index.avg_document_length,
-        total_number_of_documents=invert_index.total_number_of_documents,
-        invert_index=invert_index.invert_index,
-    )
     for question in QUESTIONS:
         query_terms: list[str] = [
             word
@@ -96,14 +80,12 @@ def test_invert_index_with_bm25() -> None:
             )
             if word not in STOP_WORDS
         ]
-        condidate_documents: list[DocumentInterface] = invert_index(query_terms)
-        _: list[tuple[Annotated[float, "document score"], DocumentInterface]] = bm25(
-            query_terms, condidate_documents
-        )
-        """
-        for score, cond_doc in high_score_documents:
-            print(score, cond_doc.file.path)
-        """
+        invert_index(query_terms)
+        chosen_documents = bm25(query_terms, 5)
+        print("*" * 30)
+        print(question)
+        for doc in chosen_documents:
+            print(doc.score, doc.document.file.path)
 
     print(len(QUESTIONS))
 
@@ -121,23 +103,6 @@ def main() -> None:
     indexer.index()
     """
     test_invert_index_with_bm25()
-    """
-
-    invert_index: InvertIndex = InvertIndex(
-        document_term_repository=document_term_repository,
-        document_repository=document_repository,
-    )
-    cli: CLI = CLI(invert_index=invert_index)
-
-    _ = fire.Fire(cli)
-    """
-    # display_files()
-    # display_terms()
-    # display_documents()
-    # print_document_has_term_value()
-    # display_documents_terms()
-    # test_bm25()
-    # get_term_by_id()
 
 
 if __name__ == "__main__":

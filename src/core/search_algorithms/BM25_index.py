@@ -1,16 +1,27 @@
+from dataclasses import dataclass
+from typing import Annotated, TypeAlias
 import math
 
-
 from src.server.entities import DocumentInterface
-from typing import Annotated, TypeAlias
-from .invert_index import InvertIndexType
+from .invert_index import InvertIndexType, PostingType
 
 _TermIDFS: TypeAlias = dict[
     Annotated[str, "term value"], Annotated[float, "idf(t) score"]
 ]
-_DocumentScore: TypeAlias = tuple[
-    Annotated[int, "document id"], Annotated[float, "document score"]
-]
+
+
+@dataclass(frozen=False)
+class DocumentScore:
+    document: DocumentInterface
+    score: float = 0
+
+    def __lt__(self, object: object) -> bool:
+        if not isinstance(object, DocumentScore):
+            return False
+        return True
+
+
+_DocumentScore: TypeAlias = dict[Annotated[int, "document id"], DocumentScore]
 
 
 class BM25Index:
@@ -19,59 +30,60 @@ class BM25Index:
         *,
         k: float = 1,
         b: float = 0.75,
-        top_k: int = 5,
         avg_documents_length: int,
         total_number_of_documents: int,
         invert_index: InvertIndexType,
     ) -> None:
         self.__k: float = k
         self.__b: float = b
-        self.__top_k: int = top_k
         self.__avg_document_length: int = avg_documents_length
         self.__total_number_of_documents: int = total_number_of_documents
         self.__invert_index: InvertIndexType = invert_index
         self.__idfs_score: _TermIDFS = _TermIDFS()
 
-    def __call__(
-        self,
-        query_terms: list[str],
-        condidates_documents: list[DocumentInterface],
-    ) -> list[tuple[Annotated[float, "document score"], DocumentInterface]]:
-        chosen_documents: list[
-            tuple[Annotated[float, "document score"], DocumentInterface]
-        ] = list()
+    def __call__(self, query_terms: list[str], top_k: int) -> list[DocumentScore]:
+        chosen_documents: _DocumentScore = _DocumentScore()
+
         # score the condidtate documents
-        for document in condidates_documents:
-            doc_score = self.__score_document(query_terms, document)
-            chosen_documents.append((doc_score, document))
-        # sort the document based on bm25 score
-        chosen_documents.sort(key=lambda x: x[0], reverse=True)
-        chosen_documents = chosen_documents[: self.__top_k]
-        return chosen_documents
+        for term in set(query_terms):
+            if term in self.__invert_index:
+                posting: PostingType = self.__invert_index[term]
+                for document_id, (document, term_frequency) in posting.items():
+                    if document_id not in chosen_documents:
+                        chosen_documents[document_id] = DocumentScore(
+                            document=document, score=0
+                        )
+                    chosen_documents[document_id].score += self.__score_document(
+                        document, term, term_frequency, len(posting)
+                    )
+        return sorted(chosen_documents.values(), key=lambda x: x.score, reverse=True)[
+            :top_k
+        ]
+        # scored_documents: list[DocumentScore] = list(chosen_documents.values())
+        # heapq.heapify(scored_documents)
+        # return scored_documents
 
     def __score_document(
-        self, query_terms: list[str], document: DocumentInterface
+        self,
+        document: DocumentInterface,
+        term: str,
+        term_frequency: int,
+        number_of_document_contain_term: int,
     ) -> float:
-        score: float = 0.0
-        for term in query_terms:
-            if document.id not in self.__invert_index[term]:
-                continue
-            idf_score: float = self.__get_idf_score(term)
-            _, term_frequency = self.__invert_index[term][document.id]
-            tf_score: float = self.__tf(document.length, term_frequency)
-            score += idf_score * tf_score
-        return score
+        idf_score: float = self.__get_idf_score(term, number_of_document_contain_term)
+        tf_score: float = self.__tf(document.length, term_frequency)
+        return tf_score * idf_score
 
     def __tf(self, doc_len: int, term_frequency: int) -> float:
+        nominator: float = term_frequency * (self.__k + 1)
         dominator: float = term_frequency + (
             self.__k
             * (1 - self.__b + (self.__b * (doc_len / self.__avg_document_length)))
         )
-        return float(term_frequency / dominator)
+        return float(nominator / dominator)
 
-    def __get_idf_score(self, term: str) -> float:
-        if term not in self.__idfs_score.keys():
-            number_of_document_contain_term: int = len(self.__invert_index[term])
+    def __get_idf_score(self, term: str, number_of_document_contain_term: int) -> float:
+        if term not in self.__idfs_score:
             nominator: float = (
                 self.__total_number_of_documents - number_of_document_contain_term + 0.5
             )

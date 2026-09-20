@@ -67,14 +67,5 @@ class DocumentTermRepository:
             for term_frequency, term_value, document_id in terms_documents
         ]
         _: list[DocumentTermModel] = self.__model.objects.bulk_create(
-            documents_terms_model, batch_size=20000
+            documents_terms_model, batch_size=10000
         )
-
-    def get_document_term_value_and_document_id(
-        self, document_id: int, term_value: str
-    ) -> DocumentTermInterface | None:
-        document_term_model: DocumentTermModel | None = self.__model.objects.filter(
-            document_id=document_id, value=term_value
-        ).first()
-
-        return cast(DocumentTermInterface | None, cast(object, document_term_model))

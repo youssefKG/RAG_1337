@@ -33,18 +33,6 @@ class FileRepositoryInterface(Protocol):
 
 
 class DocumentRepositoryInterface(Protocol):
-    def create(
-        self,
-        *,
-        start_index: int,
-        end_index: int,
-        document_length: int,
-        file_id: int,
-    ) -> DocumentInterface: ...
-
-    def delete_by_id(self, document_id: int) -> None: ...
-
-    def delete_by_file_id(self, file_id: int) -> None: ...
 
     def create_many(
         self,
@@ -61,11 +49,7 @@ class DocumentRepositoryInterface(Protocol):
     @property
     def get_avg_document_length(self) -> int: ...
 
-    def get_by_id(self, id: int) -> DocumentInterface | None: ...
-
-    def get_documents_has_term_value(
-        self, term_value: str
-    ) -> list[DocumentInterface]: ...
+    def delete_by_file_id(self, file_id: int) -> None: ...
 
     @property
     def count(self) -> int: ...
@@ -77,8 +61,6 @@ class DocumentTermRepositoryInterface(Protocol):
     def create(
         self, *, term_frequency: int, term_value: str, document_id: int
     ) -> DocumentTermInterface: ...
-
-    def delete_by_id(self, document_term_id: int) -> None: ...
 
     def create_many(
         self,
@@ -92,6 +74,3 @@ class DocumentTermRepositoryInterface(Protocol):
     ) -> None: ...
 
     def get_by_terms_values(self, values: set[str]) -> list[DocumentTermInterface]: ...
-    def get_document_term_value_and_document_id(
-        self, document_id: int, term_value: str
-    ) -> DocumentTermInterface | None: ...
