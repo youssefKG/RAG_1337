@@ -1,3 +1,4 @@
+TOKENIZER_REGEX_PATTERN = r"[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*"
 STOP_WORDS = {
     "0o",
     "0s",

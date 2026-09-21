@@ -28,22 +28,6 @@ class DocumentTermRepository:
         document_term_model.save()
         return cast(DocumentTermInterface, cast(object, document_term_model))
 
-    def delete_by_id(self, document_term_id: int) -> None:
-        _ = self.__model.objects.filter(id=document_term_id).delete()
-
-    # TEST:
-    def get_by_documet_id(self, document_id: int) -> list[DocumentTermInterface]:
-        terms_models: list[DocumentTermModel] = list(
-            self.__model.objects.filter(document_id=document_id)
-        )
-        return cast(list[DocumentTermInterface], terms_models)
-
-    def all(self) -> list[DocumentTermInterface]:
-        return [
-            cast(DocumentTermInterface, cast(object, document_term))
-            for document_term in self.__all_terms
-        ]
-
     def get_by_terms_values(self, values: set[str]) -> list[DocumentTermInterface]:
         document_term_models: list[DocumentTermModel] = list(
             self.__all_terms.filter(value__in=values).select_related("document")

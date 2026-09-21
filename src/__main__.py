@@ -23,7 +23,7 @@ from src.server.repositories import (
     document_repository,
     file_repository,
 )
-from src.core.indexer.stop_words import STOP_WORDS
+from src.core.utils import TOKENIZER_REGEX_PATTERN, STOP_WORDS
 
 MAX_CHUNK_SIZE = 2000
 CORPUS_PATH = "vllm-0.10.1"
@@ -121,9 +121,7 @@ def set_student_search_result() -> None:
             word.lower()
             for word in cast(
                 list[str],
-                re.findall(
-                    r"[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*", question.question.lower()
-                ),
+                re.findall(TOKENIZER_REGEX_PATTERN, question.question.lower()),
             )
             if word not in STOP_WORDS
         ]
@@ -154,6 +152,7 @@ def set_student_search_result() -> None:
 
 
 def main() -> None:
+    """
 
     indexer: Indexer = Indexer(
         CORPUS_PATH,
@@ -163,6 +162,8 @@ def main() -> None:
         document_repository=document_repository,
     )
     indexer.index()
+    """
+
     # test_invert_index_with_bm25()
     set_student_search_result()
 

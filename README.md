@@ -93,3 +93,21 @@ https://nlp.stanford.edu/IR-book/
 
 
 ## benchmark: more than 1h => 6:09 (without inserting the document terms) => 5:49(without inserting the document terms) => 4:15 => 1.30
+
+### vector Embeding
+https://www.youtube.com/watch?v=gl1r1XV0SLw
+
+### vector indexing:
+https://medium.com/@myscale/understanding-vector-indexing-a-comprehensive-guide-d1abe36ccd3c
+
+### how to build vector storage
+https://oneuptime.com/blog/post/2026-01-30-rag-vector-storage/view
+
+
+### HNSW search:
+https://www.youtube.com/watch?v=77QH0Y2PYKg
+https://www.youtube.com/watch?v=rhZgXNdhWDY
+
+### SKIPED LINKED LIST
+https://ocw.mit.edu/courses/6-046j-introduction-to-algorithms-sma-5503-fall-2005/resources/lecture-12-skip-lists/
+https://www.youtube.com/watch?v=2g9OSRKJuzM

@@ -53,10 +53,6 @@ class DocumentRepository:
             )
             return cast(list[DocumentInterface], documents_models)
 
-    def all(self) -> list[DocumentInterface]:
-        documents_models: list[DocumentModel] = list(self.__model.objects.all())
-        return cast(list[DocumentInterface], documents_models)
-
     @property
     def get_avg_document_length(self) -> float:
         avg_dl = self.__model.objects.aggregate(Avg("length", default=0))

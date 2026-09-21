@@ -28,18 +28,16 @@ class InvertIndex:
     def __call__(self, query_terms: list[str]) -> None:
         # add new terms to invert index from user query
         new_terms: set[str] = set(query_terms) - set(self.__invert_index)
-        if len(new_terms) != 0:
+        if new_terms:
             terms_documents: list[DocumentTermInterface] = (
                 self.__document_term_repository.get_by_terms_values(new_terms)
             )
-            self.__add_new_terms_to_invert_index(terms_documents, new_terms)
+            self.__add_new_terms_to_invert_index(terms_documents)
 
     def __add_new_terms_to_invert_index(
-        self, terms_documents: list[DocumentTermInterface], new_terms: set[str]
+        self, terms_documents: list[DocumentTermInterface]
     ) -> None:
         for doc_term in terms_documents:
-            if doc_term.value not in new_terms:
-                continue
             self.__invert_index[doc_term.value][doc_term.document.id] = (
                 doc_term.document,
                 doc_term.frequency,

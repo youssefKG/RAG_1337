@@ -1,7 +1,7 @@
 from collections.abc import Generator
 from typing import Annotated, TypeAlias, cast
 
-from .stop_words import STOP_WORDS
+from src.core.utils import STOP_WORDS, TOKENIZER_REGEX_PATTERN
 from src.core.chunker.languages import Language
 from src.core.chunker.text_spliter import TextSpliter
 from src.server.entities import DocumentInterface, FileInterface
@@ -151,7 +151,7 @@ class Indexer:
             word.strip()
             for word in cast(
                 list[str],
-                re.findall(r"[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*", document.lower()),
+                re.findall(TOKENIZER_REGEX_PATTERN, document.lower()),
             )
             if word.strip() not in STOP_WORDS
         ]

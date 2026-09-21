@@ -16,7 +16,7 @@ class DocumentScore:
     score: float = 0
 
 
-_DocumentScore: TypeAlias = dict[Annotated[int, "document id"], DocumentScore]
+_DocumentScoreType: TypeAlias = dict[Annotated[int, "document id"], DocumentScore]
 
 
 class BM25Index:
@@ -37,9 +37,7 @@ class BM25Index:
         self.__idfs_score: _TermIDFS = _TermIDFS()
 
     def __call__(self, query_terms: list[str], top_k: int) -> list[DocumentScore]:
-        chosen_documents: _DocumentScore = _DocumentScore()
-
-        # score the condidtate documents
+        chosen_documents: _DocumentScoreType = _DocumentScoreType()
         for term in query_terms:
             if term in self.__invert_index:
                 posting: PostingType = self.__invert_index[term]
