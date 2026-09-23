@@ -5,7 +5,7 @@ _ = os.environ.setdefault("DJANGO_SETTINGS_MODULE", "src.config.settings")
 import django
 
 django.setup()
-from src.core.search_algorithms.invert_index import InvertIndex
+from src.core.search_engine.invert_index import InvertIndex
 
 
 from src.core.indexer.indexer import Indexer

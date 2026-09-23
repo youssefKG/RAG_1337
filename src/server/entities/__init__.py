@@ -13,6 +13,7 @@ class DocumentInterface(Protocol):
     end_index: int
     length: int
     file: FileInterface
+    embeding: list[float]
 
 
 class DocumentTermInterface(Protocol):

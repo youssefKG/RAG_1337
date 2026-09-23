@@ -19,7 +19,7 @@ class DocumentScore:
 _DocumentScoreType: TypeAlias = dict[Annotated[int, "document id"], DocumentScore]
 
 
-class BM25Index:
+class BM25:
     def __init__(
         self,
         *,
@@ -36,7 +36,7 @@ class BM25Index:
         self.__invert_index: InvertIndexType = invert_index
         self.__idfs_score: _TermIDFS = _TermIDFS()
 
-    def __call__(self, query_terms: list[str], top_k: int) -> list[DocumentScore]:
+    def __call__(self, query_terms: list[str], top_k: int) -> list[DocumentInterface]:
         chosen_documents: _DocumentScoreType = _DocumentScoreType()
         for term in query_terms:
             if term in self.__invert_index:
@@ -49,9 +49,10 @@ class BM25Index:
                     chosen_documents[document_id].score += self.__score_document(
                         document, term, term_frequency, len(posting)
                     )
-        return sorted(chosen_documents.values(), key=lambda x: x.score, reverse=True)[
-            :top_k
-        ]
+        high_score_document: list[DocumentScore] = sorted(
+            chosen_documents.values(), key=lambda x: x.score, reverse=True
+        )[:top_k]
+        return [doc.document for doc in high_score_document]
 
     def __score_document(
         self,

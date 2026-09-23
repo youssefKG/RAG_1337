@@ -1,6 +1,5 @@
 from collections.abc import Generator
 from typing import Annotated, TypeAlias, cast
-
 from src.core.utils import STOP_WORDS, TOKENIZER_REGEX_PATTERN
 from src.core.chunker.languages import Language
 from src.core.chunker.text_spliter import TextSpliter
@@ -46,6 +45,7 @@ class Indexer:
                 Annotated[int, "end_index"],
                 Annotated[int, "file id"],
                 Annotated[int, "document length"],
+                Annotated[list[float], "embeded vector"],
             ]
         ] = list()
         self.__terms_to_create: list[
@@ -129,7 +129,7 @@ class Indexer:
         for chunk, start_index, end_index in chunks:
             terms: Counter[str] = self.__get_terms_freqeuncy(chunk)
             self.__documents_to_create.append(
-                (start_index, end_index, sum(terms.values()), file.id)
+                (start_index, end_index, sum(terms.values()), file.id, [])
             )
             for (
                 term,

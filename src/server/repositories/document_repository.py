@@ -35,6 +35,7 @@ class DocumentRepository:
                 Annotated[int, "end index"],
                 Annotated[int, "document length"],
                 Annotated[int, "file id"],
+                Annotated[list[float], "embeding"],
             ]
         ],
     ) -> list[DocumentInterface]:
@@ -45,8 +46,9 @@ class DocumentRepository:
                     end_index=end_index,
                     file_id=file_id,
                     length=length,
+                    embeding=embeding,
                 )
-                for start_index, end_index, length, file_id in documents
+                for start_index, end_index, length, file_id, embeding in documents
             ]
             documents_models: list[DocumentModel] = self.__model.objects.bulk_create(
                 documents_models_to_create

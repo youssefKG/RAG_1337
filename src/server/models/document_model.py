@@ -1,4 +1,11 @@
-from django.db.models import Model, ForeignKey, CASCADE, PositiveIntegerField, AutoField
+from django.db.models import (
+    Model,
+    ForeignKey,
+    CASCADE,
+    PositiveIntegerField,
+    AutoField,
+    JSONField,
+)
 from .file_model import FileModel
 
 
@@ -8,3 +15,4 @@ class DocumentModel(Model):
     start_index: int = PositiveIntegerField()
     end_index: int = PositiveIntegerField()
     length: int = PositiveIntegerField()
+    embeding = JSONField()
