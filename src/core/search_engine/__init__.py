@@ -18,4 +18,4 @@ bm25: BM25 = BM25(
 
 search_engine = SearchEngine(bm25=bm25, invert_index=invert_index)
 
-__all__ = ["search_engine"]
+__all__ = ["search_engine", "SearchEngine"]

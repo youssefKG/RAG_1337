@@ -30,33 +30,72 @@ class COLORS(str, Enum):
     NEGATIVE = "\033[7m"
     CROSSED = "\033[9m"
     END = "\033[0m"
-    RESET = "\x1b[0m"
+
+
+time_formatter: Callable[[], str] = lambda: "{color}[{date}]{reset_color}".format(
+    color=COLORS.LIGHT_GRAY.value,
+    date=str(datetime.now()),
+    reset_color=COLORS.END.value,
+)
+
+
+stage_formatter: Callable[[str], str] = (
+    lambda stage: "{color}[{stage}]{reset_color}".format(
+        color=COLORS.CYAN.value, stage=stage, reset_color=COLORS.END.value
+    )
+)
+
+
+message_formatter: Callable[[str], str] = lambda message: "{color}{message}".format(
+    color=COLORS.BOLD.value, message=message
+)
 
 
 class Logger:
-    info_formater: str = "{color}[INFO]{reset_color}".format(
-        color=COLORS.BLUE.value, reset_color=COLORS.RESET.value
+    info_formater: str = "{bold}{color}[INFO]{reset_color}".format(
+        color=COLORS.LIGHT_BLUE.value,
+        bold=COLORS.BOLD.value,
+        reset_color=COLORS.END.value,
     )
-    warning_formater: str = "{color}[ERROR]{reset_color}".format(
-        color=COLORS.YELLOW.value
+    warning_formater: str = "{color}[WARNNING]{reset_color}".format(
+        color=COLORS.YELLOW.value, reset_color=COLORS.END.value
     )
-    error_formater: str = "{color}[ERROR]{reset_color}".format(color=COLORS.RED.value)
-    time_formater: Callable[[], str] = lambda: "{color}[{date}]{reset_color}".format(
-        color=COLORS.LIGHT_GRAY.value,
-        date=str(datetime.now()),
-        reset_color=COLORS.RESET.value,
+    error_formater: str = "{color}[ERROR]{reset_color}".format(
+        color=COLORS.LIGHT_RED.value, reset_color=COLORS.END.value
     )
 
     @classmethod
     def info(cls, message: str, stage: str) -> None:
-        info_format = f"{time_formatter()} {"
-
-        pass
+        info_format = (
+            f"{time_formatter()}"
+            f" {cls.info_formater}"
+            f" {stage_formatter(stage)}"
+            f": {message_formatter(message)}"
+        )
+        print(info_format)
 
     @classmethod
     def warn(cls, message: str, stage: str) -> None:
-        pass
+        warn_format = (
+            f"{time_formatter()}"
+            f" {cls.warning_formater}"
+            f" {stage_formatter(stage)}"
+            f": {message_formatter(message)}"
+        )
+        print(warn_format)
 
     @classmethod
     def error(cls, message: str, stage: str) -> None:
-        pass
+        error_format = (
+            f"{time_formatter()}"
+            f" {cls.error_formater}"
+            f" {stage_formatter(stage)}"
+            f": {message_formatter(message)}"
+        )
+        print(error_format)
+
+
+if __name__ == "__main__":
+    Logger.info("hello world info", "INDEXING")
+    Logger.warn("warining message", "CHUNKING")
+    Logger.error("hello world info", "not found")

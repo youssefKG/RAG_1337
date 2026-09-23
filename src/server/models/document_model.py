@@ -4,7 +4,6 @@ from django.db.models import (
     CASCADE,
     PositiveIntegerField,
     AutoField,
-    JSONField,
 )
 from .file_model import FileModel
 
@@ -15,4 +14,3 @@ class DocumentModel(Model):
     start_index: int = PositiveIntegerField()
     end_index: int = PositiveIntegerField()
     length: int = PositiveIntegerField()
-    embeding = JSONField()

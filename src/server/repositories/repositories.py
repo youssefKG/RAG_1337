@@ -42,7 +42,6 @@ class DocumentRepositoryInterface(Protocol):
                 Annotated[int, "end index"],
                 Annotated[int, "document length"],
                 Annotated[int, "file id"],
-                Annotated[list[float], "embeded vector"],
             ]
         ],
     ) -> list[DocumentInterface]: ...

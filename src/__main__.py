@@ -20,7 +20,8 @@ from src.server.repositories import (
     document_repository,
     file_repository,
 )
-from src.core.llm import embeding_model
+from src.core.rage_against_machine import RageAgainstMachine
+import fire
 
 MAX_CHUNK_SIZE = 2000
 CORPUS_PATH = "data/raw/vllm-0.10.1"
@@ -28,48 +29,6 @@ RECALL = 10
 CODE_BASE_QUESTIONS = "data/public/UnansweredQuestions/dataset_code_public.json"
 
 DOC_BASE_QUESTIONS = "data/public/UnansweredQuestions/dataset_docs_public.json"
-
-
-class CLI:
-
-    def index(self, max_chunk_size: int = 2000) -> None:
-        if max_chunk_size == True:
-            max_chunk_size = 2000
-        indexer: Indexer = Indexer(
-            CORPUS_PATH,
-            max_chunk_size,
-            file_repository=file_repository,
-            document_term_repository=document_term_repository,
-            document_repository=document_repository,
-            embeding_model=embeding_model,
-        )
-        indexer.index()
-
-    def search(self, query: str, k: int = 5) -> None:
-        pass
-
-    def search_dataset(
-        self,
-        data_set_path: str,
-        path: str,
-        k: int,
-        save_directory: str,
-        dir: Annotated[str, "save_directory_path"],
-    ) -> None:
-        pass
-
-    def answer(self, query: str, k: int) -> None:
-        pass
-
-    def answer_dataset(
-        self, student_search_result_path: str, path: str, save_directory: str, dir: str
-    ) -> None:
-        pass
-
-    def evaluate(
-        self,
-    ) -> None:
-        pass
 
 
 def load_unanswerd_question() -> RagDataset:
@@ -95,21 +54,21 @@ def set_student_search_result() -> None:
 
 
 def main() -> None:
-    # indexer: Indexer = Indexer(
-    #     CORPUS_PATH,
-    #     MAX_CHUNK_SIZE,
-    #     file_repository=file_repository,
-    #     document_term_repository=document_term_repository,
-    #     document_repository=document_repository,
-    #     embeding_model=embeding_model,
-    # )
-    # indexer.index()
+    """
 
-    set_student_search_result()
+    indexer: Indexer = Indexer(
+        CORPUS_PATH,
+        MAX_CHUNK_SIZE,
+        file_repository=file_repository,
+        document_term_repository=document_term_repository,
+        document_repository=document_repository,
+    )
+    indexer.index()
+    """
+    _: object = fire.Fire(RageAgainstMachine)
+
+    # set_student_search_result()
 
 
 if __name__ == "__main__":
     main()
-
-
-# i dont mean any disrespect but if you say 3hour that mean in this 3hour your understand the subject  and you  learn about the graph  and learn about the algo and you understand it and you implement the algo
