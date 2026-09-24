@@ -9,6 +9,7 @@ from src.server.repositories import (
     DocumentRepositoryInterface,
     DocumentTermRepositoryInterface,
 )
+from src.core.validation_models import MinimalSource
 from src.core.utils import Logger
 import re
 
@@ -20,7 +21,6 @@ ChunkType: TypeAlias = tuple[
     Annotated[int, "start index"],
     Annotated[int, "end index"],
 ]
-
 
 class Indexer:
     def __init__(
@@ -52,7 +52,7 @@ class Indexer:
             ]
         ] = list()
 
-    def __call__(self, /, *, corpus_path: str, max_chunk_size: int) -> None:
+    def __call__(self, /, *, corpus_path: str, max_chunk_size: int) -> list[MinimalSource]:
         for file_path, file_content, last_modified_at in self.__files_iter(corpus_path):
             file, is_changed = self.__insert_file(
                 file_path=file_path, last_modified_at=last_modified_at
@@ -66,7 +66,9 @@ class Indexer:
                     max_chunk_size=max_chunk_size,
                 )
         Logger.info(
-            "The document is being processed, and its content is being stored in the database in smaller chunks for efficient retrieval and search. Please wait while the process completes.",
+            "The document is being processed, and its content is being"
+            + "stored in the database in smaller chunks for efficient"
+            + "retrieval and search. Please wait while the process completes.",
             "INDEXING",
         )
         created_documents: list[DocumentInterface] = (
@@ -77,11 +79,20 @@ class Indexer:
             for frequency, value, document_id in self.__terms_to_create
         ]
         Logger.info(
-            "We’re extracting the key terms from your document and storing them in the database to make searching and retrieving relevant information faster.",
+            "We’re extracting the key terms from your document and storing" 
+            +" them in the database to make searching and retrieving" 
+            +" relevant information faster.",
             "INDEXING",
         )
         self.__document_term_repository.create_many(terms_to_create)
-        print(len(self.__terms_to_create))
+        all_documents: list[DocumentInterface] = self.__document_repository.all()
+        return [
+                MinimalSource(
+                    file_path=doc.file.path,
+                    first_character_index=doc.start_index,
+                    last_character_index=doc.end_index
+                    ) for doc in all_documents
+                ]
 
     def __files_iter(self, corpus_path: str) -> Generator[
         tuple[
@@ -130,7 +141,7 @@ class Indexer:
         language: Language,
         max_chunk_size: int,
     ) -> None:
-        Logger.warn(f"Indexing file {file.path}", "INDEXING")
+        Logger.info(f"Indexing file {file.path}", "INDEXING")
         # delete documents for this file
         # self.__document_repository.delete_by_file_id(file.id)
         # delete terms for this file

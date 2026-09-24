@@ -1,5 +1,5 @@
 from core.search_engine import SearchEngine
-from src.core.indexer import indexer
+from src.core.indexer import Indexer
 
 
 class Generator:

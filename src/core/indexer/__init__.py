@@ -12,4 +12,4 @@ indexer: Indexer = Indexer(
     file_repository=file_repository,
 )
 
-__all__ = ["indexer"]
+__all__ = ["indexer", "Indexer"]

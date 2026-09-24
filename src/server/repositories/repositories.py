@@ -56,6 +56,9 @@ class DocumentRepositoryInterface(Protocol):
 
     def get_by_terms_values(self, values: set[str]) -> list[DocumentInterface]: ...
 
+    def all(self) -> list[DocumentInterface]:
+        ...
+
 
 class DocumentTermRepositoryInterface(Protocol):
     def create(

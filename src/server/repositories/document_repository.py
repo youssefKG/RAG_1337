@@ -20,6 +20,9 @@ class DocumentRepository:
         )
         return cast(list[DocumentInterface], documents_models)
 
+    def all(self) -> list[DocumentInterface]:
+        return cast(list[DocumentInterface], list(self.__model.objects.all()))
+
     @property
     def count(self) -> int:
         return self.__model.objects.all().count()

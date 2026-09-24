@@ -93,9 +93,3 @@ class Logger:
             f": {message_formatter(message)}"
         )
         print(error_format)
-
-
-if __name__ == "__main__":
-    Logger.info("hello world info", "INDEXING")
-    Logger.warn("warining message", "CHUNKING")
-    Logger.error("hello world info", "not found")

@@ -31,7 +31,7 @@ class SearchEngine:
         condidate_documents: list[DocumentInterface] = self.__bm25(query_terms, top_k)
         retrieved_sources: list[MinimalSource] = [
             MinimalSource(
-                file_path=doc.file.path,
+               file_path=doc.file.path,
                 first_character_index=doc.start_index,
                 last_character_index=doc.end_index,
             )
