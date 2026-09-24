@@ -34,10 +34,6 @@ class FileRepository:
             return None
         return cast(FileInterface, cast(object, file_model))
 
-    def get_model_by_id(self, file_id: int) -> FileModel | None:
-        file_model: FileModel | None = self.__model.objects.filter(id=file_id).first()
-        return file_model
-
     def all(self) -> list[FileInterface]:
         file_models: list[FileModel] = list(self.__model.objects.all())
         return cast(list[FileInterface], file_models)
@@ -60,6 +56,3 @@ class FileRepository:
             file_model.last_modified_at = last_modified_at
         file_model.save()
 
-
-def test_get_or_create():
-    pass

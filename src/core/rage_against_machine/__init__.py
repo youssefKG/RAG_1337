@@ -1,5 +1,5 @@
 import sys
-import os
+
 from src.core.search_engine import SearchEngine, search_engine
 from src.core.validation_models import (
     MinimalSearchResults,
@@ -8,7 +8,7 @@ from src.core.validation_models import (
     MinimalSource,
     StudentSearchResults
 )
-from src.core.utils.logger import Logger
+from src.core.utils import Logger, Stage, permission_checker
 from src.core.indexer import indexer, Indexer
 from pydantic import RootModel, ValidationError
 from pathlib import Path
@@ -41,28 +41,24 @@ class RageAgainstMachine:
                         )
                     )
                 ).model_dump_json(indent=4)
-        try:
-            index_path = Path(DATA_PROCESSED_PATH)
-            index_path.parent.mkdir(parents=True, exist_ok=True)
-            index_path.touch()
-            with index_path.open("w") as file:
-                _ =file.write(minimal_sources)
-        except PermissionError:
-            Logger.error(
-                    f"Permision Error cannot write to file {DATA_PROCESSED_PATH + 'index.json'}",
-                    "INDEXING"
-                    )
-            sys.exit(1)
-        except Exception as error:
-            Logger.error(str(error), "INDEXING")
-            sys.exit(1)
+        index_path = Path(DATA_PROCESSED_PATH)
+        index_path.parent.mkdir(parents=True, exist_ok=True)
+        index_path.touch()
+        permission_checker(
+            file_path=DATASET_PATH,
+            exist=True,
+            write=True,
+            fn= lambda x: Logger.error(x, Stage.INDEXING.name)
+        )
+        with index_path.open("w") as file:
+            _ =file.write(minimal_sources)
 
 
     def search(self, query: str, k: int = 5) -> None:
         if k == 0:
             Logger.error(
                 f"Number of requested results {k} cannot be 0 or negative.",
-                "SEARCH_DATASET",
+                Stage.SEARCH_DATASET.name
             )
             sys.exit(1)
         unanswered_question: UnansweredQuestion = UnansweredQuestion(question=query)
@@ -73,7 +69,7 @@ class RageAgainstMachine:
             Logger.info(
                 f"{source.file_path}"
                 + f" [{source.first_character_index}:{source.last_character_index}]",
-                "SEARCH",
+                Stage.SEARCH.name
             )
 
     def search_dataset(
@@ -82,33 +78,43 @@ class RageAgainstMachine:
         if k == 0:
             Logger.error(
                 f"Number of requested results {k} cannot be 0 or negative.",
-                "SEARCH_DATASET",
+                Stage.SEARCH_DATASET.name
             )
             sys.exit(0)
-        unanswered_questions: RagDataset = self.__load_unanswered_questions(dataset_path)
+        # load the unanswerd question from dataset path
+        unanswered_questions: RagDataset = self.__load_unanswered_questions(dataset_path, Stage.SEARCH_DATASET)
+        # get the student search result for the questions
+        student_search_result: StudentSearchResults = self.__get_student_search_results(unanswered_questions, k)
+        # create directory for save directory if is not exist
         save_directory_path = Path(save_directory)
         save_directory_path.parent.mkdir(parents=True, exist_ok=True)
+        save_directory_path.touch()
+        # check the write permission for save directory
+        permission_checker(file_path=dataset_path, exist=True, write=True, fn= lambda x: Logger.error(x, Stage.SEARCH_DATASET.name))
         try:
-            with save_directory_path.open() as file:
-                pass
+            with save_directory_path.open("w") as file:
+                _ = file.write(student_search_result.model_dump_json())
         except PermissionError:
             Logger.error(
                     f"Permision Error cannot write to file {save_directory}",
-                    "SEARCH"
+                    Stage.SEARCH.name
                     )
             sys.exit(1)
         except Exception as error:
-            Logger.error(str(error), "SEARCH")
+            Logger.error(str(error), Stage.SEARCH.name)
             sys.exit(1)
-
-            
 
     def answer(self, query: str, k: int = 5) -> None:
         pass
 
-    def __load_unanswered_questions(self, dataset_path: str) -> RagDataset:
-        self.__check_is_exist(dataset_path, "SEARCH")
-        self.__check_read_permision(dataset_path, "SEARCH")
+    def __load_unanswered_questions(self, dataset_path: str, stage: Stage) -> RagDataset:
+        # check if the dataset path is exist and read permission
+        permission_checker(
+            file_path=dataset_path,
+            exist=True,
+            read=True,
+            fn=lambda x: Logger.error(x, stage.name)
+        )
         unanswered_questions: RagDataset
         try:
             with open(CODE_BASE_QUESTIONS, "r") as unanswed_question_file:
@@ -117,27 +123,12 @@ class RageAgainstMachine:
                 )
             return unanswered_questions
         except ValidationError as errors:
-            print(errors)
+            Logger.error(errors.errors()[0]["msg"], stage.name)
             sys.exit(1)
 
-    def __get_search_results(self, dataset: RagDataset, top_k: int) -> StudentSearchResults:
+    def __get_student_search_results(self, rag_dataset: RagDataset, top_k: int) -> StudentSearchResults:
         search_results: list[MinimalSearchResults] = list()
-        for question in dataset.rag_questions:
+        for question in rag_dataset.rag_questions:
             minimal_search_result: MinimalSearchResults = self.__search_engine(question, top_k)
             search_results.append(minimal_search_result)
         return StudentSearchResults(search_results=search_results, k=top_k)
-
-    def __check_write_permision(self, file_path: str, stage: str) -> None:
-        if not os.access(file_path, os.W_OK):
-            Logger.error("Permission denied: cannot write to '{file_path}'", stage)
-            sys.exit(2)
-
-    def __check_read_permision(self, file_path: str, stage: str) -> None:
-        if not os.access(file_path, os.R_OK):
-            Logger.error("Permission denied: cannot write to '{file_path}'", stage)
-            sys.exit(2)
-
-    def __check_is_exist(self, file_path: str, stage: str) -> None:
-        if not os.access(file_path, os.F_OK):
-            Logger.error(f"File not found: unable to access '{file_path}'", stage)
-            sys.exit(2)

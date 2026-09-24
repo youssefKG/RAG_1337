@@ -15,6 +15,7 @@ import re
 
 from collections import Counter
 import os
+import sys
 
 ChunkType: TypeAlias = tuple[
     Annotated[str, "chunk"],
@@ -115,7 +116,8 @@ class Indexer:
                         "You do not have permission to open {file_path}", "INDEXING"
                     )
                 except Exception as error:
-                    print(error)
+                    Logger.error(str(error), "INDEXING")
+                    sys.exit(0)
 
     def __insert_file(
         self, *, file_path: str, last_modified_at: float
@@ -141,9 +143,8 @@ class Indexer:
         language: Language,
         max_chunk_size: int,
     ) -> None:
-        Logger.info(f"Indexing file {file.path}", "INDEXING")
+        Logger.warn(f"Indexing file {file.path} because is changed", "INDEXING")
         # delete documents for this file
-        # self.__document_repository.delete_by_file_id(file.id)
         # delete terms for this file
         chunker: TextSpliter = TextSpliter(
             source=file_content,

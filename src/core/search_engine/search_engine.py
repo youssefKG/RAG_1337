@@ -20,6 +20,7 @@ class SearchEngine:
     def __call__(
         self, question: UnansweredQuestion, top_k: int
     ) -> MinimalSearchResults:
+        # get query Terms
         query_terms: list[str] = [
             word
             for word in cast(
@@ -27,7 +28,9 @@ class SearchEngine:
             )
             if word not in STOP_WORDS
         ]
+        # update the invert index with new terms
         self.__invert_index(query_terms)
+        # run bm25 and get top k high score documents
         condidate_documents: list[DocumentInterface] = self.__bm25(query_terms, top_k)
         retrieved_sources: list[MinimalSource] = [
             MinimalSource(
