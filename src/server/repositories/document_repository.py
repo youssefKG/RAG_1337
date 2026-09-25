@@ -28,7 +28,7 @@ class DocumentRepository:
         return self.__model.objects.all().count()
 
     def delete_by_file_id(self, file_id: int) -> None:
-        self.__file_repository.delete_by_id(file_id)
+        _ = self.__model.objects.filter(file__id=file_id).delete()
 
     def create_many(
         self,

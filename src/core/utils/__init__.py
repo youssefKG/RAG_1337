@@ -130,5 +130,4 @@ def permission_checker(
     if kill:
         sys.exit(1)
 
-
 __all__ = ["TOKENIZER_REGEX_PATTERN", "STOP_WORDS", "Logger", "Stage", "permission_checker"]
