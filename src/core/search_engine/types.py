@@ -1,7 +1,7 @@
 from typing import Protocol
 from collections import defaultdict
 from typing import TypeAlias, Annotated
-from src.server.entities import DocumentInterface
+from src.core.entities import DocumentInterface
 
 PostingType: TypeAlias = tuple[Annotated[int, "term frequency"], DocumentInterface]
 InvertIndexType: TypeAlias = defaultdict[

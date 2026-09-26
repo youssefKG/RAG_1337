@@ -3,7 +3,7 @@ from typing import Annotated, cast
 from src.server.repositories.document_repository import DocumentRepository
 
 from src.server.models import DocumentTermModel
-from src.server.entities import DocumentTermInterface
+from src.core.entities import DocumentTermInterface
 
 
 class DocumentTermRepository:

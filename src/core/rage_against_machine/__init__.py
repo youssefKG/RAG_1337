@@ -34,6 +34,13 @@ class RageAgainstMachine:
         self.__indexer: Indexer = indexer
 
     def index(self, max_chunk_size: int = MAX_CHUNK_SIZE) -> None:
+        if max_chunk_size <= 200:
+            Logger.error(
+                f"Invalid max_chunk_size ({max_chunk_size}). "  
+                + "The minimum allowed chunk size is 200 to maintain useful context.",
+                Stage.INDEXING.name
+            )
+            sys.exit(1)
         self.__indexer(corpus_path=CORPUS_PATH, max_chunk_size=max_chunk_size)
 
     def search(self, query: str, k: int = 5) -> None:

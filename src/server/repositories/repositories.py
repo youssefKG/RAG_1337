@@ -1,5 +1,5 @@
 from typing import Annotated, Protocol
-from src.server.entities import (
+from src.core.entities import (
     DocumentTermInterface,
     DocumentInterface,
     FileInterface,

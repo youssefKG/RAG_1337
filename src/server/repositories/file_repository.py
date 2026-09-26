@@ -1,5 +1,5 @@
 from typing import Annotated, cast
-from src.server.entities import FileInterface
+from src.core.entities import FileInterface
 
 from src.server.models import FileModel
 
@@ -55,4 +55,3 @@ class FileRepository:
         if last_modified_at is not None:
             file_model.last_modified_at = last_modified_at
         file_model.save()
-

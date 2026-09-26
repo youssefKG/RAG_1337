@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Annotated, TypeAlias
 import math
 
-from src.server.entities import DocumentInterface
+from src.core.entities import DocumentInterface
 from .invert_index import InvertIndexType, PostingType
 
 _TermIDFS: TypeAlias = dict[

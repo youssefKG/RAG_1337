@@ -4,7 +4,7 @@ from src.server.repositories import (
 )
 from collections import defaultdict
 
-from src.server.entities import DocumentInterface, DocumentTermInterface
+from src.core.entities import DocumentInterface, DocumentTermInterface
 
 PostingType: TypeAlias = dict[
     Annotated[int, "document id"],

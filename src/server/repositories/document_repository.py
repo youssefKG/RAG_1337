@@ -1,7 +1,7 @@
 from typing import cast, Annotated
 from src.server.repositories.file_repository import FileRepository
 from src.server.models import DocumentModel
-from src.server.entities import DocumentInterface
+from src.core.entities import DocumentInterface
 from django.db import transaction
 from django.db.models import Avg, QuerySet
 

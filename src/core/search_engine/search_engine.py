@@ -2,7 +2,7 @@ from typing import cast
 import re
 from .types import SearchMethod
 from src.core.utils import TOKENIZER_REGEX_PATTERN, STOP_WORDS
-from src.server.entities import DocumentInterface
+from src.core.entities import DocumentInterface
 from .invert_index import InvertIndex
 from src.core.validation_models import (
     MinimalSearchResults,
