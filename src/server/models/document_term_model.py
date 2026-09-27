@@ -1,6 +1,6 @@
+from typing import cast
 from django.db.models import (
     CASCADE,
-    AutoField,
     CharField,
     Model,
     PositiveIntegerField,
@@ -12,9 +12,9 @@ from .document_model import DocumentModel
 
 
 class DocumentTermModel(Model):
-    id: int = AutoField(primary_key=True)
-    frequency: int = PositiveIntegerField()
-    value: str = CharField()
+    id: str = cast(str, cast(object, CharField(primary_key=True)))
+    frequency: int = cast(int, cast(object, PositiveIntegerField()))
+    value: str = cast(str, cast(object, CharField()))
     document: ForeignKey[DocumentModel] = ForeignKey(DocumentModel, on_delete=CASCADE)
 
     class Meta:

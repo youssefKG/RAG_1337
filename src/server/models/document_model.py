@@ -3,14 +3,15 @@ from django.db.models import (
     ForeignKey,
     CASCADE,
     PositiveIntegerField,
-    AutoField,
+    CharField
 )
 from .file_model import FileModel
+from typing import cast
 
 
 class DocumentModel(Model):
-    id: int = AutoField(primary_key=True)
+    id: str = cast(str, cast(object, CharField(primary_key=True)))
     file: ForeignKey[FileModel] = ForeignKey(FileModel, on_delete=CASCADE)
-    start_index: int = PositiveIntegerField()
-    end_index: int = PositiveIntegerField()
-    length: int = PositiveIntegerField()
+    start_index: int = cast(int, cast(object, PositiveIntegerField()))
+    end_index: int = cast(int, cast(object, PositiveIntegerField()))
+    length: int = cast(int, cast(object, PositiveIntegerField()))

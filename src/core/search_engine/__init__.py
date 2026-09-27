@@ -1,13 +1,13 @@
 from src.server.repositories import (
     document_repository,
-    document_term_repository,
+    term_repository,
 )
 from .BM25 import BM25
 from .invert_index import InvertIndex
 from .search_engine import SearchEngine
 
 invert_index: InvertIndex = InvertIndex(
-    document_term_repository=document_term_repository,
+    term_repository=term_repository,
 )
 
 bm25: BM25 = BM25(

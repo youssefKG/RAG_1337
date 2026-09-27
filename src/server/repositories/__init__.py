@@ -1,17 +1,17 @@
 from .file_repository import FileRepository
 from .document_repository import DocumentRepository
-from .document_term_repository import DocumentTermRepository
+from .term_repository import TermRepository
 from .repositories import (
     FileRepositoryInterface,
     DocumentRepositoryInterface,
-    DocumentTermRepositoryInterface,
+    TermRepositoryInterface,
 )
 from .errors import DBError, DBNotFoundError, DBDuplicateValueError
 
 
 file_repository: FileRepository = FileRepository()
 document_repository = DocumentRepository(file_repository)
-document_term_repository: DocumentTermRepository = DocumentTermRepository(
+term_repository: TermRepository = TermRepository(
     document_repository=document_repository
 )
 
@@ -25,9 +25,9 @@ __all__ = [
     "DocumentRepository",
     "DocumentRepositoryInterface",
     # document term repository
-    "document_term_repository",
-    "DocumentTermRepository",
-    "DocumentTermRepositoryInterface",
+    "term_repository",
+    "TermRepository",
+    "TermRepositoryInterface",
     # database errors:
     "DBError",
     "DBDuplicateValueError",

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Annotated, TypeAlias
 import math
 
-from src.core.entities import DocumentInterface
+from src.core.entities import Document
 from .invert_index import InvertIndexType, PostingType
 
 _TermIDFS: TypeAlias = dict[
@@ -12,11 +12,11 @@ _TermIDFS: TypeAlias = dict[
 
 @dataclass(frozen=False)
 class DocumentScore:
-    document: DocumentInterface
+    document: Document
     score: float = 0
 
 
-_DocumentScoreType: TypeAlias = dict[Annotated[int, "document id"], DocumentScore]
+_DocumentScoreType: TypeAlias = dict[Annotated[str, "document id"], DocumentScore]
 
 
 class BM25:
@@ -36,7 +36,7 @@ class BM25:
         self.__invert_index: InvertIndexType = invert_index
         self.__idfs_score: _TermIDFS = _TermIDFS()
 
-    def __call__(self, query_terms: list[str], top_k: int) -> list[DocumentInterface]:
+    def __call__(self, query_terms: list[str], top_k: int) -> list[Document]:
         chosen_documents: _DocumentScoreType = _DocumentScoreType()
         for term in query_terms:
             if term in self.__invert_index:
@@ -56,7 +56,7 @@ class BM25:
 
     def __score_document(
         self,
-        document: DocumentInterface,
+        document: Document,
         term: str,
         term_frequency: int,
         number_of_document_contain_term: int,

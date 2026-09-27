@@ -1,5 +1,5 @@
 from typing import Annotated, cast
-from src.core.entities import FileInterface
+from src.core.entities import File
 
 from src.server.models import FileModel
 
@@ -8,41 +8,47 @@ class FileRepository:
     def __init__(self) -> None:
         self.__model: type[FileModel] = FileModel
 
-    def create(self, *, path: str, last_modified_at: float) -> FileInterface:
+    def create(self, file: File) -> File:
         created_file: FileModel = self.__model.objects.create(
-            path=path, last_modified_at=last_modified_at
+            path=file.file_path, last_modified_at=file.last_modified_at, id=file.id
         )
-        return cast(FileInterface, cast(object, created_file))
+        return cast(File, cast(object, created_file))
 
-    def get_or_create_by_path(
-        self, *, path: str, last_modified_at: float
-    ) -> tuple[FileInterface, Annotated[bool, "is created"]]:
+    @property
+    def count(self) -> int:
+        return self.__model.objects.all().count()
+
+    def get_or_create_by_path( self, file: File) -> tuple[File, Annotated[bool, "is created"]]:
         file_model, is_created = self.__model.objects.get_or_create(
-            path=path, defaults={"last_modified_at": last_modified_at}
+            path=file.file_path,
+            defaults={
+                "last_modified_at": file.last_modified_at,
+                "id": file.id
+            }
         )
-        return (cast(FileInterface, cast(object, file_model)), is_created)
+        return (cast(File, cast(object, file_model)), is_created)
 
     def delete_by_path(self, path: str) -> None:
         _ = self.__model.objects.filter(path=path).delete()
 
-    def delete_by_id(self, file_id: int) -> None:
+    def delete_by_id(self, file_id: str) -> None:
         _ = self.__model.objects.filter(id=file_id).delete()
 
-    def get_by_path(self, path: str) -> FileInterface | None:
+    def get_by_path(self, path: str) -> File | None:
         file_model: FileModel | None = self.__model.objects.filter(path=path).first()
         if file_model is None:
             return None
-        return cast(FileInterface, cast(object, file_model))
+        return cast(File, cast(object, file_model))
 
-    def all(self) -> list[FileInterface]:
+    def all(self) -> list[File]:
         file_models: list[FileModel] = list(self.__model.objects.all())
-        return cast(list[FileInterface], file_models)
+        return cast(list[File], file_models)
 
     def update(
         self,
         /,
         *,
-        id: int,
+        id: str,
         path: str | None = None,
         last_modified_at: float | None = None,
     ) -> None:

@@ -1,31 +1,30 @@
-from typing import Protocol
+from dataclasses import dataclass, field
+import uuid
 
-
-class FileInterface(Protocol):
-    id: int
-    path: str
+@dataclass(frozen=False)
+class File:
+    file_path: str
     last_modified_at: float
+    id: str
 
-
-class DocumentInterface(Protocol):
-    """document interface"""
-    id: int
+@dataclass(frozen=False)
+class Document:
+    id: str
     start_index: int
     end_index: int
     length: int
-    file: FileInterface
-    content: str | None
+    file: File
+    content: str | None = field(default_factory=lambda: str(uuid.uuid4()))
 
-
-class DocumentTermInterface(Protocol):
-    id: int
-    frequency: int
+@dataclass(frozen=False)
+class Term:
+    document: Document
     value: str
-    document: DocumentInterface
-
+    frequency: int
+    id: str
 
 __all__ = [
-    "DocumentInterface",
-    "DocumentInterface",
-    "FileInterface",
+    "File",
+    "Document",
+    "Term"
 ]

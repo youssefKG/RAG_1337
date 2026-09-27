@@ -10,11 +10,11 @@ from tqdm import tqdm
 from src.core.utils import STOP_WORDS, TOKENIZER_REGEX_PATTERN
 from src.core.chunker.languages import Language
 from src.core.chunker.text_spliter import TextSpliter
-from src.core.entities import DocumentInterface, FileInterface
+from src.core.entities import Document, File, Term
 from src.server.repositories import (
     FileRepositoryInterface,
     DocumentRepositoryInterface,
-    DocumentTermRepositoryInterface,
+    TermRepositoryInterface,
 )
 
 
@@ -90,34 +90,22 @@ class Indexer:
         *,
         file_repository: FileRepositoryInterface,
         document_repository: DocumentRepositoryInterface,
-        document_term_repository: DocumentTermRepositoryInterface,
+        term_repository: TermRepositoryInterface,
         vector_document_repository: VectorDocumentRepositoryInterface,
     ) -> None:
         self.__file_repository: FileRepositoryInterface = file_repository
         self.__document_repository: DocumentRepositoryInterface = (
             document_repository
         )
-        self.__document_term_repository: DocumentTermRepositoryInterface = (
-            document_term_repository
-        )
+        self.__term_repository: TermRepositoryInterface = term_repository
         self.__vector_document_repository: VectorDocumentRepositoryInterface = (
             vector_document_repository
         )
-        self.__documents_to_create: list[
-            tuple[
-                Annotated[int, "start index"],
-                Annotated[int, "end_index"],
-                Annotated[int, "file id"],
-                Annotated[int, "document length"],
-            ]
-        ] = list()
-        self.__terms_to_create: list[
-            tuple[
-                Annotated[int, "term frequency"],
-                Annotated[str, "term value"],
-                Annotated[int, "document id"],
-            ]
-        ] = list()
+        self.__documents_to_create: list[Document] = list()
+        self.__terms_to_create: list[Term] = list()
+        self.__total_number_of_documents: int
+        self.__total_number_of_files: int
+        self.__total_number_of_terms: int
 
     def __call__(self, /, *, corpus_path: str, max_chunk_size: int) -> None:
         Logger.info(f"Indexing the corpus: {corpus_path}", Stage.INDEXING.name)
@@ -125,6 +113,9 @@ class Indexer:
             corpus_path=corpus_path,
             files_extensions=(".py", ".md", ".txt")
         )
+        self.__total_number_of_documents = self.__document_repository.count
+        self.__total_number_of_terms = self.__term_repository.count
+        self.__total_number_of_files = self.__file_repository.count
         for file_path, file_content, last_modified_at in tqdm(file_iter, total=len(file_iter)):
             file, is_changed = self.__insert_file(
                 file_path=file_path, last_modified_at=last_modified_at
@@ -144,35 +135,35 @@ class Indexer:
             + "retrieval and search. Please wait while the process completes.",
             Stage.INDEXING.name
         )
-        created_documents: list[DocumentInterface] = (
-            self.__document_repository.create_many(self.__documents_to_create)
-        )
+        self.__document_repository.create_many(self.__documents_to_create)
         Logger.info(
             "We’re extracting the key terms from your document and storing" 
             + " them in the database to make searching and retrieving" 
             + " relevant information faster.",
             Stage.INDEXING.name
         )
-        terms_to_create = [
-            (frequency, value, created_documents[document_id - 1].id)
-            for frequency, value, document_id in self.__terms_to_create
-        ]
-        self.__document_term_repository.create_many(terms_to_create)
+        self.__term_repository.create_many(self.__terms_to_create)
+        Logger.info("Embed the documents and store them in vector db", Stage.INDEXING.name)
+        # for idx in tqdm(range(0, len(self.__documents_to_create), 1000)):
+        #     self.__vector_document_repository.create_many(self.__documents_to_create[idx: idx + 1000])
 
     def __insert_file(
             self,
             *,
             file_path: str,
             last_modified_at: float,
-        ) -> tuple[FileInterface, Annotated[bool, "is file changed"]]:
+        ) -> tuple[File, Annotated[bool, "is file changed"]]:
         # check if the file is already exist
         is_changed: bool = False
-        file, is_created = self.__file_repository.get_or_create_by_path(
-            path=file_path, last_modified_at=last_modified_at
+        file_to_create: File = File(
+            id =str(),
+            file_path=file_path,
+            last_modified_at=last_modified_at
         )
+        file, is_created = self.__file_repository.get_or_create_by_path(file_to_create)
         if is_created:
             is_changed = True
-            return file, is_changed
+            return file_to_create, is_changed
         if file.last_modified_at != last_modified_at:
             is_changed = True
             self.__file_repository.update(id=file.id, last_modified_at=last_modified_at)
@@ -181,7 +172,7 @@ class Indexer:
     def __index_file(
         self,
         *,
-        file: FileInterface,
+        file: File,
         file_content: str,
         language: Language,
         max_chunk_size: int,
@@ -195,13 +186,23 @@ class Indexer:
         chunks: list[ChunkType] = chunker.split_text()
         for chunk, start_index, end_index in chunks:
             terms: Counter[str] = self.__get_terms_freqeuncy(chunk)
-            self.__documents_to_create.append(
-                (start_index, end_index, sum(terms.values()), file.id)
+            document: Document = Document(
+                id=file.file_path,
+                file=file,
+                start_index=start_index,
+                end_index=end_index,
+                content=chunk,
+                length=sum(terms.values())
             )
-            for (term, frequency) in terms.items():
-                self.__terms_to_create.append(
-                    (frequency, term.lower(), len(self.__documents_to_create))
+            self.__documents_to_create.append(document)
+            for value, frequency in terms.items():
+                term: Term = Term(
+                    id=str(),
+                    frequency=frequency,
+                    value=value.lower(),
+                    document=document
                 )
+                self.__terms_to_create.append(term)
 
     def __get_language(self, file_path: str) -> Language:
         if file_path.endswith(".py"):

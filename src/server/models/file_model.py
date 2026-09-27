@@ -4,7 +4,7 @@ from typing_extensions import override
 
 
 class FileModel(Model):
-    id: int = AutoField(primary_key=True)
+    id: str = CharField(primary_key=True)
     path: str = CharField(unique=True)
     last_modified_at: float = FloatField()
 

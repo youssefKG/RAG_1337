@@ -1,79 +1,64 @@
 from typing import Annotated, Protocol
 from src.core.entities import (
-    DocumentTermInterface,
-    DocumentInterface,
-    FileInterface,
+    Term,
+    Document,
+    File,
 )
 
 
 class FileRepositoryInterface(Protocol):
-    def create(self, *, path: str, last_modified_at: float) -> FileInterface: ...
+    def create(self, file: File) -> File: ...
 
     def delete_by_path(self, path: str) -> None: ...
 
-    def delete_by_id(self, file_id: int) -> None: ...
+    def delete_by_id(self, file_id: str) -> None: ...
 
-    def get_by_path(self, path: str) -> FileInterface | None: ...
+    def get_by_path(self, path: str) -> File | None: ...
 
-    def get_or_create_by_path(
-        self,
-        *,
-        path: str,
-        last_modified_at: float,
-    ) -> tuple[FileInterface, Annotated[bool, "is created"]]: ...
+    def get_or_create_by_path(self, file: File) -> tuple[File, Annotated[bool, "is created"]]:
+        ...
 
     def update(
         self,
         /,
         *,
-        id: int,
+        id: str,
         path: str | None = None,
         last_modified_at: float | None = None,
     ) -> None: ...
+
+    @property
+    def count(self) -> int: ...
 
 
 class DocumentRepositoryInterface(Protocol):
 
     def create_many(
-        self,
-        documents: list[
-            tuple[
-                Annotated[int, "start index"],
-                Annotated[int, "end index"],
-                Annotated[int, "document length"],
-                Annotated[int, "file id"],
-            ]
-        ],
-    ) -> list[DocumentInterface]: ...
+        self, documents: list[Document],
+    ) -> None: ...
 
     @property
     def get_avg_document_length(self) -> float: ...
 
-    def delete_by_file_id(self, file_id: int) -> None: ...
+    def delete_by_file_id(self, file_id: str) -> None: ...
 
     @property
     def count(self) -> int: ...
 
-    def get_by_terms_values(self, values: set[str]) -> list[DocumentInterface]: ...
+    def get_by_terms_values(self, values: set[str]) -> list[Document]: ...
 
-    def all(self) -> list[DocumentInterface]:
+    def all(self) -> list[Document]:
         ...
 
 
-class DocumentTermRepositoryInterface(Protocol):
-    def create(
-        self, *, term_frequency: int, term_value: str, document_id: int
-    ) -> DocumentTermInterface: ...
 
+class TermRepositoryInterface(Protocol):
     def create_many(
         self,
-        terms_documents: list[
-            tuple[
-                Annotated[int, "term frequency"],
-                Annotated[str, "term value"],
-                Annotated[int, "document id"],
-            ]
-        ],
+        terms_documents: list[Term],
     ) -> None: ...
 
-    def get_by_terms_values(self, values: set[str]) -> list[DocumentTermInterface]: ...
+    def get_by_terms_values(self, values: set[str]) -> list[Term]: ...
+    
+    @property
+    def count(self) -> int: ...
