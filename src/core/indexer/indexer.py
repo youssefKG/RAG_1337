@@ -103,9 +103,6 @@ class Indexer:
         )
         self.__documents_to_create: list[Document] = list()
         self.__terms_to_create: list[Term] = list()
-        self.__total_number_of_documents: int
-        self.__total_number_of_files: int
-        self.__total_number_of_terms: int
 
     def __call__(self, /, *, corpus_path: str, max_chunk_size: int) -> None:
         Logger.info(f"Indexing the corpus: {corpus_path}", Stage.INDEXING.name)
@@ -113,22 +110,19 @@ class Indexer:
             corpus_path=corpus_path,
             files_extensions=(".py", ".md", ".txt")
         )
-        self.__total_number_of_documents = self.__document_repository.count
-        self.__total_number_of_terms = self.__term_repository.count
-        self.__total_number_of_files = self.__file_repository.count
         for file_path, file_content, last_modified_at in tqdm(file_iter, total=len(file_iter)):
             file, is_changed = self.__insert_file(
                 file_path=file_path, last_modified_at=last_modified_at
             )
-            if is_changed:
-                self.__document_repository.delete_by_file_id(file.id)
-                language: Language = self.__get_language(file_path)
-                self.__index_file(
-                    file=file,
-                    file_content=file_content,
-                    language=language,
-                    max_chunk_size=max_chunk_size,
-                )
+            # if is_changed:
+            #     self.__document_repository.delete_by_file_id(file.id)
+            #     language: Language = self.__get_language(file_path)
+            #     self.__index_file(
+            #         file=file,
+            #         file_content=file_content,
+            #         language=language,
+            #         max_chunk_size=max_chunk_size,
+            #     )
         Logger.info(
             "The document is being processed, and its content is being "
             + "stored in the database in smaller chunks for efficient "
@@ -156,7 +150,6 @@ class Indexer:
         # check if the file is already exist
         is_changed: bool = False
         file_to_create: File = File(
-            id =str(),
             file_path=file_path,
             last_modified_at=last_modified_at
         )
@@ -164,10 +157,10 @@ class Indexer:
         if is_created:
             is_changed = True
             return file_to_create, is_changed
-        if file.last_modified_at != last_modified_at:
-            is_changed = True
-            self.__file_repository.update(id=file.id, last_modified_at=last_modified_at)
-        return file, is_changed
+        # if file.last_modified_at != last_modified_at:
+        #     is_changed = True
+        #     self.__file_repository.update(id=file.id, last_modified_at=last_modified_at)
+        return file_to_create, is_changed
 
     def __index_file(
         self,
@@ -187,7 +180,6 @@ class Indexer:
         for chunk, start_index, end_index in chunks:
             terms: Counter[str] = self.__get_terms_freqeuncy(chunk)
             document: Document = Document(
-                id=file.file_path,
                 file=file,
                 start_index=start_index,
                 end_index=end_index,
@@ -197,7 +189,6 @@ class Indexer:
             self.__documents_to_create.append(document)
             for value, frequency in terms.items():
                 term: Term = Term(
-                    id=str(),
                     frequency=frequency,
                     value=value.lower(),
                     document=document
