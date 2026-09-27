@@ -28,6 +28,17 @@ class FileRepository:
         )
         return (cast(File, cast(object, file_model)), is_created)
 
+    def create_many(self, files: list[File]) -> None:
+        files_to_create: list[FileModel] = [
+            FileModel(
+                path=file.file_path,
+                last_modified_at=file.last_modified_at,
+                id=file.id
+            ) for file in files
+        ]
+        _ = self.__model.objects.bulk_create(files_to_create, batch_size=1000)
+
+
     def delete_by_path(self, path: str) -> None:
         _ = self.__model.objects.filter(path=path).delete()
 
@@ -43,6 +54,10 @@ class FileRepository:
     def all(self) -> list[File]:
         file_models: list[FileModel] = list(self.__model.objects.all())
         return cast(list[File], file_models)
+
+
+    def delete_all(self) -> None:
+        _ = self.__model.objects.all().delete()
 
     def update(
         self,

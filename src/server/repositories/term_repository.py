@@ -38,5 +38,8 @@ class TermRepository:
             ) for term in terms_documents
         ]
         _: list[DocumentTermModel] = self.__model.objects.bulk_create(
-            documents_terms_model, batch_size=10000
+            documents_terms_model, batch_size=100000
         )
+
+    def delete_all(self) -> None:
+        _ = self.__model.objects.all().delete()

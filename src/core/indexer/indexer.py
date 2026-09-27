@@ -18,7 +18,7 @@ from src.server.repositories import (
 )
 
 
-from src.core.vector_repositories_interfaces import VectorDocumentRepositoryInterface
+# from src.core.vector_repositories_interfaces import VectorDocumentRepositoryInterface
 from src.core.utils import Logger, permission_checker, Stage
 
 ChunkType: TypeAlias = tuple[
@@ -33,6 +33,8 @@ _FileType: TypeAlias = tuple[
     Annotated[float, "last updated time"]
 ]
 
+
+BATCH_SIZE = 10000
 
 class FileIter:
     def __init__(
@@ -91,18 +93,19 @@ class Indexer:
         file_repository: FileRepositoryInterface,
         document_repository: DocumentRepositoryInterface,
         term_repository: TermRepositoryInterface,
-        vector_document_repository: VectorDocumentRepositoryInterface,
+        # vector_document_repository: VectorDocumentRepositoryInterface,
     ) -> None:
         self.__file_repository: FileRepositoryInterface = file_repository
         self.__document_repository: DocumentRepositoryInterface = (
             document_repository
         )
         self.__term_repository: TermRepositoryInterface = term_repository
-        self.__vector_document_repository: VectorDocumentRepositoryInterface = (
-            vector_document_repository
-        )
+        # self.__vector_document_repository: VectorDocumentRepositoryInterface = (
+        #     vector_document_repository
+        # )
         self.__documents_to_create: list[Document] = list()
         self.__terms_to_create: list[Term] = list()
+        self.__files_to_create: list[File] = list()
 
     def __call__(self, /, *, corpus_path: str, max_chunk_size: int) -> None:
         Logger.info(f"Indexing the corpus: {corpus_path}", Stage.INDEXING.name)
@@ -114,30 +117,44 @@ class Indexer:
             file, is_changed = self.__insert_file(
                 file_path=file_path, last_modified_at=last_modified_at
             )
-            # if is_changed:
-            #     self.__document_repository.delete_by_file_id(file.id)
-            #     language: Language = self.__get_language(file_path)
-            #     self.__index_file(
-            #         file=file,
-            #         file_content=file_content,
-            #         language=language,
-            #         max_chunk_size=max_chunk_size,
-            #     )
-        Logger.info(
-            "The document is being processed, and its content is being "
-            + "stored in the database in smaller chunks for efficient "
-            + "retrieval and search. Please wait while the process completes.",
-            Stage.INDEXING.name
-        )
-        self.__document_repository.create_many(self.__documents_to_create)
-        Logger.info(
-            "We’re extracting the key terms from your document and storing" 
-            + " them in the database to make searching and retrieving" 
-            + " relevant information faster.",
-            Stage.INDEXING.name
-        )
-        self.__term_repository.create_many(self.__terms_to_create)
-        Logger.info("Embed the documents and store them in vector db", Stage.INDEXING.name)
+            if is_changed:
+                self.__document_repository.delete_by_file_id(file.id)
+                language: Language = self.__get_language(file_path)
+                self.__index_file(
+                    file=file,
+                    file_content=file_content,
+                    language=language,
+                    max_chunk_size=max_chunk_size,
+                )
+        try:
+
+            self.__file_repository.create_many(self.__files_to_create)
+            Logger.info(
+                "The files is being processed "
+                + "stored in the database in smaller chunks for efficient "
+                + "retrieval and search. Please wait while the process completes.",
+                Stage.INDEXING.name
+            )
+            Logger.info(
+                "The document is being processed, and its content is being "
+                + "stored in the database in smaller chunks for efficient "
+                + "retrieval and search. Please wait while the process completes.",
+                Stage.INDEXING.name
+            )
+            self.__document_repository.create_many(self.__documents_to_create)
+            Logger.info(
+                "We’re extracting the key terms from your document and storing" 
+                + " them in the database to make searching and retrieving" 
+                + " relevant information faster.",
+                Stage.INDEXING.name
+            )
+            self.__term_repository.create_many(self.__terms_to_create)
+            Logger.info("Embed the documents and store them in vector db", Stage.INDEXING.name)
+        except KeyboardInterrupt:
+            self.__file_repository.delete_all()
+            self.__document_repository.delete_all()
+            self.__term_repository.delete_all()
+            sys.exit()
         # for idx in tqdm(range(0, len(self.__documents_to_create), 1000)):
         #     self.__vector_document_repository.create_many(self.__documents_to_create[idx: idx + 1000])
 
@@ -149,18 +166,15 @@ class Indexer:
         ) -> tuple[File, Annotated[bool, "is file changed"]]:
         # check if the file is already exist
         is_changed: bool = False
-        file_to_create: File = File(
-            file_path=file_path,
-            last_modified_at=last_modified_at
-        )
-        file, is_created = self.__file_repository.get_or_create_by_path(file_to_create)
-        if is_created:
-            is_changed = True
-            return file_to_create, is_changed
-        # if file.last_modified_at != last_modified_at:
-        #     is_changed = True
-        #     self.__file_repository.update(id=file.id, last_modified_at=last_modified_at)
-        return file_to_create, is_changed
+        file: File | None = self.__file_repository.get_by_path(file_path)
+        if file is None:
+            file_to_create: File = File(file_path=file_path, last_modified_at=last_modified_at)
+            self.__files_to_create.append(file_to_create)
+            return file_to_create, True
+        elif file.last_modified_at != last_modified_at:
+            self.__file_repository.update(id=file.id, last_modified_at=last_modified_at)
+            return file, True
+        return file, is_changed
 
     def __index_file(
         self,

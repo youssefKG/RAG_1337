@@ -5,20 +5,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "accelerate>=1.15.0",
-    "astor>=0.8.1",
     "basedpyright>=1.40.1",
-    "chromadb>=1.5.9",
-    "chromadb-client>=1.5.9",
+    # "chromadb>=1.5.9",
+    # "chromadb-client>=1.5.9",
     "django>=5.2.17",
     "django-stubs>=6.0.9",
     "fire>=0.7.1",
     "pydantic>=2.13.4",
-    "pytest>=9.1.1",
-    "sentence-transformers>=6.1.0",
-    "torch>=2.14.0",
+    # "pytest>=9.1.1",
+    # "sentence-transformers>=6.1.0",
     "tqdm>=4.70.1",
-    "transformers>=5.17.0",
 ]
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]

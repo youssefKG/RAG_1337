@@ -10,13 +10,10 @@ class DocumentRepository:
     def __init__(self, file_repository: FileRepository) -> None:
         self.__model: type[DocumentModel] = DocumentModel
         self.__file_repository: FileRepository = FileRepository()
-        self.__all_documents: QuerySet[DocumentModel, DocumentModel] = (
-            self.__model.objects.all()
-        )
 
     def get_by_terms_values(self, values: set[str]) -> list[Document]:
         documents_models: list[DocumentModel] = list(
-            self.__all_documents.filter(documenttermmodel__value__in=values).distinct()
+            self.__model.objects.filter(documenttermmodel__value__in=values).distinct()
         )
         return cast(list[Document], documents_models)
 
@@ -46,8 +43,11 @@ class DocumentRepository:
                 for doc in documents
             ]
             _: list[DocumentModel] = self.__model.objects.bulk_create(
-                documents_models_to_create
+                documents_models_to_create, batch_size=10000
             )
+
+    def delete_all(self) -> None:
+        _ = self.__model.objects.all().delete()
 
     @property
     def get_avg_document_length(self) -> float:

@@ -15,6 +15,8 @@ class FileRepositoryInterface(Protocol):
 
     def get_by_path(self, path: str) -> File | None: ...
 
+    def create_many(self, files: list[File]) -> None: ...
+
     def get_or_create_by_path(self, file: File) -> tuple[File, Annotated[bool, "is created"]]:
         ...
 
@@ -29,6 +31,8 @@ class FileRepositoryInterface(Protocol):
 
     @property
     def count(self) -> int: ...
+
+    def delete_all(self) -> None: ...
 
 
 class DocumentRepositoryInterface(Protocol):
@@ -50,6 +54,8 @@ class DocumentRepositoryInterface(Protocol):
     def all(self) -> list[Document]:
         ...
 
+    def delete_all(self) -> None: ...
+
 
 
 class TermRepositoryInterface(Protocol):
@@ -60,5 +66,7 @@ class TermRepositoryInterface(Protocol):
 
     def get_by_terms_values(self, values: set[str]) -> list[Term]: ...
     
+    def delete_all(self) -> None: ...
+
     @property
     def count(self) -> int: ...
