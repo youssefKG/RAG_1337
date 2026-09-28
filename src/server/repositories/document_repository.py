@@ -1,9 +1,8 @@
-from typing import cast, Annotated
+from typing import cast
 from src.server.repositories.file_repository import FileRepository
 from src.server.models import DocumentModel
 from src.core.entities import Document
-from django.db import transaction
-from django.db.models import Avg, QuerySet
+from django.db.models import Avg
 
 
 class DocumentRepository:
@@ -31,20 +30,19 @@ class DocumentRepository:
         self,
         documents: list[Document],
     ) -> None:
-        with transaction.atomic():
-            documents_models_to_create: list[DocumentModel] = [
-                DocumentModel(
-                    id = doc.id,
-                    start_index=doc.start_index,
-                    end_index=doc.end_index,
-                    file_id=doc.file.id,
-                    length=doc.length,
-                )
-                for doc in documents
-            ]
-            _: list[DocumentModel] = self.__model.objects.bulk_create(
-                documents_models_to_create, batch_size=10000
+        documents_models_to_create: list[DocumentModel] = [
+            DocumentModel(
+                id = doc.id,
+                start_index=doc.start_index,
+                end_index=doc.end_index,
+                file_id=doc.file.id,
+                length=doc.length,
             )
+            for doc in documents
+        ]
+        _: list[DocumentModel] = self.__model.objects.bulk_create(
+            documents_models_to_create, batch_size=10000
+        )
 
     def delete_all(self) -> None:
         _ = self.__model.objects.all().delete()

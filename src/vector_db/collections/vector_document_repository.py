@@ -27,7 +27,11 @@ class VectorDocumentRepository(MyCollection):
 
     def create_many(self, documents: list[Document]) -> None:
         documents_collection: DocumentsCollection = self.__get_documents_collection(documents)
-        self.__collection.add(**asdict(documents_collection))
+        self.__collection.add(
+                ids=documents_collection.ids,
+                documents=documents_collection.documents,
+                metadatas=documents_collection.metadatas
+        )
 
     def get_by_ids(self) -> None:
         pass

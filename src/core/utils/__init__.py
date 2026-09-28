@@ -40,6 +40,17 @@ class COLORS(str, Enum):
     CROSSED = "\033[9m"
     END = "\033[0m"
 
+
+def INIT_DB(sqlite_path_dir: str="./data/processed") -> None:
+    import  os
+    from django.core.management import call_command
+    if not os.access(sqlite_path_dir, os.F_OK):
+        os.makedirs(sqlite_path_dir)
+        _ = call_command("makemigrations", interactive=False)
+        _ = call_command("migrate", interactive=False)
+
+
+
 time_formatter: Callable[[], str] = lambda: "{color}[{date}]{reset_color}".format(
     color=COLORS.LIGHT_GRAY.value,
     date=str(datetime.now()),
@@ -130,4 +141,11 @@ def permission_checker(
     if kill:
         sys.exit(1)
 
-__all__ = ["TOKENIZER_REGEX_PATTERN", "STOP_WORDS", "Logger", "Stage", "permission_checker"]
+__all__ = [
+        "TOKENIZER_REGEX_PATTERN",
+        "STOP_WORDS",
+        "Logger",
+        "Stage",
+        "permission_checker",
+        "INIT_DB"
+]

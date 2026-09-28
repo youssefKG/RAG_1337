@@ -3,7 +3,6 @@ from typing import Annotated
 from .languages import Language
 from .separators import PYTHON_SEPARATORS, MARKDOWN_SPERATORS, TEXT_SEPARATORS
 
-
 class TextSpliter:
     def __init__(
         self,

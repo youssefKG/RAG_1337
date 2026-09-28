@@ -11,7 +11,7 @@ from src.core.validation_models import (
     RagDataset,
     StudentSearchResults
 )
-from src.core.utils import Logger, Stage, permission_checker
+from src.core.utils import Logger, Stage, permission_checker, INIT_DB
 from src.core.indexer import indexer, Indexer
 
 
@@ -24,7 +24,7 @@ STUDENT_SEARCH_RESULTS_PATH = (
 )
 SAVE_DIRECTORY = "data/output/search_results/UnansweredQuestions"
 
-DATA_PROCESSED_PATH = "data/processed/index.json"
+DATA_PROCESSED_PATH = "data/processed/"
 MAX_CHUNK_SIZE = 2000
 
 
@@ -41,6 +41,7 @@ class RageAgainstMachine:
                 Stage.INDEXING.name
             )
             sys.exit(1)
+        INIT_DB(DATA_PROCESSED_PATH)
         self.__indexer(corpus_path=CORPUS_PATH, max_chunk_size=max_chunk_size)
 
     def search(self, query: str, k: int = 5) -> None:

@@ -9,5 +9,8 @@ flush:
 run:
 	uv run python -m src
 
+index: 
+	time uv run python -m src index
+
 clean: 
 	rm -rf ./src/server/migrations ./src/db.sqlite3

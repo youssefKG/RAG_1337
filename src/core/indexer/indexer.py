@@ -18,7 +18,7 @@ from src.server.repositories import (
 )
 
 
-# from src.core.vector_repositories_interfaces import VectorDocumentRepositoryInterface
+from src.core.vector_repositories_interfaces import VectorDocumentRepositoryInterface
 from src.core.utils import Logger, permission_checker, Stage
 
 ChunkType: TypeAlias = tuple[
@@ -93,19 +93,19 @@ class Indexer:
         file_repository: FileRepositoryInterface,
         document_repository: DocumentRepositoryInterface,
         term_repository: TermRepositoryInterface,
-        # vector_document_repository: VectorDocumentRepositoryInterface,
+        vector_document_repository: VectorDocumentRepositoryInterface,
     ) -> None:
         self.__file_repository: FileRepositoryInterface = file_repository
         self.__document_repository: DocumentRepositoryInterface = (
             document_repository
         )
         self.__term_repository: TermRepositoryInterface = term_repository
-        # self.__vector_document_repository: VectorDocumentRepositoryInterface = (
-        #     vector_document_repository
-        # )
         self.__documents_to_create: list[Document] = list()
         self.__terms_to_create: list[Term] = list()
         self.__files_to_create: list[File] = list()
+        self.__vector_document_repository: VectorDocumentRepositoryInterface = (
+            vector_document_repository
+        )
 
     def __call__(self, /, *, corpus_path: str, max_chunk_size: int) -> None:
         Logger.info(f"Indexing the corpus: {corpus_path}", Stage.INDEXING.name)
@@ -127,14 +127,13 @@ class Indexer:
                     max_chunk_size=max_chunk_size,
                 )
         try:
-
-            self.__file_repository.create_many(self.__files_to_create)
             Logger.info(
                 "The files is being processed "
                 + "stored in the database in smaller chunks for efficient "
                 + "retrieval and search. Please wait while the process completes.",
                 Stage.INDEXING.name
             )
+            self.__file_repository.create_many(self.__files_to_create)
             Logger.info(
                 "The document is being processed, and its content is being "
                 + "stored in the database in smaller chunks for efficient "
@@ -150,13 +149,11 @@ class Indexer:
             )
             self.__term_repository.create_many(self.__terms_to_create)
             Logger.info("Embed the documents and store them in vector db", Stage.INDEXING.name)
+            for idx in tqdm(range(0, len(self.__documents_to_create), 1000), desc="Embed the documents"):
+                self.__vector_document_repository.create_many(self.__documents_to_create[idx: idx + 1000])
         except KeyboardInterrupt:
             self.__file_repository.delete_all()
-            self.__document_repository.delete_all()
-            self.__term_repository.delete_all()
-            sys.exit()
-        # for idx in tqdm(range(0, len(self.__documents_to_create), 1000)):
-        #     self.__vector_document_repository.create_many(self.__documents_to_create[idx: idx + 1000])
+            sys.exit(1)
 
     def __insert_file(
             self,
@@ -202,11 +199,7 @@ class Indexer:
             )
             self.__documents_to_create.append(document)
             for value, frequency in terms.items():
-                term: Term = Term(
-                    frequency=frequency,
-                    value=value.lower(),
-                    document=document
-                )
+                term: Term = Term(frequency=frequency, value=value.lower(), document=document)
                 self.__terms_to_create.append(term)
 
     def __get_language(self, file_path: str) -> Language:
@@ -222,8 +215,18 @@ class Indexer:
             for word in cast(
                 list[str],
                 re.findall(TOKENIZER_REGEX_PATTERN, document.lower()),
-            )
-            if word.strip() not in STOP_WORDS
+            ) if word.strip() not in STOP_WORDS
         ]
         term_frequency: Counter[str] = Counter(document_terms)
         return term_frequency
+
+    def __store_documents(self) -> None:
+        doc_len: int = len(self.__documents_to_create)
+        for idx in tqdm(range(0, doc_len, BATCH_SIZE), desc="store documents"):
+            pass
+
+    def __store_created_terms(self) -> None:
+        pass
+
+    def __store_created_files(self) -> None:
+        pass
