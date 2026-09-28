@@ -3,6 +3,7 @@ from src.core.entities import (
     Term,
     Document,
     File,
+    Config
 )
 
 
@@ -70,3 +71,4 @@ class TermRepositoryInterface(Protocol):
 
     @property
     def count(self) -> int: ...
+

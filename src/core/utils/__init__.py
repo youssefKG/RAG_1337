@@ -127,17 +127,17 @@ def permission_checker(
         if fn is not None:
             fn(f"permission error: not exist {file_path}")
             if kill:
-                sys.exit(1)
+                sys.exit(126)
     if write and not os.access(file_path, os.W_OK):
         if fn is not None:
             fn(f"permission error: cannot write {file_path}")
             if kill:
-                sys.exit(1)
+                sys.exit(126)
     if read and not os.access(file_path, os.R_OK):
         if fn is not None:
             fn(f"permission error: cannot read {file_path}")
             if kill:
-                sys.exit(1)
+                sys.exit(126)
     if kill:
         sys.exit(1)
 

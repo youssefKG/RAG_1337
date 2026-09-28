@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from src.core.search_engine import SearchType
 import uuid
 
 @dataclass(frozen=False)
@@ -23,4 +24,12 @@ class Term:
     frequency: int
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
-__all__ =  ["File", "Document", "Term"]
+
+@dataclass(frozen=False)
+class Config:
+    is_indexing_hybrid: bool = False
+    max_chunk_size: bool = False
+    search_type: SearchType = SearchType.LEXICAL
+
+
+__all__ =  ["File", "Document", "Term", "Config"]

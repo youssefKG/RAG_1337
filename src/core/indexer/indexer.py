@@ -4,6 +4,7 @@ import re
 from collections.abc import Generator
 from collections import Counter
 from typing import Annotated, TypeAlias, cast
+from enum import Enum
 
 from tqdm import tqdm
 
@@ -32,6 +33,9 @@ _FileType: TypeAlias = tuple[
     Annotated[str, "file_content"],
     Annotated[float, "last updated time"]
 ]
+
+
+
 
 
 BATCH_SIZE = 10000
@@ -107,7 +111,7 @@ class Indexer:
             vector_document_repository
         )
 
-    def __call__(self, /, *, corpus_path: str, max_chunk_size: int) -> None:
+    def __call__(self, /, *, corpus_path: str, max_chunk_size: int, index_type:) -> None:
         Logger.info(f"Indexing the corpus: {corpus_path}", Stage.INDEXING.name)
         file_iter: FileIter = FileIter(
             corpus_path=corpus_path,

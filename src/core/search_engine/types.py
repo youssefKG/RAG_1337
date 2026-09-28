@@ -17,5 +17,5 @@ class SearchMethod(Protocol):
 
 class SearchType(Enum):
     LEXICAL = auto()
-    SEMATIC = auto()
-    HYPRID = auto()
+    SEMANTIC = auto()
+    HYBRID = auto()
