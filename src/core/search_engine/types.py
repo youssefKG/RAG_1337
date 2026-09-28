@@ -1,3 +1,4 @@
+from enum import Enum, auto
 from typing import Protocol
 from collections import defaultdict
 from typing import TypeAlias, Annotated
@@ -13,3 +14,8 @@ class SearchMethod(Protocol):
     def __call__(
         self, query_terms: list[str], top_k: int
     ) -> list[Document]: ...
+
+class SearchType(Enum):
+    LEXICAL = auto()
+    SEMATIC = auto()
+    HYPRID = auto()

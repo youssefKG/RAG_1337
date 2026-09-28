@@ -36,7 +36,7 @@ class BM25:
         self.__invert_index: InvertIndexType = invert_index
         self.__idfs_score: _TermIDFS = _TermIDFS()
 
-    def __call__(self, query_terms: list[str], top_k: int) -> list[Document]:
+    def __call__(self, query_terms: list[str], top_k: int, ) -> list[Document]:
         chosen_documents: _DocumentScoreType = _DocumentScoreType()
         for term in query_terms:
             if term in self.__invert_index:

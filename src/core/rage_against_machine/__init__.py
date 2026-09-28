@@ -4,7 +4,7 @@ from pathlib import Path
 from pydantic import  ValidationError
 from tqdm import tqdm
 
-from src.core.search_engine import SearchEngine, search_engine
+from src.core.search_engine import SearchEngine, search_engine, SearchType
 from src.core.validation_models import (
     MinimalSearchResults,
     UnansweredQuestion,
@@ -44,7 +44,7 @@ class RageAgainstMachine:
         INIT_DB(DATA_PROCESSED_PATH)
         self.__indexer(corpus_path=CORPUS_PATH, max_chunk_size=max_chunk_size)
 
-    def search(self, query: str, k: int = 5) -> None:
+    def search(self, query: str, k: int = 5, search_type: SearchType=SearchType.LEXICAL) -> None:
         if k == 0:
             Logger.error(
                 f"Number of requested results {k} cannot be 0 or negative.",
@@ -53,7 +53,7 @@ class RageAgainstMachine:
             sys.exit(1)
         unanswered_question: UnansweredQuestion = UnansweredQuestion(question=query)
         minimal_search_result: MinimalSearchResults = search_engine(
-            unanswered_question, k
+            unanswered_question, k, search_type
         )
         for source in minimal_search_result.retrieved_sources:
             Logger.info(

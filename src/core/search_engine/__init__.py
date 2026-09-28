@@ -5,6 +5,9 @@ from src.server.repositories import (
 from .BM25 import BM25
 from .invert_index import InvertIndex
 from .search_engine import SearchEngine
+from .types import SearchType
+
+
 
 invert_index: InvertIndex = InvertIndex(
     term_repository=term_repository,
@@ -15,7 +18,16 @@ bm25: BM25 = BM25(
     total_number_of_documents=document_repository.count,
     invert_index=invert_index.invert_index,
 )
+semantic_search: BM25 = BM25(
+    avg_documents_length=document_repository.get_avg_document_length,
+    total_number_of_documents=document_repository.count,
+    invert_index=invert_index.invert_index,
+)
 
-search_engine = SearchEngine(bm25=bm25, invert_index=invert_index)
+search_engine = SearchEngine(
+    lexical_search=bm25,
+    semantic_search=semantic_search,
+    invert_index=invert_index
+)
 
-__all__ = ["search_engine", "SearchEngine"]
+__all__ = ["search_engine", "SearchEngine", "SearchType"]
