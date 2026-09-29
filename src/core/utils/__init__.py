@@ -126,20 +126,18 @@ def permission_checker(
     if exist and not os.access(file_path, os.F_OK):
         if fn is not None:
             fn(f"permission error: not exist {file_path}")
-            if kill:
-                sys.exit(126)
+        if kill:
+            sys.exit(126)
     if write and not os.access(file_path, os.W_OK):
         if fn is not None:
             fn(f"permission error: cannot write {file_path}")
-            if kill:
-                sys.exit(126)
+        if kill:
+            sys.exit(126)
     if read and not os.access(file_path, os.R_OK):
         if fn is not None:
             fn(f"permission error: cannot read {file_path}")
-            if kill:
-                sys.exit(126)
-    if kill:
-        sys.exit(1)
+        if kill:
+            sys.exit(126)
 
 __all__ = [
         "TOKENIZER_REGEX_PATTERN",

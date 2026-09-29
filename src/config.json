@@ -1,0 +1,5 @@
+{
+    "is_indexing_hybrid": false,
+    "max_chunk_size": 2000,
+    "search_type": "lexical"
+}
