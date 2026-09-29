@@ -12,6 +12,7 @@ from src.core.validation_models import (
     StudentSearchResults
 )
 from src.core.utils import Logger, Stage, permission_checker, INIT_DB
+from src.core.config_manager import ConfigManager, config_manager, IndexingStrategy
 from src.core.indexer import indexer, Indexer
 
 
@@ -32,16 +33,20 @@ class RageAgainstMachine:
     def __init__(self) -> None:
         self.__search_engine: SearchEngine = search_engine
         self.__indexer: Indexer = indexer
+        self.__config_manager: ConfigManager = config_manager
 
-    def index(self, max_chunk_size: int = MAX_CHUNK_SIZE, hybrid: str = "true") -> None:
-        if max_chunk_size <= 200:
-            Logger.error(
-                f"Invalid max_chunk_size ({max_chunk_size}). "  
-                + "The minimum allowed chunk size is 200 to maintain useful context.",
-                Stage.INDEXING.name
-            )
+    def index(self, max_chunk_size: int = MAX_CHUNK_SIZE, hybrid: str = "false") -> None:
+        if hybrid != "true" and hybrid != "false":
+            Logger.error(f"invalid value for hybrid {hybrid}. allowed values: true, false",  Stage.INDEXING.name)
             sys.exit(1)
-        self.__indexer(corpus_path=CORPUS_PATH, max_chunk_size=max_chunk_size)
+        is_indexing_hybrid: bool = True if hybrid == "true" else False
+        indexing_strategy: IndexingStrategy = (
+            self.__config_manager.update_indexing_config(
+                 max_chunk_size=max_chunk_size,
+                 is_hybrid=is_indexing_hybrid
+             )
+        )
+        self.__indexer(corpus_path=CORPUS_PATH, max_chunk_size=max_chunk_size, indexing_strategy=indexing_strategy)
 
     def search(self, query: str, k: int = 5, search_type: SearchType=SearchType.LEXICAL) -> None:
         if k == 0:

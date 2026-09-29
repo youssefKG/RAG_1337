@@ -37,6 +37,7 @@ class DocumentRepository:
                 end_index=doc.end_index,
                 file_id=doc.file.id,
                 length=doc.length,
+                content=doc.content
             )
             for doc in documents
         ]

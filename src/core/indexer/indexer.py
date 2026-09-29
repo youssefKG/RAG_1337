@@ -7,6 +7,7 @@ from typing import Annotated, TypeAlias, cast
 
 from tqdm import tqdm
 
+from src.core.config_manager import ConfigManager, IndexingStrategy
 from src.core.utils import STOP_WORDS, TOKENIZER_REGEX_PATTERN
 from src.core.chunker.languages import Language
 from src.core.chunker.text_spliter import TextSpliter
@@ -40,7 +41,7 @@ class FileIter:
             *,
             files_extensions: tuple[str, ...],
             corpus_path: str,
-            ) -> None:
+        ) -> None:
         self.__files: list[_FileType] = list()
         self.__file_extensions: tuple[str, ...] = files_extensions
         self.__corpus_path: str = corpus_path
@@ -92,6 +93,7 @@ class Indexer:
         document_repository: DocumentRepositoryInterface,
         term_repository: TermRepositoryInterface,
         vector_document_repository: VectorDocumentRepositoryInterface,
+        config_manager: ConfigManager
     ) -> None:
         self.__file_repository: FileRepositoryInterface = file_repository
         self.__document_repository: DocumentRepositoryInterface = (
@@ -104,26 +106,19 @@ class Indexer:
         self.__vector_document_repository: VectorDocumentRepositoryInterface = (
             vector_document_repository
         )
+        self.__config_manager: ConfigManager = config_manager
 
-    def __call__(self, /, *, corpus_path: str, max_chunk_size: int, index_type) -> None:
-        Logger.info(f"Indexing the corpus: {corpus_path}", Stage.INDEXING.name)
-        file_iter: FileIter = FileIter(
-            corpus_path=corpus_path,
-            files_extensions=(".py", ".md", ".txt")
-        )
-        for file_path, file_content, last_modified_at in tqdm(file_iter, total=len(file_iter)):
-            file, is_changed = self.__insert_file(
-                file_path=file_path, last_modified_at=last_modified_at
-            )
-            if is_changed:
-                self.__document_repository.delete_by_file_id(file.id)
-                language: Language = self.__get_language(file_path)
-                self.__index_file(
-                    file=file,
-                    file_content=file_content,
-                    language=language,
-                    max_chunk_size=max_chunk_size,
-                )
+    def __call__(self, /, *, corpus_path: str, max_chunk_size: int, indexing_strategy: IndexingStrategy) -> None:
+        match indexing_strategy:
+            case IndexingStrategy.LEXICAL:
+                self.__file_repository.delete_all()
+                self.__lexical_indexing(max_chunk_size=max_chunk_size, corpus_path=corpus_path)
+            case IndexingStrategy.HYBRID:
+                pass
+            case IndexingStrategy.NONE:
+                pass
+            case IndexingStrategy.SEMANTIC:
+                pass
         try:
             Logger.info(
                 "The files is being processed "
@@ -147,31 +142,44 @@ class Indexer:
             )
             self.__term_repository.create_many(self.__terms_to_create)
             Logger.info("Embed the documents and store them in vector db", Stage.INDEXING.name)
-            for idx in tqdm(range(0, len(self.__documents_to_create), 1000), desc="Embed the documents"):
-                self.__vector_document_repository.create_many(self.__documents_to_create[idx: idx + 1000])
         except KeyboardInterrupt:
             self.__file_repository.delete_all()
+            # TODO: delete all embeded documents
             sys.exit(1)
 
-    def __insert_file(
+    def __get_file_status(
             self,
             *,
             file_path: str,
             last_modified_at: float,
         ) -> tuple[File, Annotated[bool, "is file changed"]]:
-        # check if the file is already exist
-        is_changed: bool = False
         file: File | None = self.__file_repository.get_by_path(file_path)
         if file is None:
-            file_to_create: File = File(file_path=file_path, last_modified_at=last_modified_at)
-            self.__files_to_create.append(file_to_create)
+            file_to_create: File = File(path=file_path, last_modified_at=last_modified_at)
             return file_to_create, True
         elif file.last_modified_at != last_modified_at:
             self.__file_repository.update(id=file.id, last_modified_at=last_modified_at)
             return file, True
-        return file, is_changed
+        return file, False
 
-    def __index_file(
+    def __lexical_indexing(self, /, *, max_chunk_size: int, corpus_path: str) -> None:
+        file_iter: FileIter = FileIter(corpus_path=corpus_path, files_extensions=(".py", ".md", "txt"))
+        Logger.info(f"Indexing the corpus: {corpus_path}", Stage.INDEXING.name)
+        for file_path, file_content, last_modified_at in tqdm(file_iter, total=len(file_iter)):
+            file, is_changed = self.__get_file_status(file_path=file_path, last_modified_at=last_modified_at)
+            if is_changed:
+                self.__document_repository.delete_by_file_id(file.id)
+                self.__vector_document_repository.delete_by_file_id(file.id)
+                self.__files_to_create.append(file)
+                file_language: Language = self.__get_file_language(file_path)
+                self.__index_file_lexical(
+                    file=file,
+                    file_content=file_content,
+                    language=file_language,
+                    max_chunk_size=max_chunk_size
+                )
+
+    def __index_file_lexical(
         self,
         *,
         file: File,
@@ -200,12 +208,15 @@ class Indexer:
                 term: Term = Term(frequency=frequency, value=value.lower(), document=document)
                 self.__terms_to_create.append(term)
 
-    def __get_language(self, file_path: str) -> Language:
+    def __get_file_language(self, file_path: str) -> Language:
         if file_path.endswith(".py"):
             return Language.PYTHON
         elif file_path.endswith(".md"):
             return Language.MARKDOWN
         return Language.TEXT
+
+    def embed_documents(self) ->  None:
+        pass
 
     def __get_terms_freqeuncy(self, document: str) -> Counter[str]:
         document_terms: list[str] = [
@@ -217,14 +228,3 @@ class Indexer:
         ]
         term_frequency: Counter[str] = Counter(document_terms)
         return term_frequency
-
-    def __store_documents(self) -> None:
-        doc_len: int = len(self.__documents_to_create)
-        for idx in tqdm(range(0, doc_len, BATCH_SIZE), desc="store documents"):
-            pass
-
-    def __store_created_terms(self) -> None:
-        pass
-
-    def __store_created_files(self) -> None:
-        pass

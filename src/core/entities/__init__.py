@@ -4,7 +4,7 @@ import uuid
 
 @dataclass(frozen=False)
 class File:
-    file_path: str
+    path: str
     last_modified_at: float
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
@@ -14,7 +14,7 @@ class Document:
     end_index: int
     length: int
     file: File
-    content: str | None = None
+    content: str
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
 @dataclass(frozen=False)

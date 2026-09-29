@@ -1,5 +1,4 @@
 from . import config_manager
 
-print("hello")
-config_manager.update(is_indexing_hybrid=True)
-print(config_manager.config)
+# print(config_manager.update(is_indexing_hybrid=True, search_type="lexical", max_chunk_size=2000))
+config_manager.write_default_config()

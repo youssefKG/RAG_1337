@@ -10,7 +10,7 @@ class FileRepository:
 
     def create(self, file: File) -> File:
         created_file: FileModel = self.__model.objects.create(
-            path=file.file_path, last_modified_at=file.last_modified_at, id=file.id
+            path=file.path, last_modified_at=file.last_modified_at, id=file.id
         )
         return cast(File, cast(object, created_file))
 
@@ -20,7 +20,7 @@ class FileRepository:
 
     def get_or_create_by_path( self, file: File) -> tuple[File, Annotated[bool, "is created"]]:
         file_model, is_created = self.__model.objects.get_or_create(
-            path=file.file_path,
+            path=file.path,
             defaults={
                 "last_modified_at": file.last_modified_at,
                 "id": file.id
@@ -31,7 +31,7 @@ class FileRepository:
     def create_many(self, files: list[File]) -> None:
         files_to_create: list[FileModel] = [
             FileModel(
-                path=file.file_path,
+                path=file.path,
                 last_modified_at=file.last_modified_at,
                 id=file.id
             ) for file in files

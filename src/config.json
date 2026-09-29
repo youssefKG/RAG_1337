@@ -1,5 +1,5 @@
 {
-    "is_indexing_hybrid": false,
-    "max_chunk_size": 2000,
-    "search_type": "lexical"
+    "indexing_strategy": "lexical",
+    "max_chunk_size": 1000,
+    "search_type": "hybrid"
 }
