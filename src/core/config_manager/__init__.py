@@ -16,9 +16,9 @@ class IndexingStrategy(str, Enum):
     SEMANTIC = "lexical"
 
 class ConfigModel(BaseModel):
-    indexing_strategy: Literal["lexical", "hybrid"] = Field()
-    max_chunk_size: int = Field()
-    search_type: SearchType = Field()
+    indexing_strategy: Literal["lexical", "hybrid"] = Field(default="lexical")
+    max_chunk_size: int = Field(default=-1)
+    search_type: SearchType = Field(default="lexical")
 
     class ConfigDict:
         extra: str = "forbid"
@@ -28,10 +28,6 @@ CONFIG_FILE_PATH = "src/config.json"
 class ConfigManager:
     def __init__(self) -> None:
         self.__config: ConfigModel = self.__load_config_file()
-
-
-    def __call__(self) -> None:
-        pass
 
     @property
     def config(self) -> ConfigModel:
@@ -57,6 +53,9 @@ class ConfigManager:
             Logger.error(str(error), "CONFIG MANAGER")
             sys.exit(1)
 
+    @property
+    def get_current_indexing_strategy(self) -> Literal["hybrid", "lexical"]:
+        return self.__config.indexing_strategy
 
     def __get_indexing_strategy(self, max_chunk_size: int, is_hybrid: bool) -> IndexingStrategy:
         indexing_strategy: IndexingStrategy = IndexingStrategy.NONE
@@ -102,4 +101,3 @@ class ConfigManager:
 config_manager: ConfigManager = ConfigManager()
 
 __all__ = ["config_manager", "ConfigManager", "IndexingStrategy"]
-

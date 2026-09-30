@@ -16,7 +16,7 @@ class DocumentCollectionMettadata:
 class DocumentsCollection:
     ids: list[str] = field(default_factory=list)
     documents: list[str] = field(default_factory=list)
-    metadatas: list[dict[str, int | str]] = field(default_factory=list)
+    metadatas: list[dict[str, str]] = field(default_factory=list)
 
 
 class VectorDocumentRepository(MyCollection):
@@ -33,12 +33,12 @@ class VectorDocumentRepository(MyCollection):
                 metadatas=documents_collection.metadatas
         )
 
-    def get_by_ids(self) -> None:
-        pass
-
-
     def get_cosin_simalitry_documents(self, query: str, top_k: int) -> None:
         result = self.__collection.query(query_texts=[query], n_results=top_k)
+
+
+    def delete_by_file_id(self, file_id: str) -> None:
+        _ = self.__collection.delete(where={"file_id": file_id})
 
     def __get_documents_collection(self, documents: list[Document]) -> DocumentsCollection:
         documents_collection: DocumentsCollection = DocumentsCollection()
@@ -49,9 +49,12 @@ class VectorDocumentRepository(MyCollection):
                 asdict(
                     DocumentCollectionMettadata(
                         file_id=doc.file.id,
-                        file_path=doc.file.file_path,
+                        file_path=doc.file.path,
                         doc_length=doc.length
                     )
                 )
             )
         return documents_collection
+
+    def delete_all(self) -> None:
+        pass

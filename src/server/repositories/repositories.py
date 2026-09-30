@@ -3,7 +3,6 @@ from src.core.entities import (
     Term,
     Document,
     File,
-    Config
 )
 
 

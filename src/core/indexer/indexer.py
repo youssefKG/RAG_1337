@@ -1,13 +1,13 @@
 import os
 import sys
 import re
-from collections.abc import Generator
+from collections.abc import Generator, Callable
 from collections import Counter
-from typing import Annotated, TypeAlias, cast
+from typing import Annotated, TypeAlias, cast, Literal
 
 from tqdm import tqdm
 
-from src.core.config_manager import ConfigManager, IndexingStrategy
+from src.core.config_manager import IndexingStrategy, ConfigManager
 from src.core.utils import STOP_WORDS, TOKENIZER_REGEX_PATTERN
 from src.core.chunker.languages import Language
 from src.core.chunker.text_spliter import TextSpliter
@@ -71,13 +71,7 @@ class FileIter:
                 try:
                     with open(file_path, "r") as file:
                         file_content: str = file.read()
-                        self.__files.append(
-                            (
-                                file_path,
-                                file_content,
-                                last_updated_time
-                            )
-                        )
+                        self.__files.append((file_path, file_content, last_updated_time))
                 except Exception as error:
                     Logger.warn(str(error), Stage.INDEXING.name)
                     sys.exit(1)
@@ -100,84 +94,95 @@ class Indexer:
             document_repository
         )
         self.__term_repository: TermRepositoryInterface = term_repository
-        self.__documents_to_create: list[Document] = list()
-        self.__terms_to_create: list[Term] = list()
-        self.__files_to_create: list[File] = list()
         self.__vector_document_repository: VectorDocumentRepositoryInterface = (
             vector_document_repository
         )
         self.__config_manager: ConfigManager = config_manager
 
     def __call__(self, /, *, corpus_path: str, max_chunk_size: int, indexing_strategy: IndexingStrategy) -> None:
+        files_to_index: Callable[[], list[_FileType]] = lambda: self.__get_files_to_index(corpus_path)
+        files: list[_FileType]
         match indexing_strategy:
             case IndexingStrategy.LEXICAL:
                 self.__file_repository.delete_all()
-                self.__lexical_indexing(max_chunk_size=max_chunk_size, corpus_path=corpus_path)
+                files = files_to_index()
+                _ = self.__lexical_indexing(files=files, max_chunk_size=max_chunk_size, corpus_path=corpus_path)
             case IndexingStrategy.HYBRID:
-                pass
-            case IndexingStrategy.NONE:
-                pass
+                self.__file_repository.delete_all()
+                self.__vector_document_repository.delete_all()
+                files = files_to_index()
+                documents: list[Document] = self.__lexical_indexing(files=files, max_chunk_size=max_chunk_size, corpus_path=corpus_path)
+                self.__semantic_indexing(documents)
             case IndexingStrategy.SEMANTIC:
-                pass
-        try:
-            Logger.info(
-                "The files is being processed "
-                + "stored in the database in smaller chunks for efficient "
-                + "retrieval and search. Please wait while the process completes.",
-                Stage.INDEXING.name
-            )
-            self.__file_repository.create_many(self.__files_to_create)
-            Logger.info(
-                "The document is being processed, and its content is being "
-                + "stored in the database in smaller chunks for efficient "
-                + "retrieval and search. Please wait while the process completes.",
-                Stage.INDEXING.name
-            )
-            self.__document_repository.create_many(self.__documents_to_create)
-            Logger.info(
-                "We’re extracting the key terms from your document and storing" 
-                + " them in the database to make searching and retrieving" 
-                + " relevant information faster.",
-                Stage.INDEXING.name
-            )
-            self.__term_repository.create_many(self.__terms_to_create)
-            Logger.info("Embed the documents and store them in vector db", Stage.INDEXING.name)
-        except KeyboardInterrupt:
-            self.__file_repository.delete_all()
-            # TODO: delete all embeded documents
-            sys.exit(1)
+                self.__vector_document_repository.delete_all()
+                documents_to_embed: list[Document] = self.__document_repository.all()
+                self.__semantic_indexing(documents_to_embed)
+            case IndexingStrategy.NONE:
+                current_indexing_startegy: Literal["hybrid", "lexical"] = self.__config_manager.get_current_indexing_strategy
+                files = files_to_index()
+                if current_indexing_startegy == "hybrid":
+                    documents = self.__lexical_indexing(files=files, max_chunk_size=max_chunk_size, corpus_path=corpus_path)
+                    self.__semantic_indexing(documents)
+                else:
+                    ...
 
-    def __get_file_status(
-            self,
-            *,
-            file_path: str,
-            last_modified_at: float,
-        ) -> tuple[File, Annotated[bool, "is file changed"]]:
-        file: File | None = self.__file_repository.get_by_path(file_path)
-        if file is None:
-            file_to_create: File = File(path=file_path, last_modified_at=last_modified_at)
-            return file_to_create, True
-        elif file.last_modified_at != last_modified_at:
-            self.__file_repository.update(id=file.id, last_modified_at=last_modified_at)
-            return file, True
-        return file, False
-
-    def __lexical_indexing(self, /, *, max_chunk_size: int, corpus_path: str) -> None:
-        file_iter: FileIter = FileIter(corpus_path=corpus_path, files_extensions=(".py", ".md", "txt"))
-        Logger.info(f"Indexing the corpus: {corpus_path}", Stage.INDEXING.name)
-        for file_path, file_content, last_modified_at in tqdm(file_iter, total=len(file_iter)):
-            file, is_changed = self.__get_file_status(file_path=file_path, last_modified_at=last_modified_at)
-            if is_changed:
-                self.__document_repository.delete_by_file_id(file.id)
+    def __get_files_to_index(self, corpust_path: str) -> list[_FileType]:
+        file_iter: FileIter = FileIter(corpus_path=corpust_path, files_extensions=(".py", ".txt", "md"))
+        file_to_index: list[_FileType] = list()
+        for file_path, file_content, last_modified_at in tqdm(file_iter, total=len(file_iter), desc="Search for changed file"):
+            file: File | None = self.__file_repository.get_by_path(file_path)
+            if file is None:
+                file_to_index.append((file_path, file_content, last_modified_at))
+            elif file.last_modified_at != last_modified_at:
+                self.__file_repository.delete_by_id(file.id)
                 self.__vector_document_repository.delete_by_file_id(file.id)
-                self.__files_to_create.append(file)
-                file_language: Language = self.__get_file_language(file_path)
-                self.__index_file_lexical(
-                    file=file,
-                    file_content=file_content,
-                    language=file_language,
-                    max_chunk_size=max_chunk_size
-                )
+                file_to_index.append((file_path, file_content, last_modified_at))
+        return file_to_index
+
+
+    def __lexical_indexing(self, /, *, files: list[_FileType],  max_chunk_size: int, corpus_path: str) -> list[Document]:
+        Logger.info(f"Indexing the corpus: {corpus_path}", Stage.INDEXING.name)
+        documents_to_create: list[Document] = list()
+        files_to_create: list[File] = list()
+        terms_to_create: list[Term] = list()
+        for file_path, file_content, last_modified_at in tqdm(files, total=len(files)):
+            file_language: Language = self.__get_file_language(file_path)
+            file: File = File(path=file_path, last_modified_at=last_modified_at)
+            files_to_create.append(file)
+            documents, terms = self.__index_file_lexical(
+                file=file,
+                file_content=file_content,
+                language=file_language,
+                max_chunk_size=max_chunk_size
+            )
+            documents_to_create.extend(documents)
+            terms_to_create.extend(terms)
+        Logger.info(
+            "The files is being processed "
+            + "stored in the database in smaller chunks for efficient "
+            + "retrieval and search. Please wait while the process completes.",
+            Stage.INDEXING.name
+        )
+        self.__file_repository.create_many(files_to_create)
+        Logger.info(
+            "The document is being processed, and its content is being "
+            + "stored in the database in smaller chunks for efficient "
+            + "retrieval and search. Please wait while the process completes.",
+            Stage.INDEXING.name
+        )
+        self.__document_repository.create_many(documents_to_create)
+        Logger.info(
+            "We’re extracting the key terms from your document and storing" 
+            + " them in the database to make searching and retrieving" 
+            + " relevant information faster.",
+            Stage.INDEXING.name
+        )
+        self.__term_repository.create_many(terms_to_create)
+        return documents_to_create
+
+    def __semantic_indexing(self, documents: list[Document]) -> None:
+        for idx in tqdm(range(0, len(documents), BATCH_SIZE), total=len(documents), desc="SEMANTIC INDEXING"):
+            self.__vector_document_repository.create_many(documents[idx: idx + BATCH_SIZE])
 
     def __index_file_lexical(
         self,
@@ -186,7 +191,9 @@ class Indexer:
         file_content: str,
         language: Language,
         max_chunk_size: int,
-    ) -> None:
+    ) -> tuple[list[Document], list[Term]]:
+        terms_to_create: list[Term] = list()
+        documents_to_create: list[Document] = list()
         chunker: TextSpliter = TextSpliter(
             source=file_content,
             overlap_size=0,
@@ -203,10 +210,12 @@ class Indexer:
                 content=chunk,
                 length=sum(terms.values())
             )
-            self.__documents_to_create.append(document)
+            documents_to_create.append(document)
             for value, frequency in terms.items():
                 term: Term = Term(frequency=frequency, value=value.lower(), document=document)
-                self.__terms_to_create.append(term)
+                terms_to_create.append(term)
+        return documents_to_create, terms_to_create
+
 
     def __get_file_language(self, file_path: str) -> Language:
         if file_path.endswith(".py"):
@@ -214,9 +223,6 @@ class Indexer:
         elif file_path.endswith(".md"):
             return Language.MARKDOWN
         return Language.TEXT
-
-    def embed_documents(self) ->  None:
-        pass
 
     def __get_terms_freqeuncy(self, document: str) -> Counter[str]:
         document_terms: list[str] = [

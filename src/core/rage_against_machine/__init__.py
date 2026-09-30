@@ -11,7 +11,7 @@ from src.core.validation_models import (
     RagDataset,
     StudentSearchResults
 )
-from src.core.utils import Logger, Stage, permission_checker, INIT_DB
+from src.core.utils import Logger, Stage, permission_checker
 from src.core.config_manager import ConfigManager, config_manager, IndexingStrategy
 from src.core.indexer import indexer, Indexer
 

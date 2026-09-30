@@ -36,7 +36,7 @@ class SearchEngine:
             condidate_documents: list[Document] = self.__lexical_search(query_terms, top_k)
             retrieved_sources: list[MinimalSource] = [
                 MinimalSource(
-                    file_path=doc.file.file_path,
+                    file_path=doc.file.path,
                     first_character_index=doc.start_index,
                     last_character_index=doc.end_index
                     ) for doc in condidate_documents

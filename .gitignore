@@ -14,3 +14,5 @@ src/db.sqlite3
 
 # vllm project
 vllm-0.10.1
+
+.env
