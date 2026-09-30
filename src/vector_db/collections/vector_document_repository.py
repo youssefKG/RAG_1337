@@ -27,15 +27,15 @@ class VectorDocumentRepository(MyCollection):
 
     def create_many(self, documents: list[Document]) -> None:
         documents_collection: DocumentsCollection = self.__get_documents_collection(documents)
-        self.__collection.add(
-                ids=documents_collection.ids,
-                documents=documents_collection.documents,
-                metadatas=documents_collection.metadatas
-        )
+        if documents_collection.ids:
+            self.__collection.add(
+                    ids=documents_collection.ids,
+                    documents=documents_collection.documents,
+                    metadatas=documents_collection.metadatas
+            )
 
     def get_cosin_simalitry_documents(self, query: str, top_k: int) -> None:
         result = self.__collection.query(query_texts=[query], n_results=top_k)
-
 
     def delete_by_file_id(self, file_id: str) -> None:
         _ = self.__collection.delete(where={"file_id": file_id})
@@ -57,4 +57,6 @@ class VectorDocumentRepository(MyCollection):
         return documents_collection
 
     def delete_all(self) -> None:
-        pass
+        all_ids: list[str]  = self.__collection.get()["ids"]
+        if all_ids:
+            _ = self.__collection.delete(ids=all_ids)

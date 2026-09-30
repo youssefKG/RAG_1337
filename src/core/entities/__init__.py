@@ -23,7 +23,4 @@ class Term:
     frequency: int
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
-
-
-
 __all__ =  ["File", "Document", "Term"]

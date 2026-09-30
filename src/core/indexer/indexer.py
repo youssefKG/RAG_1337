@@ -61,13 +61,13 @@ class FileIter:
                 if not file_name.endswith(self.__file_extensions):
                     continue
                 file_path: str = os.path.join(dir_path, file_name)
-                last_updated_time: float = os.path.getmtime(file_path)
                 permission_checker(
                     file_path=file_path,
                     read=True,
                     kill=False,
                     fn=lambda x: Logger.warn(x, Stage.INDEXING.name)
                 )
+                last_updated_time: float = os.path.getmtime(file_path)
                 try:
                     with open(file_path, "r") as file:
                         file_content: str = file.read()
@@ -100,44 +100,55 @@ class Indexer:
         self.__config_manager: ConfigManager = config_manager
 
     def __call__(self, /, *, corpus_path: str, max_chunk_size: int, indexing_strategy: IndexingStrategy) -> None:
+        print("indexing strategy: ", indexing_strategy)
         files_to_index: Callable[[], list[_FileType]] = lambda: self.__get_files_to_index(corpus_path)
         files: list[_FileType]
+        lexical_indexing: Callable[[list[_FileType]], list[Document]] = (
+            lambda x: self.__lexical_indexing(
+                files=x,
+                max_chunk_size=max_chunk_size,
+                corpus_path=corpus_path
+            )
+        )
         match indexing_strategy:
             case IndexingStrategy.LEXICAL:
                 self.__file_repository.delete_all()
                 files = files_to_index()
-                _ = self.__lexical_indexing(files=files, max_chunk_size=max_chunk_size, corpus_path=corpus_path)
+                _ = lexical_indexing(files)
             case IndexingStrategy.HYBRID:
                 self.__file_repository.delete_all()
                 self.__vector_document_repository.delete_all()
                 files = files_to_index()
-                documents: list[Document] = self.__lexical_indexing(files=files, max_chunk_size=max_chunk_size, corpus_path=corpus_path)
+                documents: list[Document] = lexical_indexing(files)
+                print("documents length: ", len(documents))
                 self.__semantic_indexing(documents)
             case IndexingStrategy.SEMANTIC:
                 self.__vector_document_repository.delete_all()
                 documents_to_embed: list[Document] = self.__document_repository.all()
                 self.__semantic_indexing(documents_to_embed)
             case IndexingStrategy.NONE:
-                current_indexing_startegy: Literal["hybrid", "lexical"] = self.__config_manager.get_current_indexing_strategy
+                current_indexing_strategy: Literal["hybrid", "lexical", "none"] = self.__config_manager.get_current_indexing_strategy
                 files = files_to_index()
-                if current_indexing_startegy == "hybrid":
-                    documents = self.__lexical_indexing(files=files, max_chunk_size=max_chunk_size, corpus_path=corpus_path)
+                if current_indexing_strategy == "hybrid":
+                    documents = lexical_indexing(files)
                     self.__semantic_indexing(documents)
-                else:
+                elif current_indexing_strategy == "none":
                     ...
+                else:
+                    pass
 
     def __get_files_to_index(self, corpust_path: str) -> list[_FileType]:
-        file_iter: FileIter = FileIter(corpus_path=corpust_path, files_extensions=(".py", ".txt", "md"))
-        file_to_index: list[_FileType] = list()
+        file_iter: FileIter = FileIter(corpus_path=corpust_path, files_extensions=(".py", ".txt", ".md"))
+        files_to_index: list[_FileType] = list()
         for file_path, file_content, last_modified_at in tqdm(file_iter, total=len(file_iter), desc="Search for changed file"):
             file: File | None = self.__file_repository.get_by_path(file_path)
             if file is None:
-                file_to_index.append((file_path, file_content, last_modified_at))
+                files_to_index.append((file_path, file_content, last_modified_at))
             elif file.last_modified_at != last_modified_at:
                 self.__file_repository.delete_by_id(file.id)
                 self.__vector_document_repository.delete_by_file_id(file.id)
-                file_to_index.append((file_path, file_content, last_modified_at))
-        return file_to_index
+                files_to_index.append((file_path, file_content, last_modified_at))
+        return files_to_index
 
 
     def __lexical_indexing(self, /, *, files: list[_FileType],  max_chunk_size: int, corpus_path: str) -> list[Document]:
@@ -145,7 +156,7 @@ class Indexer:
         documents_to_create: list[Document] = list()
         files_to_create: list[File] = list()
         terms_to_create: list[Term] = list()
-        for file_path, file_content, last_modified_at in tqdm(files, total=len(files)):
+        for file_path, file_content, last_modified_at in tqdm(files, total=len(files), desc="lexical indexing: "):
             file_language: Language = self.__get_file_language(file_path)
             file: File = File(path=file_path, last_modified_at=last_modified_at)
             files_to_create.append(file)
@@ -181,7 +192,7 @@ class Indexer:
         return documents_to_create
 
     def __semantic_indexing(self, documents: list[Document]) -> None:
-        for idx in tqdm(range(0, len(documents), BATCH_SIZE), total=len(documents), desc="SEMANTIC INDEXING"):
+        for idx in tqdm(range(0, len(documents), BATCH_SIZE), desc="SEMANTIC INDEXING"):
             self.__vector_document_repository.create_many(documents[idx: idx + BATCH_SIZE])
 
     def __index_file_lexical(
