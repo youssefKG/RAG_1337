@@ -192,7 +192,7 @@ class Indexer:
         return documents_to_create
 
     def __semantic_indexing(self, documents: list[Document]) -> None:
-        for idx in tqdm(range(0, len(documents), BATCH_SIZE), desc="SEMANTIC INDEXING"):
+        for idx in tqdm(range(0, len(documents), 1), desc="SEMANTIC INDEXING"):
             self.__vector_document_repository.create_many(documents[idx: idx + BATCH_SIZE])
 
     def __index_file_lexical(
