@@ -34,9 +34,7 @@ class InvertIndex:
             )
             self.__add_new_terms_to_invert_index(terms_documents)
 
-    def __add_new_terms_to_invert_index(
-        self, terms_documents: list[Term]
-    ) -> None:
+    def __add_new_terms_to_invert_index(self, terms_documents: list[Term]) -> None:
         for doc_term in terms_documents:
             self.__invert_index[doc_term.value][doc_term.document.id] = (
                 doc_term.document,

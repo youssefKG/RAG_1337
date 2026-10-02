@@ -7,7 +7,7 @@ from .collections import  VectorDocumentRepository
 client: ClientAPI = HttpClient(
         host='localhost',
         port=8000,
-        settings=Settings(allow_reset=True, anonymized_telemetry=False)
+        # settings=Settings(allow_reset=True, anonymized_telemetry=False)
 )
 
 

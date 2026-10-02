@@ -120,7 +120,6 @@ class Indexer:
                 self.__vector_document_repository.delete_all()
                 files = files_to_index()
                 documents: list[Document] = lexical_indexing(files)
-                print("documents length: ", len(documents))
                 self.__semantic_indexing(documents)
             case IndexingStrategy.SEMANTIC:
                 self.__vector_document_repository.delete_all()
@@ -192,8 +191,14 @@ class Indexer:
         return documents_to_create
 
     def __semantic_indexing(self, documents: list[Document]) -> None:
-        for idx in tqdm(range(0, len(documents), 1), desc="SEMANTIC INDEXING"):
-            self.__vector_document_repository.create_many(documents[idx: idx + BATCH_SIZE])
+        print("semantic embdeing")
+        for idx in tqdm(
+            range(0, len(documents), 100),
+            desc="SEMANTIC INDEXING",
+        ):
+            self.__vector_document_repository.create_many(
+                documents[idx: idx+100]
+            )
 
     def __index_file_lexical(
         self,

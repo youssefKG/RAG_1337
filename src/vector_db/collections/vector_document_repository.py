@@ -9,7 +9,7 @@ from dataclasses import dataclass, asdict , field
 class DocumentCollectionMettadata:
     file_id: str
     file_path: str
-    doc_length: int
+    doc_length: str
 
 
 @dataclass(frozen=False)
@@ -50,7 +50,7 @@ class VectorDocumentRepository(MyCollection):
                     DocumentCollectionMettadata(
                         file_id=doc.file.id,
                         file_path=doc.file.path,
-                        doc_length=doc.length
+                        doc_length=str(doc.length)
                     )
                 )
             )
@@ -60,3 +60,6 @@ class VectorDocumentRepository(MyCollection):
         all_ids: list[str]  = self.__collection.get()["ids"]
         if all_ids:
             _ = self.__collection.delete(ids=all_ids)
+
+
+
