@@ -71,3 +71,6 @@ class TermRepositoryInterface(Protocol):
     @property
     def count(self) -> int: ...
 
+
+class QuestionRepositoryInterface(Protocol):
+    ...

@@ -12,7 +12,7 @@ from src.core.validation_models import (
     StudentSearchResults
 )
 from src.core.utils import Logger, Stage, permission_checker
-from src.core.config_manager import ConfigManager, config_manager, IndexingStrategy
+from src.core.config_manager import ConfigManager, config_manager
 from src.core.indexer import indexer, Indexer
 
 

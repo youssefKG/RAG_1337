@@ -23,4 +23,22 @@ class Term:
     frequency: int
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
+@dataclass(frozen=False)
+class Question:
+    id: str
+    question: str
+
+
+@dataclass
+class QuestionDocument:
+    question: Question
+    id: str = field(default_factory=lambda: str(uuid.uuid4()))
+
+
+@dataclass(frozen=False)
+class QuestionAnswer:
+    question: Question
+    answer: str
+    id: str = field(default_factory=lambda: str(uuid.uuid4()))
+
 __all__ =  ["File", "Document", "Term"]

@@ -5,7 +5,9 @@ from .repositories import (
     FileRepositoryInterface,
     DocumentRepositoryInterface,
     TermRepositoryInterface,
+    QuestionRepositoryInterface
 )
+
 from .errors import DBError, DBNotFoundError, DBDuplicateValueError
 
 
@@ -32,4 +34,6 @@ __all__ = [
     "DBError",
     "DBDuplicateValueError",
     "DBNotFoundError",
+    # question
+    "QuestionRepositoryInterface"
 ]
