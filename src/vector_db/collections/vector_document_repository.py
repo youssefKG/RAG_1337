@@ -3,6 +3,7 @@ from chromadb import Collection
 from src.core.entities import Document 
 from chromadb.api import ClientAPI
 from dataclasses import dataclass, asdict , field
+from typing import cast
 
 
 @dataclass(frozen=False)
@@ -60,6 +61,3 @@ class VectorDocumentRepository(MyCollection):
         all_ids: list[str]  = self.__collection.get()["ids"]
         if all_ids:
             _ = self.__collection.delete(ids=all_ids)
-
-
-

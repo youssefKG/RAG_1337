@@ -57,7 +57,7 @@ class ConfigManager:
     def get_current_indexing_strategy(self) -> Literal["hybrid", "lexical", "none"]:
         return self.__config.indexing_strategy
 
-    def __get_indexing_strategy(self, max_chunk_size: int, is_hybrid: bool) -> IndexingStrategy:
+    def get_indexing_strategy(self, max_chunk_size: int, is_hybrid: bool) -> IndexingStrategy:
         indexing_strategy: IndexingStrategy = IndexingStrategy.NONE
         if max_chunk_size != self.__config.max_chunk_size or self.__config.indexing_strategy == "none":
             if is_hybrid == True:
@@ -68,7 +68,7 @@ class ConfigManager:
              indexing_strategy = IndexingStrategy.SEMANTIC
         return indexing_strategy
 
-    def update_indexing_config(self, *, max_chunk_size: int, is_hybrid: bool) -> IndexingStrategy:
+    def update_indexing_config(self, *, max_chunk_size: int, is_hybrid: bool) -> None:
         permission_checker(
             file_path=CONFIG_FILE_PATH,
             exist=True,
@@ -76,15 +76,12 @@ class ConfigManager:
             kill=True,
             fn=lambda x: Logger.error(x, "CONFIG MANAGER")
         )
-        indexing_strategy: IndexingStrategy = self.__get_indexing_strategy(max_chunk_size, is_hybrid)
-        if indexing_strategy == IndexingStrategy.NONE:
-            return indexing_strategy
+        self.__config = ConfigModel(
+            max_chunk_size=max_chunk_size,
+            indexing_strategy="lexical" if is_hybrid else "hybrid",
+            search_type=self.__config.search_type
+        )
         try:
-            self.__config = ConfigModel(
-                max_chunk_size=max_chunk_size,
-                indexing_strategy="lexical" if indexing_strategy == IndexingStrategy.LEXICAL else "hybrid",
-                search_type=self.__config.search_type
-            )
             with open(CONFIG_FILE_PATH, "w") as config_file:
                 _  = config_file.write(self.__config.model_dump_json(indent=4))
         except ValidationError as error:
@@ -93,10 +90,6 @@ class ConfigManager:
         except Exception as error:
             Logger.error(str(error), "CONFIG MANAGER")
             sys.exit(1)
-        return indexing_strategy
-
-
-
 
 config_manager: ConfigManager = ConfigManager()
 

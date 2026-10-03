@@ -40,16 +40,14 @@ class RageAgainstMachine:
             Logger.error(f"invalid value for hybrid {hybrid}. allowed values: true, false",  Stage.INDEXING.name)
             sys.exit(1)
         is_indexing_hybrid: bool = True if hybrid == "true" else False
-        indexing_strategy: IndexingStrategy = (
-            self.__config_manager.update_indexing_config(
-                 max_chunk_size=max_chunk_size,
-                 is_hybrid=is_indexing_hybrid
-             )
-        )
-        self.__indexer(corpus_path=CORPUS_PATH, max_chunk_size=max_chunk_size, indexing_strategy=indexing_strategy)
+        self.__indexer(
+            corpus_path=CORPUS_PATH,
+            max_chunk_size=max_chunk_size,
+            is_hybrid=is_indexing_hybrid
+       )
 
     def search(self, query: str, k: int = 5, search_type: SearchType=SearchType.LEXICAL) -> None:
-        if k == 0:
+        if k <= 0:
             Logger.error(
                 f"Number of requested results {k} cannot be 0 or negative.",
                 Stage.SEARCH_DATASET.name

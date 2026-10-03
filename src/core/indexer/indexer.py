@@ -99,13 +99,16 @@ class Indexer:
         )
         self.__config_manager: ConfigManager = config_manager
 
-    def __call__(self, /, *, corpus_path: str, max_chunk_size: int, indexing_strategy: IndexingStrategy) -> None:
-        print("indexing strategy: ", indexing_strategy)
-        files_to_index: Callable[[], list[_FileType]] = lambda: self.__get_files_to_index(corpus_path)
+    def __call__(self, /, *, corpus_path: str, max_chunk_size: int, is_hybrid: bool) -> None:
+        indexing_strategy: IndexingStrategy = self.__config_manager.get_indexing_strategy(
+            max_chunk_size,
+            is_hybrid
+        )
+        files_to_index_callback: Callable[[], list[_FileType]] = lambda: self.__get_files_to_index(corpus_path)
         files: list[_FileType]
-        lexical_indexing: Callable[[list[_FileType]], list[Document]] = (
-            lambda x: self.__lexical_indexing(
-                files=x,
+        lexical_indexing_callback: Callable[[list[_FileType]], list[Document]] = (
+            lambda files: self.__lexical_indexing(
+                files=files,
                 max_chunk_size=max_chunk_size,
                 corpus_path=corpus_path
             )
@@ -113,13 +116,13 @@ class Indexer:
         match indexing_strategy:
             case IndexingStrategy.LEXICAL:
                 self.__file_repository.delete_all()
-                files = files_to_index()
-                _ = lexical_indexing(files)
+                files = files_to_index_callback()
+                _ = lexical_indexing_callback(files)
             case IndexingStrategy.HYBRID:
                 self.__file_repository.delete_all()
                 self.__vector_document_repository.delete_all()
-                files = files_to_index()
-                documents: list[Document] = lexical_indexing(files)
+                files = files_to_index_callback()
+                documents: list[Document] = lexical_indexing_callback(files)
                 self.__semantic_indexing(documents)
             case IndexingStrategy.SEMANTIC:
                 self.__vector_document_repository.delete_all()
@@ -127,14 +130,15 @@ class Indexer:
                 self.__semantic_indexing(documents_to_embed)
             case IndexingStrategy.NONE:
                 current_indexing_strategy: Literal["hybrid", "lexical", "none"] = self.__config_manager.get_current_indexing_strategy
-                files = files_to_index()
+                files = files_to_index_callback()
                 if current_indexing_strategy == "hybrid":
-                    documents = lexical_indexing(files)
+                    documents = lexical_indexing_callback(files)
                     self.__semantic_indexing(documents)
                 elif current_indexing_strategy == "none":
                     ...
                 else:
                     pass
+        self.__config_manager.update_indexing_config(max_chunk_size=max_chunk_size, is_hybrid=is_hybrid)
 
     def __get_files_to_index(self, corpust_path: str) -> list[_FileType]:
         file_iter: FileIter = FileIter(corpus_path=corpust_path, files_extensions=(".py", ".txt", ".md"))
@@ -191,7 +195,6 @@ class Indexer:
         return documents_to_create
 
     def __semantic_indexing(self, documents: list[Document]) -> None:
-        print("semantic embdeing")
         for idx in tqdm(
             range(0, len(documents), 100),
             desc="SEMANTIC INDEXING",

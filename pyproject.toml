@@ -5,7 +5,6 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "basedpyright>=1.40.1",
     "chromadb>=1.5.9",
     "chromadb-client>=1.5.9",
     "chromadb>=1.5.9",
@@ -16,6 +15,7 @@ dependencies = [
     "pydantic>=2.13.4",
     # "pytest>=9.1.1",
     "tqdm>=4.70.1",
+    "basedpyright>=1.40.1",
 ]
 
 
