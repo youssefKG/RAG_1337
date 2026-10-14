@@ -12,7 +12,6 @@ from src.core.validation_models import (
     StudentSearchResults
 )
 from src.core.utils import Logger, Stage, permission_checker
-from src.core.config_manager import ConfigManager, config_manager
 from src.core.indexer import indexer, Indexer
 
 
@@ -33,7 +32,6 @@ class RageAgainstMachine:
     def __init__(self) -> None:
         self.__search_engine: SearchEngine = search_engine
         self.__indexer: Indexer = indexer
-        self.__config_manager: ConfigManager = config_manager
 
     def index(self, max_chunk_size: int = MAX_CHUNK_SIZE, hybrid: str = "false") -> None:
         if hybrid != "true" and hybrid != "false":
@@ -53,16 +51,6 @@ class RageAgainstMachine:
                 Stage.SEARCH_DATASET.name
             )
             sys.exit(1)
-        unanswered_question: UnansweredQuestion = UnansweredQuestion(question=query)
-        minimal_search_result: MinimalSearchResults = search_engine(
-            unanswered_question, k, search_type
-        )
-        for source in minimal_search_result.retrieved_sources:
-            Logger.info(
-                f"{source.file_path}"
-                + f" [{source.first_character_index}:{source.last_character_index}]",
-                Stage.SEARCH.name
-            )
 
     def search_dataset(
         self,
@@ -70,7 +58,7 @@ class RageAgainstMachine:
         k: int = 5,
         save_directory: str = "",
     ) -> None:
-        if k == 0:
+        if k <= 0:
             Logger.error(
                 f"Number of requested results {k} cannot be 0 or negative.",
                 Stage.SEARCH_DATASET.name

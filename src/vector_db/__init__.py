@@ -1,8 +1,6 @@
 from chromadb.api import ClientAPI
 from chromadb import HttpClient
-from chromadb.config import Settings
 from .collections import  VectorDocumentRepository
-# from sentence_transformers import SentenceTransformer
 
 client: ClientAPI = HttpClient(
         host='localhost',

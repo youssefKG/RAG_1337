@@ -25,15 +25,15 @@ class Term:
 
 @dataclass(frozen=False)
 class Question:
-    id: str
     question: str
-
+    top_k: int
+    id: str = field(default_factory=lambda : str(uuid.uuid4()))
 
 @dataclass
 class QuestionDocument:
     question: Question
+    document: Document
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
-
 
 @dataclass(frozen=False)
 class QuestionAnswer:
@@ -41,4 +41,4 @@ class QuestionAnswer:
     answer: str
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
-__all__ =  ["File", "Document", "Term"]
+__all__ =  ["File", "Document", "Term", "QuestionDocument"]

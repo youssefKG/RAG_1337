@@ -3,6 +3,8 @@ from src.core.entities import (
     Term,
     Document,
     File,
+    Question,
+    QuestionDocument
 )
 
 
@@ -56,6 +58,9 @@ class DocumentRepositoryInterface(Protocol):
 
     def delete_all(self) -> None: ...
 
+    def get_question_documents(self, question_id: str) -> list[Document]:
+        ...
+
 
 
 class TermRepositoryInterface(Protocol):
@@ -71,6 +76,18 @@ class TermRepositoryInterface(Protocol):
     @property
     def count(self) -> int: ...
 
+    def get_question_documents(self, question: str) -> list[Document]:
+        ...
+
 
 class QuestionRepositoryInterface(Protocol):
-    ...
+    def get(self, question: str) -> Question | None:
+        ...
+
+    def create(self, question: Question) -> None:
+        ...
+
+    def delete(self, question: str) -> None:
+        ...
+
+

@@ -60,13 +60,14 @@ class ConfigManager:
     def get_indexing_strategy(self, max_chunk_size: int, is_hybrid: bool) -> IndexingStrategy:
         indexing_strategy: IndexingStrategy = IndexingStrategy.NONE
         if max_chunk_size != self.__config.max_chunk_size or self.__config.indexing_strategy == "none":
-            if is_hybrid == True:
+            if is_hybrid:
                 indexing_strategy = IndexingStrategy.HYBRID
             else:
                 indexing_strategy = IndexingStrategy.LEXICAL
         elif is_hybrid and self.__config.indexing_strategy in ("lexical", "none"):
              indexing_strategy = IndexingStrategy.SEMANTIC
         return indexing_strategy
+    
 
     def update_indexing_config(self, *, max_chunk_size: int, is_hybrid: bool) -> None:
         permission_checker(
