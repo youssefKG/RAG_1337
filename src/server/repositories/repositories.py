@@ -76,9 +76,6 @@ class TermRepositoryInterface(Protocol):
     @property
     def count(self) -> int: ...
 
-    def get_question_documents(self, question: str) -> list[Document]:
-        ...
-
 
 class QuestionRepositoryInterface(Protocol):
     def get(self, question: str) -> Question | None:
@@ -87,7 +84,8 @@ class QuestionRepositoryInterface(Protocol):
     def create(self, question: Question) -> None:
         ...
 
-    def delete(self, question: str) -> None:
+    def get_question_documents(self, question: str) -> list[Document]:
         ...
 
-
+    def delete(self, question: str) -> None:
+        ...

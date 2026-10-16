@@ -17,12 +17,11 @@ class QuestionRepository:
         question_model: QuestionModel | None = self.__question_model.objects.filter(question=question).first()
         return cast(Question | None, question_model)
 
+    def delete(self, question: str) -> None:
+        _ = self.__question_model.objects.filter(question=question).delete()
+
     def create(self, question: Question) -> None:
         _ = self.__question_model.objects.create(**cast(dict[str, object], cast(object, question)))
-
-    def get_question_documents(self, question_id: str) -> list[QuestionDocument]:
-        question_documents_models: list[QuestionDocumentModel] = list(self.__question_document_model.objects.filter(question__id=question_id))
-        return cast(list[QuestionDocument], question_documents_models)
 
     def get_question_answer(self, question_id: str) -> QuestionAnswer | None:
         question_answer_model: QuestionAnswerModel | None = self.__question_answer_model.objects.filter(question__id=question_id).first()
@@ -32,9 +31,8 @@ class QuestionRepository:
         _, is_created = self.__question_model.objects.get_or_create(id=question.question_id, question=question.question)
         return question, is_created
 
-    def get_question_document(self, question_id: str) -> list[Document]:
+    def get_question_documents(self, question: str) -> list[Document]:
         question_documents: list[QuestionDocument] = cast(
                 list[QuestionDocument],
-                list(self.__question_document_model.objects.filter(document__question_id=question_id)))
-        )
-        return [question_doc.document in question_documents]
+                list(self.__question_document_model.objects.filter(document__question=question)))
+        return [question_doc.document for question_doc in question_documents]

@@ -7,11 +7,11 @@ from tqdm import tqdm
 from src.core.search_engine import SearchEngine, search_engine, SearchType
 from src.core.validation_models import (
     MinimalSearchResults,
-    UnansweredQuestion,
     RagDataset,
     StudentSearchResults
 )
 from src.core.utils import Logger, Stage, permission_checker
+from src.core.question_manager import QuestionManager
 from src.core.indexer import indexer, Indexer
 
 
@@ -32,6 +32,7 @@ class RageAgainstMachine:
     def __init__(self) -> None:
         self.__search_engine: SearchEngine = search_engine
         self.__indexer: Indexer = indexer
+        self.__question_manager: QuestionManager
 
     def index(self, max_chunk_size: int = MAX_CHUNK_SIZE, hybrid: str = "false") -> None:
         if hybrid != "true" and hybrid != "false":
@@ -64,47 +65,6 @@ class RageAgainstMachine:
                 Stage.SEARCH_DATASET.name
             )
             sys.exit(0)
-        unanswered_questions: RagDataset = self.__load_unanswered_questions(dataset_path, Stage.SEARCH_DATASET)
-        student_search_result: StudentSearchResults = self.__get_student_search_results(unanswered_questions, k)
-        save_directory_path = self.__create_file(save_directory)
-        permission_checker(
-            file_path=dataset_path,
-            exist=True,
-            write=True,
-            fn= lambda x: Logger.error(x, Stage.SEARCH_DATASET.name)
-        )
-        try:
-            with save_directory_path.open("w") as file:
-                _ = file.write(student_search_result.model_dump_json())
-        except Exception as error:
-            Logger.error(str(error), Stage.SEARCH.name)
-            sys.exit(1)
-
-    def __load_unanswered_questions(self, dataset_path: str, stage: Stage) -> RagDataset:
-        # check if the dataset path is exist and read permission
-        permission_checker(
-            file_path=dataset_path,
-            exist=True,
-            read=True,
-            fn=lambda x: Logger.error(x, stage.name)
-        )
-        unanswered_questions: RagDataset
-        try:
-            with open(CODE_BASE_QUESTIONS, "r") as unanswed_question_file:
-                unanswered_questions = RagDataset.model_validate_json(
-                    unanswed_question_file.read()
-                )
-            return unanswered_questions
-        except ValidationError as errors:
-            Logger.error(errors.errors()[0]["msg"], stage.name)
-            sys.exit(1)
-
-    def __get_student_search_results(self, rag_dataset: RagDataset, top_k: int) -> StudentSearchResults:
-        search_results: list[MinimalSearchResults] = list()
-        for question in tqdm(rag_dataset.rag_questions, total=len(rag_dataset.rag_questions)):
-            minimal_search_result: MinimalSearchResults = self.__search_engine(question, top_k)
-            search_results.append(minimal_search_result)
-        return StudentSearchResults(search_results=search_results, k=top_k)
 
     def __create_file(self, file_path: str) -> Path:
         path = Path(file_path)

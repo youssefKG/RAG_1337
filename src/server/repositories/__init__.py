@@ -1,6 +1,7 @@
 from .file_repository import FileRepository
 from .document_repository import DocumentRepository
 from .term_repository import TermRepository
+from .question_repository import QuestionRepository
 from .repositories import (
     FileRepositoryInterface,
     DocumentRepositoryInterface,
@@ -16,6 +17,7 @@ document_repository = DocumentRepository(file_repository)
 term_repository: TermRepository = TermRepository(
     document_repository=document_repository
 )
+question_repository: QuestionRepository = QuestionRepository()
 
 __all__ = [
     # file repository
@@ -35,5 +37,6 @@ __all__ = [
     "DBDuplicateValueError",
     "DBNotFoundError",
     # question
-    "QuestionRepositoryInterface"
+    "QuestionRepositoryInterface",
+    "question_repository"
 ]

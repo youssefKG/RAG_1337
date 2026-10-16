@@ -42,41 +42,37 @@ class FileIter:
             files_extensions: tuple[str, ...],
             corpus_path: str,
         ) -> None:
-        self.__files: list[_FileType] = list()
         self.__file_extensions: tuple[str, ...] = files_extensions
         self.__corpus_path: str = corpus_path
         self.__length: int = self.__count()
 
     def __iter__(self) -> Generator[_FileType]:
-        for file_path, file_content, last_updated_time in self.__files:
-            yield file_path, file_content, last_updated_time
-
-    def __len__(self) -> int:
-        return self.__length
-
-    def __count(self) -> int:
-        total: int = 0
         for dir_path, _, file_names in os.walk(self.__corpus_path):
             for file_name in file_names:
+                file_path: str = os.path.join(dir_path, file_name)
                 if not file_name.endswith(self.__file_extensions):
                     continue
-                file_path: str = os.path.join(dir_path, file_name)
+                # TODO: do not forget to check if the file is readable before you open it
                 permission_checker(
                     file_path=file_path,
                     read=True,
                     kill=False,
                     fn=lambda x: Logger.warn(x, Stage.INDEXING.name)
                 )
-                last_updated_time: float = os.path.getmtime(file_path)
+                last_updated_time = os.path.getmtime(file_path)
                 try:
                     with open(file_path, "r") as file:
                         file_content: str = file.read()
-                        self.__files.append((file_path, file_content, last_updated_time))
+                        yield file_path, file_content, last_updated_time
                 except Exception as error:
                     Logger.warn(str(error), Stage.INDEXING.name)
                     sys.exit(1)
-                total += 1
-        return total
+
+    def __len__(self) -> int:
+        return self.__length
+
+    def __count(self) -> int:
+        return sum(1 for _, _, file_names in os.walk(self.__corpus_path) for file in file_names if not file.endswith(self.__file_extensions))
 
 class Indexer:
     def __init__(
@@ -100,12 +96,12 @@ class Indexer:
         self.__config_manager: ConfigManager = config_manager
 
     def __call__(self, /, *, corpus_path: str, max_chunk_size: int, is_hybrid: bool) -> None:
+        files: list[_FileType]
         indexing_strategy: IndexingStrategy = self.__config_manager.get_indexing_strategy(
             max_chunk_size,
             is_hybrid
         )
         files_to_index_callback: Callable[[], list[_FileType]] = lambda: self.__get_files_to_index(corpus_path)
-        files: list[_FileType]
         lexical_indexing_callback: Callable[[list[_FileType]], list[Document]] = (
             lambda files: self.__lexical_indexing(
                 files=files,

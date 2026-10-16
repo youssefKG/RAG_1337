@@ -1,6 +1,7 @@
 from src.server.repositories import (
     document_repository,
     term_repository,
+    question_repository
 )
 from .BM25 import BM25
 from .invert_index import InvertIndex
@@ -27,7 +28,8 @@ semantic_search: BM25 = BM25(
 search_engine = SearchEngine(
     lexical_search=bm25,
     semantic_search=semantic_search,
-    invert_index=invert_index
+    invert_index=invert_index,
+    question_repository=question_repository
 )
 
 __all__ = ["search_engine", "SearchEngine", "SearchType"]

@@ -1,15 +1,21 @@
 import sys
 from typing import Literal
 from pydantic import ValidationError
-from src.core.entities import Document, QuestionAnswer
-from src.server.repositories import QuestionRepositoryInterface
-from src.core.config_manager import ConfigModel, ConfigManager
+
+from src.server.repositories import QuestionRepositoryInterface, question_repository
+from src.core.config_manager import ConfigModel, ConfigManager, config_manager
 from src.core.utils import permission_checker, Logger
-from src.core.search_engine import SearchEngine, SearchType
+from src.core.search_engine import SearchEngine, SearchType, search_engine
 from src.core.validation_models import RagDataset, StudentSearchResults, MinimalSearchResults
 
 class QuestionManager:
-    def __init__(self, question_repository: QuestionRepositoryInterface, search_engine: SearchEngine, config_manager: ConfigManager) -> None:
+    def __init__(
+        self,
+        *,
+        question_repository: QuestionRepositoryInterface,
+        search_engine: SearchEngine,
+        config_manager: ConfigManager
+     ) -> None:
         self.__question_repository: QuestionRepositoryInterface = question_repository
         self.__search_engine: SearchEngine = search_engine
         self.__config_manager: ConfigManager = ConfigManager()
@@ -25,7 +31,7 @@ class QuestionManager:
             file_path=data_set_path,
             exist=True,
             write=True,
-            fn=lambda message: Logger.error(message, "SEARCH DATA_SET")
+            fn=lambda message: Logger.error(message, "SEARCH DATASET")
         )
         permission_checker(
             file_path=save_directory,
@@ -38,9 +44,9 @@ class QuestionManager:
         if indexing_strategy == "none":
             Logger.error("Search cannot be performed because no indexing is available.", "SEARCH DATASET")
             return
-        elif indexing_strategy == "lexical" and is_hybrid:
+        elif indexing_strategy != "hybrid" and is_hybrid:
             Logger.error(
-                "Hybrid search is not supported because your pre-indexing method is lexical.",
+                f"Hybrid search is not supported because your pre-indexing method is {indexing_strategy}.",
                 "SEARCH DATASET"
             )
             return
@@ -53,22 +59,12 @@ class QuestionManager:
                 top_k=k,
                 search_type=search_type
             ))
-        student_search_results: StudentSearchResults = StudentSearchResults(search_results=search_results, k=k)
+        student_search_results: StudentSearchResults = StudentSearchResults(
+            search_results=search_results,
+            k=k
+        )
         with open(save_directory, "w") as save_file:
             _ = save_file.write(student_search_results.model_dump_json(indent=4))
-
-    def answer_question(self) -> None:
-        pass
-
-    def get_question_documents(self, question_id: str) -> list[Document]:
-        return []
-
-    def get_question_answer(self, question_id: str) -> QuestionAnswer | None:
-        return None
-
-    def create_question_answer(self, question_answer: QuestionAnswer) -> None:
-        pass
-
 
     def __load_rag_dataset(self, file_path: str) -> RagDataset:
         permission_checker(
@@ -85,3 +81,8 @@ class QuestionManager:
                 Logger.error(error.errors()[0]["msg"], "SEARCH DATASET")
                 sys.exit(1)
 
+question_manager: QuestionManager = QuestionManager(
+    question_repository=question_repository,
+    search_engine=search_engine,
+    config_manager=config_manager
+)
