@@ -1,17 +1,8 @@
 import sys
-import os
-from pathlib import Path
-from pydantic import  ValidationError
-from tqdm import tqdm
 
-from src.core.search_engine import SearchEngine, search_engine, SearchType
-from src.core.validation_models import (
-    MinimalSearchResults,
-    RagDataset,
-    StudentSearchResults
-)
-from src.core.utils import Logger, Stage, permission_checker
-from src.core.question_manager import QuestionManager
+from src.core.search_engine import SearchEngine, search_engine 
+from src.core.utils import Logger, Stage
+from src.core.question_manager import QuestionManager, question_manager
 from src.core.indexer import indexer, Indexer
 
 
@@ -32,7 +23,7 @@ class RageAgainstMachine:
     def __init__(self) -> None:
         self.__search_engine: SearchEngine = search_engine
         self.__indexer: Indexer = indexer
-        self.__question_manager: QuestionManager
+        self.__question_manager: QuestionManager = question_manager
 
     def index(self, max_chunk_size: int = MAX_CHUNK_SIZE, hybrid: str = "false") -> None:
         if hybrid != "true" and hybrid != "false":
@@ -45,13 +36,13 @@ class RageAgainstMachine:
             is_hybrid=is_indexing_hybrid
        )
 
-    def search(self, query: str, k: int = 5, search_type: SearchType=SearchType.LEXICAL) -> None:
-        if k <= 0:
-            Logger.error(
-                f"Number of requested results {k} cannot be 0 or negative.",
-                Stage.SEARCH_DATASET.name
-            )
-            sys.exit(1)
+    # def search(self, query: str, k: int = 5, search_type: SearchType=SearchType.LEXICAL) -> None:
+    #     if k <= 0:
+    #         Logger.error(
+    #             f"Number of requested results {k} cannot be 0 or negative.",
+    #             Stage.SEARCH_DATASET.name
+    #         )
+    #         sys.exit(1)
 
     def search_dataset(
         self,
@@ -65,11 +56,17 @@ class RageAgainstMachine:
                 Stage.SEARCH_DATASET.name
             )
             sys.exit(0)
+        self.__question_manager.search_datasets(
+            dataset_path=dataset_path,
+            top_k=k,
+            save_directory=save_directory,
+            is_hybrid=False
+        )
 
-    def __create_file(self, file_path: str) -> Path:
-        path = Path(file_path)
-        if os.path.exists(file_path):
-            return path
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.touch()
-        return path
+    # def __create_file(self, file_path: str) -> Path:
+    #     path = Path(file_path)
+    #     if os.path.exists(file_path):
+    #         return path
+    #     path.parent.mkdir(parents=True, exist_ok=True)
+    #     path.touch()
+    #     return path

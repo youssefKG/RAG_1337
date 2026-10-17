@@ -29,7 +29,11 @@ class SearchEngine:
         self.__question_repository: QuestionRepositoryInterface = question_repository
 
     def __call__(
-            self, *, question: UnansweredQuestion, top_k: int, search_type: SearchType
+        self,
+        *,
+        question: UnansweredQuestion,
+        top_k: int,
+        search_type: SearchType
     ) -> MinimalSearchResults:
         # get query Terms
         cache_question: Question | None = self.__question_repository.get(question.question)
@@ -43,55 +47,82 @@ class SearchEngine:
                 top_k=top_k
             )
             self.__question_repository.create(new_question)
-            query_terms: list[str] = [
-                word
-                for word in cast(
-                    list[str], self.__regex_pattern.findall(question.question.lower())
-                )
-                if word not in STOP_WORDS
-            ]
             # update the invert index with new terms
-            self.__invert_index(query_terms)
+            query_terms: list[str] = self.__tokenize(question.question)
             # run bm25 and get top k high score documents
-            condidate_documents: list[Document] = self.__lexical_search(query_terms, top_k)[:top_k]
+            lexical_search_results: list[Document] = self.__lexical_search(query_terms, top_k)[:top_k]
             retrieved_sources: list[MinimalSource] = [
                 MinimalSource(
                     file_path=doc.file.path,
                     first_character_index=doc.start_index,
                     last_character_index=doc.end_index
-                ) for doc in condidate_documents
+                ) for doc in lexical_search_results
             ]
             minimal_search_results = MinimalSearchResults(
                 question_id=question.question_id,
                 question=question.question,
                 retrieved_sources=retrieved_sources,
             )
+            match search_type:
+                case SearchType.LEXICAL:
+                    return lexical_search_results
+                case SearchType.HYBRID:
+                    pass
+
+            semantic_search_results: list[Document] = self.__semantic_search(query_terms, top_k)[:top_k]
         else:
             question_documents: list[Document] = self.__question_repository.get_question_documents(
                     question.question
             )
-            minimal_search_results = self.__get_minimal_search_results(
-                question=question,
-                documents=question_documents
-            )
         return minimal_search_results
-    
+
+
+    def __tokenize(self, query: str) -> list[str]:
+        query_terms: list[str] = [
+            word
+            for word in cast(
+                list[str], self.__regex_pattern.findall(query.lower())
+            )
+            if word not in STOP_WORDS
+        ]
+        return query_terms
 
     def __get_minimal_search_results(
         self,
-        *,
-        documents: list[Document],
-        question: UnansweredQuestion
+        question: UnansweredQuestion,
+        top_k: int,
+        search_type: SearchType
     ) -> MinimalSearchResults:
+        query_terms: list[str] = self.__tokenize(question.question)
+        self.__invert_index(query_terms)
+        semantic_documents: list[Document] = self.__semantic_search(query_terms, top_k)
+        lexical_documents: list[Document] = self.__lexical_search(query_terms, top_k)
+        semantic_doc_len: int
+        lexical_doc_len: int
+        match search_type:
+            case SearchType.LEXICAL:
+                lexical_doc_len = top_k
+                semantic_doc_len = 0;
+            case SearchType.HYBRID:
+                semantic_doc_len = int(.2 * top_k)
+                lexical_doc_len = top_k - semantic_doc_len
+        if semantic_doc_len > len(semantic_documents):
+            semantic_doc_len = len(semantic_documents)
+        if lexical_doc_len > len(lexical_documents):
+            lexical_doc_len = len(lexical_documents)
+        lexical_docs: list[Document] = lexical_documents[:lexical_doc_len]
+        semantic_docs: list[Document] = semantic_documents[:semantic_doc_len]
+        chosen_documents: list[Document] = lexical_docs + semantic_docs
         retrieved_sources: list[MinimalSource] = [
             MinimalSource(
                 file_path=doc.file.path,
                 first_character_index=doc.start_index,
                 last_character_index=doc.end_index
-            ) for doc in documents
+            ) for doc in chosen_documents
         ]
-        return MinimalSearchResults(
-                question_id=question.question_id,
-                question=question.question,
-                retrieved_sources=retrieved_sources
+        minimal_search_results: MinimalSearchResults = MinimalSearchResults(
+            question_id=question.question_id,
+            question=question.question,
+            retrieved_sources=retrieved_sources
         )
+        return minimal_search_results

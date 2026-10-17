@@ -12,7 +12,6 @@ PostingType: TypeAlias = dict[
 ]
 InvertIndexType: TypeAlias = defaultdict[Annotated[str, "term value"], PostingType]
 
-
 class InvertIndex:
     def __init__(
         self,

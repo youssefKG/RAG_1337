@@ -22,13 +22,14 @@ class QuestionManager:
 
     def search_datasets(
         self,
-        data_set_path: str,
+        *,
+        dataset_path: str,
         save_directory: str,
-        k: int,
+        top_k: int,
         is_hybrid: bool
     ) -> None:
         permission_checker(
-            file_path=data_set_path,
+            file_path=dataset_path,
             exist=True,
             write=True,
             fn=lambda message: Logger.error(message, "SEARCH DATASET")
@@ -50,18 +51,19 @@ class QuestionManager:
                 "SEARCH DATASET"
             )
             return
-        rag_data_set: RagDataset = self.__load_rag_dataset(data_set_path)
+        rag_data_set: RagDataset = self.__load_rag_dataset(dataset_path)
         search_results: list[MinimalSearchResults] = list()
         search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
         for question in rag_data_set.rag_questions:
-            search_results.append(self.__search_engine(
+            minimal_search_result: MinimalSearchResults = self.__search_engine(
                 question=question,
-                top_k=k,
+                top_k=top_k,
                 search_type=search_type
-            ))
+            )
+            search_results.append(minimal_search_result)
         student_search_results: StudentSearchResults = StudentSearchResults(
             search_results=search_results,
-            k=k
+            k=top_k
         )
         with open(save_directory, "w") as save_file:
             _ = save_file.write(student_search_results.model_dump_json(indent=4))
@@ -86,3 +88,8 @@ question_manager: QuestionManager = QuestionManager(
     search_engine=search_engine,
     config_manager=config_manager
 )
+
+__all__ = [
+    "QuestionManager",
+    "question_manager"
+]
