@@ -89,3 +89,6 @@ class QuestionRepositoryInterface(Protocol):
 
     def delete(self, question: str) -> None:
         ...
+
+    def create_many_question_document(self, question_document: list[QuestionDocument]) -> None:
+        ...

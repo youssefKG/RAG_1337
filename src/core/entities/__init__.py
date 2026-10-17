@@ -27,6 +27,7 @@ class Term:
 class Question:
     question: str
     top_k: int
+    search_type: str
     id: str = field(default_factory=lambda : str(uuid.uuid4()))
 
 @dataclass

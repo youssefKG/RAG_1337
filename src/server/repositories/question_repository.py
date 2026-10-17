@@ -1,8 +1,7 @@
-from typing import cast, Annotated
+from typing import cast
 from src.server.models import QuestionModel, QuestionAnswerModel, QuestionDocumentModel
-from src.core.validation_models import UnansweredQuestion
 
-from src.core.entities import Question, QuestionDocument, QuestionAnswer, Document
+from src.core.entities import Question, QuestionDocument, QuestionAnswer, Document 
 
 class QuestionRepository:
     def __init__(self) -> None:
@@ -27,12 +26,27 @@ class QuestionRepository:
         question_answer_model: QuestionAnswerModel | None = self.__question_answer_model.objects.filter(question__id=question_id).first()
         return cast(QuestionAnswer | None, question_answer_model)
 
-    def get_or_create_question(self, question: UnansweredQuestion) -> tuple[UnansweredQuestion, Annotated[bool, "is created"]]:
-        _, is_created = self.__question_model.objects.get_or_create(id=question.question_id, question=question.question)
-        return question, is_created
+    def create_many_question_document(self, question_documents: list[QuestionDocument]) -> None:
+        question_document_models: list[QuestionDocumentModel] = [
+            QuestionDocumentModel(
+                id=question_doc.id,
+                question_id=question_doc.question.id,
+                document_id=question_doc.document.id,
+            ) for question_doc in question_documents
+        ]
+        _ = self.__question_document_model.objects.bulk_create(question_document_models, batch_size=400)
 
-    def get_question_documents(self, question: str) -> list[Document]:
+    def get_question_documents(
+            self,
+            question: str,
+    ) -> list[Document]:
         question_documents: list[QuestionDocument] = cast(
-                list[QuestionDocument],
-                list(self.__question_document_model.objects.filter(document__question=question)))
+            list[QuestionDocument],
+            list(
+                self.__question_document_model.objects.filter(
+                    question__question=question
+                )
+            )
+
+        )
         return [question_doc.document for question_doc in question_documents]
