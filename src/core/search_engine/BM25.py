@@ -1,9 +1,11 @@
+import re
 from dataclasses import dataclass
-from typing import Annotated, TypeAlias
+from typing import Annotated, TypeAlias, cast
 import math
 
 from src.core.entities import Document
 from .invert_index import InvertIndexType, PostingType
+from src.core.utils import TOKENIZER_REGEX_PATTERN, STOP_WORDS
 
 _TermIDFS: TypeAlias = dict[
     Annotated[str, "term value"], Annotated[float, "idf(t) score"]
@@ -35,8 +37,10 @@ class BM25:
         self.__total_number_of_documents: int = total_number_of_documents
         self.__invert_index: InvertIndexType = invert_index
         self.__idfs_score: _TermIDFS = _TermIDFS()
+        self.__regex_pattern = re.compile(TOKENIZER_REGEX_PATTERN)
 
-    def __call__(self, query_terms: list[str], top_k: int, ) -> list[Document]:
+    def __call__(self, question:str, top_k: int, ) -> list[Document]:
+        query_terms: list[str] = self.__tokenize(question)
         chosen_documents: _DocumentScoreType = _DocumentScoreType()
         for term in query_terms:
             if term in self.__invert_index:
@@ -82,3 +86,13 @@ class BM25:
             idf_term_score: float = math.log(nominator / dominator)
             self.__idfs_score[term] = idf_term_score
         return self.__idfs_score[term]
+
+    def __tokenize(self, query: str) -> list[str]:
+        query_terms: list[str] = [
+            word
+            for word in cast(
+                list[str], self.__regex_pattern.findall(query.lower())
+            )
+            if word not in STOP_WORDS
+        ]
+        return query_terms

@@ -105,13 +105,19 @@ class SearchEngine:
     #     return minimal_search_results
 
     def __run_search(self, question: Question, top_k: int) -> MinimalSearchResults:
-        query_terms: list[str] = self.__tokenize(question.question)
         minimal_search_results: MinimalSearchResults
-        lexical_documents: list[Document]
         semantic_documents: list[Document]
+        query_terms: list[str] = self.__tokenize(question.question)
+        lexical_documents: list[Document] = self.__lexical_search(question.question, top_k)
         self.__invert_index(query_terms)
         if question.search_type == "LEXICAL":
-            lexical_documents = self.__lexical_search(query_terms, top_k)
+            question_documents: list[QuestionDocument] = [
+                QuestionDocument(
+                    question=question,
+                    document=document
+                ) for document in lexical_documents
+            ]
+            self.__question_repository.create_many_question_document(question_documents)
             retrieved_sources = [
                 MinimalSource(file_path=doc.file.path,
                     first_character_index=doc.start_index,
@@ -126,7 +132,7 @@ class SearchEngine:
         else:
             top_semantic_search = int(0.2 * top_k)
             top_lexical_search = top_k - top_semantic_search
-            lexical_documents = self.__lexical_search(query_terms, top_k)[:top_lexical_search]
+            lexical_documents = lexical_documents[:top_lexical_search]
             semantic_documents= list()
             hybrid_documents: list[Document] = lexical_documents + semantic_documents
             retrieved_sources: list[MinimalSource] = [

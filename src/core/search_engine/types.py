@@ -12,7 +12,7 @@ InvertIndexType: TypeAlias = defaultdict[
 
 class SearchMethod(Protocol):
     def __call__(
-        self, query_terms: list[str], top_k: int
+        self, question: str, top_k: int
     ) -> list[Document]: ...
 
 class SearchType(Enum):

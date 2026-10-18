@@ -4,5 +4,5 @@ class SemanticSearch:
     def __init__(self, vector_document_repository: VectorDocumentRepositoryInterface) -> None:
         self.__vector_document_repository: VectorDocumentRepositoryInterface = vector_document_repository
 
-    def __call__(self) -> list[Document]:
+    def __call__(self, question: str) -> list[Document]:
         return list()
