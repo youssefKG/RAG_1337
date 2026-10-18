@@ -1,9 +1,9 @@
+from typing import cast, Annotated
 from .collection import MyCollection
 from chromadb import Collection
 from src.core.entities import Document 
 from chromadb.api import ClientAPI
 from dataclasses import dataclass, asdict , field
-from typing import cast
 
 
 @dataclass(frozen=False)
@@ -35,8 +35,9 @@ class VectorDocumentRepository(MyCollection):
                     metadatas=documents_collection.metadatas
             )
 
-    def get_cosin_simalitry_documents(self, query: str, top_k: int) -> None:
+    def search(self, query: str, top_k: int) -> list[Document]:
         result = self.__collection.query(query_texts=[query], n_results=top_k)
+        return cast(list[Document], cast(object, result))
 
     def delete_by_file_id(self, file_id: str) -> None:
         _ = self.__collection.delete(where={"file_id": file_id})
@@ -54,7 +55,7 @@ class VectorDocumentRepository(MyCollection):
                         doc_length=str(doc.length)
                     )
                 )
-            )
+           )
         return documents_collection
 
     def delete_all(self) -> None:

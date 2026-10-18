@@ -92,7 +92,6 @@ class BM25:
             word
             for word in cast(
                 list[str], self.__regex_pattern.findall(query.lower())
-            )
-            if word not in STOP_WORDS
+            ) if word not in STOP_WORDS
         ]
         return query_terms

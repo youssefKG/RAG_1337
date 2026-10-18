@@ -72,7 +72,10 @@ class FileIter:
         return self.__length
 
     def __count(self) -> int:
-        return sum(1 for _, _, file_names in os.walk(self.__corpus_path) for file in file_names if not file.endswith(self.__file_extensions))
+        return sum(
+            1 for _, _, file_names in os.walk(self.__corpus_path)
+            for file in file_names if not file.endswith(self.__file_extensions)
+        )
 
 class Indexer:
     def __init__(
@@ -117,6 +120,7 @@ class Indexer:
             case IndexingStrategy.HYBRID:
                 self.__file_repository.delete_all()
                 self.__vector_document_repository.delete_all()
+                print("hybrid")
                 files = files_to_index_callback()
                 documents: list[Document] = lexical_indexing_callback(files)
                 self.__semantic_indexing(documents)
@@ -150,12 +154,20 @@ class Indexer:
         return files_to_index
 
 
-    def __lexical_indexing(self, /, *, files: list[_FileType],  max_chunk_size: int, corpus_path: str) -> list[Document]:
+    def __lexical_indexing(
+           self,
+           /,
+           *,
+           files: list[_FileType],
+           max_chunk_size: int,
+           corpus_path: str
+    ) -> list[Document]:
         Logger.info(f"Indexing the corpus: {corpus_path}", Stage.INDEXING.name)
         documents_to_create: list[Document] = list()
         files_to_create: list[File] = list()
         terms_to_create: list[Term] = list()
-        for file_path, file_content, last_modified_at in tqdm(files, total=len(files), desc="lexical indexing: "):
+        total_documents: list[Document] = list()
+        for idx,  (file_path, file_content, last_modified_at) in enumerate(tqdm(files, total=len(files), desc="lexical indexing: ")):
             file_language: Language = self.__get_file_language(file_path)
             file: File = File(path=file_path, last_modified_at=last_modified_at)
             files_to_create.append(file)
@@ -165,39 +177,37 @@ class Indexer:
                 language=file_language,
                 max_chunk_size=max_chunk_size
             )
+            total_documents.extend(documents)
             documents_to_create.extend(documents)
             terms_to_create.extend(terms)
-        Logger.info(
-            "The files is being processed "
-            + "stored in the database in smaller chunks for efficient "
-            + "retrieval and search. Please wait while the process completes.",
-            Stage.INDEXING.name
-        )
-        self.__file_repository.create_many(files_to_create)
-        Logger.info(
-            "The document is being processed, and its content is being "
-            + "stored in the database in smaller chunks for efficient "
-            + "retrieval and search. Please wait while the process completes.",
-            Stage.INDEXING.name
-        )
-        self.__document_repository.create_many(documents_to_create)
-        Logger.info(
-            "We’re extracting the key terms from your document and storing" 
-            + " them in the database to make searching and retrieving" 
-            + " relevant information faster.",
-            Stage.INDEXING.name
-        )
-        self.__term_repository.create_many(terms_to_create)
-        return documents_to_create
+            if len(documents_to_create) > 10000:
+                self.__file_repository.create_many(files_to_create)
+                self.__document_repository.create_many(documents_to_create)
+                self.__term_repository.create_many(terms_to_create)
+                files_to_create.clear()
+                terms_to_create.clear()
+                documents_to_create.clear()
+            elif idx == len(files) - 1:
+                self.__file_repository.create_many(files_to_create)
+                self.__document_repository.create_many(documents_to_create)
+                self.__term_repository.create_many(terms_to_create)
+        return total_documents
 
     def __semantic_indexing(self, documents: list[Document]) -> None:
-        for idx in tqdm(
-            range(0, len(documents), 100),
-            desc="SEMANTIC INDEXING",
-        ):
-            self.__vector_document_repository.create_many(
-                documents[idx: idx+100]
-            )
+        total_documents: list[Document] = documents
+        batch_documents: list[Document]
+        if len(documents) < 1000:
+            self.__vector_document_repository.create_many(total_documents)
+            return 
+        for idx in tqdm(range(0, len(documents), 1000)):
+            if idx > 1000:
+                batch_documents = total_documents[:1000]
+                self.__vector_document_repository.create_many(batch_documents)
+                total_documents = total_documents[1000:]
+                print("rest ", len(total_documents))
+            elif idx == len(documents) - 1:
+                self.__vector_document_repository.create_many(total_documents)
+                total_documents.clear()
 
     def __index_file_lexical(
         self,

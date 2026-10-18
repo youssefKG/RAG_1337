@@ -79,7 +79,7 @@ class ConfigManager:
         )
         self.__config = ConfigModel(
             max_chunk_size=max_chunk_size,
-            indexing_strategy="lexical" if is_hybrid else "hybrid",
+            indexing_strategy="hybrid" if is_hybrid else "lexical",
             search_type=self.__config.search_type
         )
         try:

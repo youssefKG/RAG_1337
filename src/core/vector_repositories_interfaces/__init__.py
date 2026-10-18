@@ -14,4 +14,5 @@ class VectorDocumentRepositoryInterface(Protocol):
     def search(self, query: str, top_k: int) -> list[Document]:
         ...
 
+
 __all__ =  ["VectorDocumentRepositoryInterface"]

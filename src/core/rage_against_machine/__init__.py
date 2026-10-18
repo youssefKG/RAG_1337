@@ -26,8 +26,12 @@ class RageAgainstMachine:
         self.__question_manager: QuestionManager = question_manager
 
     def index(self, max_chunk_size: int = MAX_CHUNK_SIZE, hybrid: str = "false") -> None:
+        print(hybrid)
         if hybrid != "true" and hybrid != "false":
-            Logger.error(f"invalid value for hybrid {hybrid}. allowed values: true, false",  Stage.INDEXING.name)
+            Logger.error(
+                f"invalid value for hybrid {hybrid}. allowed values: true, false",
+                 Stage.INDEXING.name
+            )
             sys.exit(1)
         is_indexing_hybrid: bool = True if hybrid == "true" else False
         self.__indexer(
@@ -36,19 +40,11 @@ class RageAgainstMachine:
             is_hybrid=is_indexing_hybrid
        )
 
-    # def search(self, query: str, k: int = 5, search_type: SearchType=SearchType.LEXICAL) -> None:
-    #     if k <= 0:
-    #         Logger.error(
-    #             f"Number of requested results {k} cannot be 0 or negative.",
-    #             Stage.SEARCH_DATASET.name
-    #         )
-    #         sys.exit(1)
-
     def search_dataset(
         self,
         dataset_path: str = DATASET_PATH,
-        k: int = 5,
         save_directory: str = "",
+        k: int = 5,
     ) -> None:
         if k <= 0:
             Logger.error(
@@ -62,11 +58,3 @@ class RageAgainstMachine:
             save_directory=save_directory,
             is_hybrid=False
         )
-
-    # def __create_file(self, file_path: str) -> Path:
-    #     path = Path(file_path)
-    #     if os.path.exists(file_path):
-    #         return path
-    #     path.parent.mkdir(parents=True, exist_ok=True)
-    #     path.touch()
-    #     return path
