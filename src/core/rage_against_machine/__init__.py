@@ -26,7 +26,7 @@ class RageAgainstMachine:
         self.__question_manager: QuestionManager = question_manager
 
     def index(self, max_chunk_size: int = MAX_CHUNK_SIZE, hybrid: str = "false") -> None:
-        print(hybrid)
+        print("max_chunk_size", max_chunk_size, "is_hybrid", hybrid)
         if hybrid != "true" and hybrid != "false":
             Logger.error(
                 f"invalid value for hybrid {hybrid}. allowed values: true, false",
@@ -38,13 +38,14 @@ class RageAgainstMachine:
             corpus_path=CORPUS_PATH,
             max_chunk_size=max_chunk_size,
             is_hybrid=is_indexing_hybrid
-       )
+        )
 
     def search_dataset(
         self,
         dataset_path: str = DATASET_PATH,
         save_directory: str = "",
         k: int = 5,
+        hybrid: str="false"
     ) -> None:
         if k <= 0:
             Logger.error(
@@ -52,9 +53,16 @@ class RageAgainstMachine:
                 Stage.SEARCH_DATASET.name
             )
             sys.exit(0)
+        if hybrid != "true" and hybrid != "false":
+            Logger.error(
+                f"invalid value for hybrid {hybrid}. allowed values: true, false",
+                 Stage.INDEXING.name
+            )
+            sys.exit(1)
+        is_hybrid: bool = True if hybrid == "true" else False
         self.__question_manager.search_datasets(
             dataset_path=dataset_path,
             top_k=k,
             save_directory=save_directory,
-            is_hybrid=False
+            is_hybrid=is_hybrid
         )

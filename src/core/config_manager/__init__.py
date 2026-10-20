@@ -40,7 +40,7 @@ class ConfigManager:
                 exist=True,
                 read=True,
                 kill=True,
-                fn=lambda x: Logger.error(x, "CONFIG MANAGER")
+                fn=lambda message: Logger.error(message, "CONFIG MANAGER")
             )
             with open(CONFIG_FILE_PATH, "r") as config_file:
                 config_file_content: str = config_file.read()
@@ -59,16 +59,38 @@ class ConfigManager:
 
     def get_indexing_strategy(self, max_chunk_size: int, is_hybrid: bool) -> IndexingStrategy:
         indexing_strategy: IndexingStrategy = IndexingStrategy.NONE
-        if max_chunk_size != self.__config.max_chunk_size or self.__config.indexing_strategy == "none":
-            if is_hybrid:
-                indexing_strategy = IndexingStrategy.HYBRID
-            else:
-                indexing_strategy = IndexingStrategy.LEXICAL
-        elif is_hybrid and self.__config.indexing_strategy in ("lexical", "none"):
-             indexing_strategy = IndexingStrategy.SEMANTIC
+        print(
+          "config max chunk size",
+          self.__config.max_chunk_size,
+          "config indexing strategy",
+          self.__config.indexing_strategy
+        )
+# config max chunk size 2000 config indexing strategy lexical
+        match self.__config.indexing_strategy:
+            case "none":
+                if is_hybrid:
+                    indexing_strategy = IndexingStrategy.HYBRID
+                else:
+                    indexing_strategy = IndexingStrategy.LEXICAL
+            case "lexical":
+                if self.__config.max_chunk_size != max_chunk_size and not is_hybrid:
+                    print("from lexical")
+                    indexing_strategy = IndexingStrategy.LEXICAL
+                elif self.__config.max_chunk_size != max_chunk_size and is_hybrid:
+                    indexing_strategy = IndexingStrategy.HYBRID
+                elif self.__config.max_chunk_size == max_chunk_size and is_hybrid:
+                    indexing_strategy = IndexingStrategy.SEMANTIC
+                elif self.__config.max_chunk_size == max_chunk_size and not is_hybrid:
+                    indexing_strategy = IndexingStrategy.NONE
+            case "hybrid":
+                if self.__config.max_chunk_size != max_chunk_size and not is_hybrid:
+                    indexing_strategy = IndexingStrategy.LEXICAL
+                elif self.__config.max_chunk_size != max_chunk_size and is_hybrid:
+                    indexing_strategy = IndexingStrategy.HYBRID
+                elif self.__config.max_chunk_size == max_chunk_size and is_hybrid:
+                    indexing_strategy = IndexingStrategy.NONE
         return indexing_strategy
     
-
     def update_indexing_config(self, *, max_chunk_size: int, is_hybrid: bool) -> None:
         permission_checker(
             file_path=CONFIG_FILE_PATH,

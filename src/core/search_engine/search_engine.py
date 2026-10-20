@@ -66,17 +66,16 @@ class SearchEngine:
 
     def __run_search_and_store_in_cache(self, question: Question, top_k: int) -> MinimalSearchResults:
         query_terms: list[str] = self.__tokenize(question.question)
-        lexical_documents: list[Document] = self.__lexical_search(question.question, top_k)
-        question_documents_to_create: list[QuestionDocument]
-        high_score_documents: list[Document]
         self.__invert_index(query_terms)
+        lexical_documents: list[Document] = self.__lexical_search(question.question, top_k)
+        high_score_documents: list[Document]
         if question.search_type == "LEXICAL":
             high_score_documents = lexical_documents
         else: # search_type =  hybrid
-            top_semantic_search = int(.2 * top_k)
+            top_semantic_search = int(.5 * top_k)
             top_lexical_search = top_k - top_semantic_search
             lexical_documents = lexical_documents[:top_lexical_search]
-            semantic_documents: list[Document] = list()
+            semantic_documents: list[Document] = self.__semantic_search(question.question, top_k)
             high_score_documents = lexical_documents + semantic_documents
         retrieved_sources: list[MinimalSource] = [
             MinimalSource(
@@ -100,11 +99,13 @@ class SearchEngine:
 
     def __get_documents_from_cache(self, question: Question) -> MinimalSearchResults:
         documents: list[Document] =  self.__question_repository.get_question_documents(question.question)
-        retrieved_sources: list[MinimalSource] = [MinimalSource(
-            file_path=doc.file.path,
-            first_character_index=doc.start_index,
-            last_character_index=doc.end_index
-        ) for doc in documents]
+        retrieved_sources: list[MinimalSource] = [
+            MinimalSource(
+                file_path=doc.file.path,
+                first_character_index=doc.start_index,
+                last_character_index=doc.end_index
+            ) for doc in documents
+        ]
         minimal_search_results: MinimalSearchResults = MinimalSearchResults(
             question_id=question.id,
             question=question.question,

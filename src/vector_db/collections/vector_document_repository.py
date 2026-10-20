@@ -11,13 +11,15 @@ class DocumentCollectionMettadata:
     file_id: str
     file_path: str
     doc_length: str
+    first_character_index: int
+    last_character_index: int
 
 
 @dataclass(frozen=False)
 class DocumentsCollection:
     ids: list[str] = field(default_factory=list)
     documents: list[str] = field(default_factory=list)
-    metadatas: list[dict[str, str]] = field(default_factory=list)
+    metadatas: list[dict[str, str | int]] = field(default_factory=list)
 
 
 class VectorDocumentRepository(MyCollection):
@@ -35,9 +37,9 @@ class VectorDocumentRepository(MyCollection):
                     metadatas=documents_collection.metadatas
             )
 
-    def search(self, query: str, top_k: int) -> list[Document]:
-        result = self.__collection.query(query_texts=[query], n_results=top_k)
-        return cast(list[Document], cast(object, result))
+    def get_documents_ids_search(self, query: str, top_k: int) -> list[str]:
+        result = self.__collection.query(query_texts=[query], n_results=top_k)["ids"][0]
+        return cast(list[str], cast(object, result))
 
     def delete_by_file_id(self, file_id: str) -> None:
         _ = self.__collection.delete(where={"file_id": file_id})
@@ -52,7 +54,9 @@ class VectorDocumentRepository(MyCollection):
                     DocumentCollectionMettadata(
                         file_id=doc.file.id,
                         file_path=doc.file.path,
-                        doc_length=str(doc.length)
+                        doc_length=str(doc.length),
+                        first_character_index=doc.start_index,
+                        last_character_index=doc.end_index
                     )
                 )
            )

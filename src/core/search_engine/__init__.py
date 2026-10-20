@@ -23,7 +23,8 @@ lexical_search: BM25 = BM25(
 )
 
 semantic_search: SemanticSearch =  SemanticSearch(
-    vector_document_repository=vector_document_repository
+    vector_document_repository=vector_document_repository,
+    document_repository=document_repository
 )
 
 search_engine = SearchEngine(

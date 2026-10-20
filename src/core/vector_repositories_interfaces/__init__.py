@@ -11,7 +11,7 @@ class VectorDocumentRepositoryInterface(Protocol):
     def delete_by_file_id(self, file_id: str) -> None:
         ...
 
-    def search(self, query: str, top_k: int) -> list[Document]:
+    def get_documents_ids_search(self, query: str, top_k: int) -> list[str]:
         ...
 
 

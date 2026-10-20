@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import Enum, auto
 from typing import Callable
+from pathlib import Path
 from .constants import TOKENIZER_REGEX_PATTERN, STOP_WORDS
 import os
 import sys
@@ -42,12 +43,11 @@ class COLORS(str, Enum):
 
 
 def INIT_DB(sqlite_path_dir: str="./data/processed") -> None:
-    import  os
+    # import  os
     from django.core.management import call_command
-    if not os.access(sqlite_path_dir, os.F_OK):
-        os.makedirs(sqlite_path_dir)
-        _ = call_command("makemigrations", interactive=False)
-        _ = call_command("migrate", interactive=False)
+    # os.makedirs(sqlite_path_dir)
+    _ = call_command("makemigrations", interactive=False)
+    _ = call_command("migrate", interactive=False)
 
 
 
@@ -56,7 +56,6 @@ time_formatter: Callable[[], str] = lambda: "{color}[{date}]{reset_color}".forma
     date=str(datetime.now()),
     reset_color=COLORS.END.value,
 )
-
 
 stage_formatter: Callable[[str], str] = (
     lambda stage: "{color}[{stage}]{reset_color}".format(
@@ -138,6 +137,10 @@ def permission_checker(
             fn(f"permission error: cannot read {file_path}")
         if kill:
             sys.exit(126)
+
+def create_file_path(file_path: str) -> None:
+    path = Path(file_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
 
 __all__ = [
         "TOKENIZER_REGEX_PATTERN",

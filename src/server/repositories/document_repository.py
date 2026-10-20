@@ -52,3 +52,10 @@ class DocumentRepository:
     def get_avg_document_length(self) -> float:
         avg_dl = self.__model.objects.aggregate(Avg("length", default=0))
         return cast(float, avg_dl["length__avg"])
+    
+    def get_by_ids(self, ids: list[str]) -> list[Document]:
+        documents: list[Document] = cast(
+            list[Document],
+            list(self.__model.objects.filter(id__in=ids))
+        )
+        return documents

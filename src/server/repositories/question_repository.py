@@ -20,7 +20,12 @@ class QuestionRepository:
         _ = self.__question_model.objects.filter(question=question).delete()
 
     def create(self, question: Question) -> None:
-        _ = self.__question_model.objects.create(**cast(dict[str, object], cast(object, question)))
+        _ = self.__question_model.objects.create(
+            id=question.id,
+            top_k=question.top_k,
+            search_type=question.search_type,
+            question=question.question
+        )
 
     def get_question_answer(self, question_id: str) -> QuestionAnswer | None:
         question_answer_model: QuestionAnswerModel | None = self.__question_answer_model.objects.filter(question__id=question_id).first()

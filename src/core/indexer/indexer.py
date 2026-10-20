@@ -3,10 +3,8 @@ import sys
 import re
 from collections.abc import Generator, Callable
 from collections import Counter
-from typing import Annotated, TypeAlias, cast, Literal
-
+from typing import Annotated, TypeAlias, cast
 from tqdm import tqdm
-
 from src.core.config_manager import IndexingStrategy, ConfigManager
 from src.core.utils import STOP_WORDS, TOKENIZER_REGEX_PATTERN
 from src.core.chunker.languages import Language
@@ -17,10 +15,8 @@ from src.server.repositories import (
     DocumentRepositoryInterface,
     TermRepositoryInterface,
 )
-
 from src.core.vector_repositories_interfaces import VectorDocumentRepositoryInterface
 from src.core.utils import Logger, permission_checker, Stage
-
 ChunkType: TypeAlias = tuple[
     Annotated[str, "chunk"],
     Annotated[int, "start index"],
@@ -37,11 +33,11 @@ BATCH_SIZE = 10000
 
 class FileIter:
     def __init__(
-            self,
-            *,
-            files_extensions: tuple[str, ...],
-            corpus_path: str,
-        ) -> None:
+        self,
+        *,
+        files_extensions: tuple[str, ...],
+        corpus_path: str,
+    ) -> None:
         self.__file_extensions: tuple[str, ...] = files_extensions
         self.__corpus_path: str = corpus_path
         self.__length: int = self.__count()
@@ -100,6 +96,7 @@ class Indexer:
 
     def __call__(self, /, *, corpus_path: str, max_chunk_size: int, is_hybrid: bool) -> None:
         files: list[_FileType]
+        documents: list[Document]
         indexing_strategy: IndexingStrategy = self.__config_manager.get_indexing_strategy(
             max_chunk_size,
             is_hybrid
@@ -112,32 +109,32 @@ class Indexer:
                 corpus_path=corpus_path
             )
         )
+        print("INDEXING STRATEGY: ", indexing_strategy)
         match indexing_strategy:
             case IndexingStrategy.LEXICAL:
+                Logger.info("Deleting the old indexing documents and vector documents", "INDEXING")
                 self.__file_repository.delete_all()
+                self.__vector_document_repository.delete_all()
                 files = files_to_index_callback()
                 _ = lexical_indexing_callback(files)
             case IndexingStrategy.HYBRID:
+                Logger.info("Deleting the old indexing documents and vector documents", "INDEXING")
                 self.__file_repository.delete_all()
                 self.__vector_document_repository.delete_all()
-                print("hybrid")
                 files = files_to_index_callback()
-                documents: list[Document] = lexical_indexing_callback(files)
+                documents = lexical_indexing_callback(files)
                 self.__semantic_indexing(documents)
             case IndexingStrategy.SEMANTIC:
+                Logger.info("Deleting the old indexing documents and vector documents", "INDEXING")
                 self.__vector_document_repository.delete_all()
-                documents_to_embed: list[Document] = self.__document_repository.all()
-                self.__semantic_indexing(documents_to_embed)
+                documents = self.__document_repository.all()
+                self.__semantic_indexing(documents)
             case IndexingStrategy.NONE:
-                current_indexing_strategy: Literal["hybrid", "lexical", "none"] = self.__config_manager.get_current_indexing_strategy
                 files = files_to_index_callback()
-                if current_indexing_strategy == "hybrid":
+                if len(files) > 0:
                     documents = lexical_indexing_callback(files)
-                    self.__semantic_indexing(documents)
-                elif current_indexing_strategy == "none":
-                    ...
-                else:
-                    pass
+                    if is_hybrid:
+                        self.__semantic_indexing(documents)
         self.__config_manager.update_indexing_config(max_chunk_size=max_chunk_size, is_hybrid=is_hybrid)
 
     def __get_files_to_index(self, corpust_path: str) -> list[_FileType]:
@@ -155,12 +152,12 @@ class Indexer:
 
 
     def __lexical_indexing(
-           self,
-           /,
-           *,
-           files: list[_FileType],
-           max_chunk_size: int,
-           corpus_path: str
+       self,
+       /,
+       *,
+       files: list[_FileType],
+       max_chunk_size: int,
+       corpus_path: str
     ) -> list[Document]:
         Logger.info(f"Indexing the corpus: {corpus_path}", Stage.INDEXING.name)
         documents_to_create: list[Document] = list()
@@ -196,15 +193,11 @@ class Indexer:
     def __semantic_indexing(self, documents: list[Document]) -> None:
         total_documents: list[Document] = documents
         batch_documents: list[Document]
-        if len(documents) < 1000:
-            self.__vector_document_repository.create_many(total_documents)
-            return 
         for idx in tqdm(range(0, len(documents), 1000)):
             if idx > 1000:
                 batch_documents = total_documents[:1000]
                 self.__vector_document_repository.create_many(batch_documents)
                 total_documents = total_documents[1000:]
-                print("rest ", len(total_documents))
             elif idx == len(documents) - 1:
                 self.__vector_document_repository.create_many(total_documents)
                 total_documents.clear()
@@ -240,7 +233,6 @@ class Indexer:
                 term: Term = Term(frequency=frequency, value=value.lower(), document=document)
                 terms_to_create.append(term)
         return documents_to_create, terms_to_create
-
 
     def __get_file_language(self, file_path: str) -> Language:
         if file_path.endswith(".py"):

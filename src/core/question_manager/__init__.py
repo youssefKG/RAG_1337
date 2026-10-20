@@ -1,12 +1,15 @@
+import os
 import sys
 from typing import Literal
 from pydantic import ValidationError
+from pathlib import Path
 
 from src.server.repositories import QuestionRepositoryInterface, question_repository
 from src.core.config_manager import ConfigModel, ConfigManager, config_manager
 from src.core.utils import permission_checker, Logger
 from src.core.search_engine import SearchEngine, SearchType, search_engine
 from src.core.validation_models import RagDataset, StudentSearchResults, MinimalSearchResults
+from tqdm import tqdm
 
 class QuestionManager:
     def __init__(
@@ -34,6 +37,10 @@ class QuestionManager:
             write=True,
             fn=lambda message: Logger.error(message, "SEARCH DATASET")
         )
+        if not os.access(save_directory, os.F_OK):
+            save_directory_path: Path = Path(save_directory)
+            save_directory_path.parent.mkdir(parents=True, exist_ok=True)
+            save_directory_path.touch()
         permission_checker(
             file_path=save_directory,
             exist=True,
@@ -54,7 +61,7 @@ class QuestionManager:
         rag_data_set: RagDataset = self.__load_rag_dataset(dataset_path)
         search_results: list[MinimalSearchResults] = list()
         search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
-        for question in rag_data_set.rag_questions:
+        for question in tqdm(rag_data_set.rag_questions, desc="Retrieval"):
             minimal_search_result: MinimalSearchResults = self.__search_engine(
                 question=question,
                 top_k=top_k,
@@ -90,6 +97,5 @@ question_manager: QuestionManager = QuestionManager(
 )
 
 __all__ = [
-    "QuestionManager",
-    "question_manager"
+    "QuestionManager", "question_manager"
 ]

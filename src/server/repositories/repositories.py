@@ -58,10 +58,8 @@ class DocumentRepositoryInterface(Protocol):
 
     def delete_all(self) -> None: ...
 
-    def get_question_documents(self, question_id: str) -> list[Document]:
+    def get_by_ids(self, ids: list[str]) -> list[Document]:
         ...
-
-
 
 class TermRepositoryInterface(Protocol):
     def create_many(

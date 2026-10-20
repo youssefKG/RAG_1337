@@ -14,3 +14,10 @@ index:
 
 clean: 
 	rm -rf ./src/server/migrations ./src/db.sqlite3
+
+
+install:
+	uv sync
+	uv run python src.manage makemigrations server
+	uv run python src.manage migrate
+	
