@@ -13,7 +13,7 @@ class IndexingStrategy(str, Enum):
     NONE = "none"
     LEXICAL = "lexical"
     HYBRID = "hybrid"
-    SEMANTIC = "lexical"
+    SEMANTIC = "SEMANTIC"
 
 class ConfigModel(BaseModel):
     indexing_strategy: Literal["lexical", "hybrid", "none"] = Field(default="lexical")
@@ -59,13 +59,6 @@ class ConfigManager:
 
     def get_indexing_strategy(self, max_chunk_size: int, is_hybrid: bool) -> IndexingStrategy:
         indexing_strategy: IndexingStrategy = IndexingStrategy.NONE
-        print(
-          "config max chunk size",
-          self.__config.max_chunk_size,
-          "config indexing strategy",
-          self.__config.indexing_strategy
-        )
-# config max chunk size 2000 config indexing strategy lexical
         match self.__config.indexing_strategy:
             case "none":
                 if is_hybrid:
@@ -74,7 +67,6 @@ class ConfigManager:
                     indexing_strategy = IndexingStrategy.LEXICAL
             case "lexical":
                 if self.__config.max_chunk_size != max_chunk_size and not is_hybrid:
-                    print("from lexical")
                     indexing_strategy = IndexingStrategy.LEXICAL
                 elif self.__config.max_chunk_size != max_chunk_size and is_hybrid:
                     indexing_strategy = IndexingStrategy.HYBRID

@@ -3,12 +3,11 @@ import sys
 from typing import Literal
 from pydantic import ValidationError
 from pathlib import Path
-
 from src.server.repositories import QuestionRepositoryInterface, question_repository
 from src.core.config_manager import ConfigModel, ConfigManager, config_manager
 from src.core.utils import permission_checker, Logger
 from src.core.search_engine import SearchEngine, SearchType, search_engine
-from src.core.validation_models import RagDataset, StudentSearchResults, MinimalSearchResults
+from src.core.validation_models import RagDataset, StudentSearchResults, MinimalSearchResults, UnansweredQuestion
 from tqdm import tqdm
 
 class QuestionManager:
@@ -50,9 +49,14 @@ class QuestionManager:
         config: ConfigModel = self.__config_manager.config
         indexing_strategy: Literal["lexical", "hybrid", "none"] = config.indexing_strategy
         if indexing_strategy == "none":
-            Logger.error("Search cannot be performed because no indexing is available.", "SEARCH DATASET")
+            # TODO: raise exception instead of exit for the server
+            Logger.error(
+                "Search cannot be performed because no indexing is available.",
+                 "SEARCH DATASET"
+             )
             return
         elif indexing_strategy != "hybrid" and is_hybrid:
+            # TODO: raise exception instead of exit for the server
             Logger.error(
                 f"Hybrid search is not supported because your pre-indexing method is {indexing_strategy}.",
                 "SEARCH DATASET"
@@ -90,6 +94,27 @@ class QuestionManager:
                 Logger.error(error.errors()[0]["msg"], "SEARCH DATASET")
                 sys.exit(1)
 
+    def search(self, query: str, top_k: int, is_hybrid: bool) -> MinimalSearchResults:
+        preindexing_strategy: str = self.__config_manager.config.indexing_strategy
+        if preindexing_strategy == "none":
+            # TODO: Throw exception for the server instead of exit
+            Logger.error("search cannot performed because no indexing is available", "SEARCH")
+            sys.exit(1)
+        elif preindexing_strategy == "hybrid" and is_hybrid:
+            Logger.error(
+                f"Hybrid search is not supported because your pre-indexing method is {preindexing_strategy}.",
+                 "SEARCH"
+                         )
+            sys.exit(1)
+        question: UnansweredQuestion = UnansweredQuestion(question=query)
+        search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
+        minimal_search_results: MinimalSearchResults = self.__search_engine(
+            question=question,
+            top_k=top_k,
+            search_type=search_type
+        )
+        return minimal_search_results
+
 question_manager: QuestionManager = QuestionManager(
     question_repository=question_repository,
     search_engine=search_engine,
@@ -97,5 +122,6 @@ question_manager: QuestionManager = QuestionManager(
 )
 
 __all__ = [
-    "QuestionManager", "question_manager"
+    "QuestionManager",
+    "question_manager"
 ]

@@ -38,7 +38,7 @@ class SearchEngine:
         # get query Terms
         cache_question: Question | None = self.__question_repository.get(question.question)
         minimal_search_results: MinimalSearchResults
-        if cache_question is None or cache_question.top_k < top_k or cache_question.search_type != search_type.name:
+        if cache_question is None or cache_question.top_k != top_k or cache_question.search_type != search_type.name:
             if cache_question:
                 self.__question_repository.delete(question.question)
             new_question: Question = Question(
@@ -75,7 +75,7 @@ class SearchEngine:
             top_semantic_search = int(.5 * top_k)
             top_lexical_search = top_k - top_semantic_search
             lexical_documents = lexical_documents[:top_lexical_search]
-            semantic_documents: list[Document] = self.__semantic_search(question.question, top_k)
+            semantic_documents: list[Document] = self.__semantic_search(question.question, top_k)[:top_semantic_search]
             high_score_documents = lexical_documents + semantic_documents
         retrieved_sources: list[MinimalSource] = [
             MinimalSource(

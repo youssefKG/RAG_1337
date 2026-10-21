@@ -55,3 +55,6 @@ class QuestionRepository:
 
         )
         return [question_doc.document for question_doc in question_documents]
+
+    def delete_all(self) -> None:
+        _ = self.__question_model.objects.all().delete()

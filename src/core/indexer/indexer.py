@@ -14,6 +14,7 @@ from src.server.repositories import (
     FileRepositoryInterface,
     DocumentRepositoryInterface,
     TermRepositoryInterface,
+    QuestionRepositoryInterface
 )
 from src.core.vector_repositories_interfaces import VectorDocumentRepositoryInterface
 from src.core.utils import Logger, permission_checker, Stage
@@ -30,6 +31,7 @@ _FileType: TypeAlias = tuple[
 ]
 
 BATCH_SIZE = 10000
+LEXICAL_BATCH_SIZE = 5000
 
 class FileIter:
     def __init__(
@@ -82,7 +84,8 @@ class Indexer:
         document_repository: DocumentRepositoryInterface,
         term_repository: TermRepositoryInterface,
         vector_document_repository: VectorDocumentRepositoryInterface,
-        config_manager: ConfigManager
+        config_manager: ConfigManager,
+        question_repository: QuestionRepositoryInterface
     ) -> None:
         self.__file_repository: FileRepositoryInterface = file_repository
         self.__document_repository: DocumentRepositoryInterface = (
@@ -92,6 +95,7 @@ class Indexer:
         self.__vector_document_repository: VectorDocumentRepositoryInterface = (
             vector_document_repository
         )
+        self.__question_repository: QuestionRepositoryInterface = question_repository
         self.__config_manager: ConfigManager = config_manager
 
     def __call__(self, /, *, corpus_path: str, max_chunk_size: int, is_hybrid: bool) -> None:
@@ -109,24 +113,27 @@ class Indexer:
                 corpus_path=corpus_path
             )
         )
-        print("INDEXING STRATEGY: ", indexing_strategy)
+        Logger.info(f"INDEXING STRATEGY: {indexing_strategy}", __name__)
+
         match indexing_strategy:
             case IndexingStrategy.LEXICAL:
                 Logger.info("Deleting the old indexing documents and vector documents", "INDEXING")
                 self.__file_repository.delete_all()
+                self.__question_repository.delete_all()
                 self.__vector_document_repository.delete_all()
                 files = files_to_index_callback()
                 _ = lexical_indexing_callback(files)
             case IndexingStrategy.HYBRID:
                 Logger.info("Deleting the old indexing documents and vector documents", "INDEXING")
                 self.__file_repository.delete_all()
+                self.__question_repository.delete_all()
                 self.__vector_document_repository.delete_all()
                 files = files_to_index_callback()
                 documents = lexical_indexing_callback(files)
                 self.__semantic_indexing(documents)
             case IndexingStrategy.SEMANTIC:
-                Logger.info("Deleting the old indexing documents and vector documents", "INDEXING")
                 self.__vector_document_repository.delete_all()
+                self.__question_repository.delete_all()
                 documents = self.__document_repository.all()
                 self.__semantic_indexing(documents)
             case IndexingStrategy.NONE:
@@ -177,7 +184,7 @@ class Indexer:
             total_documents.extend(documents)
             documents_to_create.extend(documents)
             terms_to_create.extend(terms)
-            if len(documents_to_create) > 10000:
+            if len(documents_to_create) > LEXICAL_BATCH_SIZE:
                 self.__file_repository.create_many(files_to_create)
                 self.__document_repository.create_many(documents_to_create)
                 self.__term_repository.create_many(terms_to_create)
@@ -193,7 +200,7 @@ class Indexer:
     def __semantic_indexing(self, documents: list[Document]) -> None:
         total_documents: list[Document] = documents
         batch_documents: list[Document]
-        for idx in tqdm(range(0, len(documents), 1000)):
+        for idx in tqdm(range(0, len(documents), 1000), desc="SEAMANTIC INDEXING"):
             if idx > 1000:
                 batch_documents = total_documents[:1000]
                 self.__vector_document_repository.create_many(batch_documents)
