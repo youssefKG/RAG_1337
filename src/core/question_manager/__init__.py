@@ -98,13 +98,16 @@ class QuestionManager:
         preindexing_strategy: str = self.__config_manager.config.indexing_strategy
         if preindexing_strategy == "none":
             # TODO: Throw exception for the server instead of exit
-            Logger.error("search cannot performed because no indexing is available", "SEARCH")
+            Logger.error(
+                "search cannot performed because no indexing is available",
+                "SEARCH"
+            )
             sys.exit(1)
         elif preindexing_strategy == "hybrid" and is_hybrid:
             Logger.error(
                 f"Hybrid search is not supported because your pre-indexing method is {preindexing_strategy}.",
                  "SEARCH"
-                         )
+            )
             sys.exit(1)
         question: UnansweredQuestion = UnansweredQuestion(question=query)
         search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL

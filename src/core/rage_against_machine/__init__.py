@@ -4,8 +4,6 @@ from src.core.search_engine import SearchEngine, search_engine
 from src.core.utils import Logger, Stage
 from src.core.question_manager import QuestionManager, question_manager
 from src.core.indexer import indexer, Indexer
-from src.core.validation_models import MinimalSource
-
 
 CORPUS_PATH = "data/raw/vllm-0.10.1"
 CODE_BASE_QUESTIONS = "data/public/UnansweredQuestions/dataset_code_public.json"
@@ -18,7 +16,6 @@ SAVE_DIRECTORY = "data/output/search_results/UnansweredQuestions"
 
 DATA_PROCESSED_PATH = "data/processed/"
 MAX_CHUNK_SIZE = 2000
-
 
 class RageAgainstMachine:
     def __init__(self) -> None:

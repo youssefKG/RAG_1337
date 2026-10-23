@@ -27,8 +27,10 @@ class QuestionRepository:
             question=question.question
         )
 
-    def get_question_answer(self, question_id: str) -> QuestionAnswer | None:
-        question_answer_model: QuestionAnswerModel | None = self.__question_answer_model.objects.filter(question__id=question_id).first()
+    def get_question_answer(self, question: str) -> QuestionAnswer | None:
+        question_answer_model: QuestionAnswerModel | None = self.__question_answer_model.objects.filter(
+            question__question=question
+        ).first()
         return cast(QuestionAnswer | None, question_answer_model)
 
     def create_many_question_document(self, question_documents: list[QuestionDocument]) -> None:
@@ -55,6 +57,9 @@ class QuestionRepository:
 
         )
         return [question_doc.document for question_doc in question_documents]
+
+    def create_question_answer(self, question_answer: QuestionAnswer) -> None:
+        pass
 
     def delete_all(self) -> None:
         _ = self.__question_model.objects.all().delete()

@@ -82,6 +82,10 @@ class Logger:
         color=COLORS.LIGHT_RED.value, reset_color=COLORS.END.value
     )
 
+    query_formatter: str = "{color}[ERROR]{reset_color}".format(
+        color=COLORS.LIGHT_RED.value, reset_color=COLORS.END.value
+    )
+
     @classmethod
     def info(cls, message: str, stage: str) -> None:
         info_format = (
@@ -91,6 +95,17 @@ class Logger:
             f": {message_formatter(message)}"
         )
         print(info_format)
+
+    @classmethod
+    def query(cls, query: str, stage: str) -> None:
+        info_format = (
+            f"{time_formatter()}"
+            f"{cls.query_formatter}"
+            f" {stage_formatter(stage)}"
+            f": {message_formatter(query)}"
+        )
+        print(info_format)
+        pass
 
     @classmethod
     def warn(cls, message: str, stage: str) -> None:

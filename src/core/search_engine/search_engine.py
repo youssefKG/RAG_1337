@@ -75,7 +75,10 @@ class SearchEngine:
             top_semantic_search = int(.5 * top_k)
             top_lexical_search = top_k - top_semantic_search
             lexical_documents = lexical_documents[:top_lexical_search]
-            semantic_documents: list[Document] = self.__semantic_search(question.question, top_k)[:top_semantic_search]
+            semantic_documents: list[Document] = self.__semantic_search(
+                question.question,
+                top_k
+            )[:top_semantic_search]
             high_score_documents = lexical_documents + semantic_documents
         retrieved_sources: list[MinimalSource] = [
             MinimalSource(

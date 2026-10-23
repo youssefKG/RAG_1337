@@ -18,6 +18,7 @@ from src.server.repositories import (
 )
 from src.core.vector_repositories_interfaces import VectorDocumentRepositoryInterface
 from src.core.utils import Logger, permission_checker, Stage
+
 ChunkType: TypeAlias = tuple[
     Annotated[str, "chunk"],
     Annotated[int, "start index"],
@@ -114,7 +115,6 @@ class Indexer:
             )
         )
         Logger.info(f"INDEXING STRATEGY: {indexing_strategy}", __name__)
-
         match indexing_strategy:
             case IndexingStrategy.LEXICAL:
                 Logger.info("Deleting the old indexing documents and vector documents", "INDEXING")

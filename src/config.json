@@ -1,5 +1,5 @@
 {
     "indexing_strategy": "lexical",
-    "max_chunk_size": 2000,
+    "max_chunk_size": 1550,
     "search_type": "lexical"
 }

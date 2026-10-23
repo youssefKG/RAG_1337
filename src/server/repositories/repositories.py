@@ -4,7 +4,8 @@ from src.core.entities import (
     Document,
     File,
     Question,
-    QuestionDocument
+    QuestionDocument,
+    QuestionAnswer
 )
 
 
@@ -92,4 +93,7 @@ class QuestionRepositoryInterface(Protocol):
         ...
 
     def delete_all(self) -> None:
+        ...
+
+    def get_question_answer(self, question: str) -> QuestionAnswer | None:
         ...
