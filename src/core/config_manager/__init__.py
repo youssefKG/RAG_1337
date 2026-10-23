@@ -8,7 +8,6 @@ SearchType: TypeAlias = Literal["hybrid", "semantic", "lexical"]
 ConfigKeyType: TypeAlias =  Literal["is_indexing_hybrid", "max_chunk_size", "search_type"]
 ConfigValueType: TypeAlias = int | SearchType | bool
 
-
 class IndexingStrategy(str, Enum):
     NONE = "none"
     LEXICAL = "lexical"

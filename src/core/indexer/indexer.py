@@ -258,3 +258,6 @@ class Indexer:
         ]
         term_frequency: Counter[str] = Counter(document_terms)
         return term_frequency
+
+
+__all__ = ["answer_manager"]

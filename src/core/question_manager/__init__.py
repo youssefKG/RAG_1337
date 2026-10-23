@@ -125,6 +125,5 @@ question_manager: QuestionManager = QuestionManager(
 )
 
 __all__ = [
-    "QuestionManager",
-    "question_manager"
+    "QuestionManager", "question_manager"
 ]

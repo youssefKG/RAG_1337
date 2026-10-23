@@ -1,10 +1,15 @@
 from typing import Literal
-from core.search_engine import SearchEngine, SearchType
-from src.server.repositories import QuestionRepositoryInterface
+from transformers import pipeline, TextGenerationPipeline
+from accelerate import Accelerator
+
+from src.core.utils import Logger
+from src.core.search_engine import SearchEngine, SearchType
+from src.server.repositories import QuestionRepositoryInterface, question_repository
 from src.core.entities import Document, QuestionAnswer, Question
 from src.core.validation_models import UnansweredQuestion
 from src.core.config_manager import ConfigManager
-from transformers import pipeline, TextGenerationPipeline
+from src.core.search_engine import search_engine
+from src.core.config_manager import config_manager
 
 PROMPT: str = """
     You are a helpful enterprise assistant. Answer the user's question using only the context provided below. Do not assume or extrapolate. If the answer is not present in the context, state "I cannot answer this based on the provided information."
@@ -32,7 +37,6 @@ class AnswerManager:
     ) -> None:
         self.__search_engine: SearchEngine = search_engine
         self.__question_repository: QuestionRepositoryInterface = question_repository
-        self.__pipeline: TextGenerationPipeline = pipeline("text-generation")
         self.__config_manager: ConfigManager = config_manager
 
     def answer(self, question: UnansweredQuestion, top_k: int, is_hybrid: bool) -> str:
@@ -60,15 +64,22 @@ class AnswerManager:
             case _:
                 cache_question_answer: QuestionAnswer | None = self.__question_repository.get_question_answer(question.question)
                 if cache_question_answer is None:
+                    Logger.warn("The question is not found in the cache. Running the retrieval", "ANSWER")
                     _ = self.__search_engine(
-                            question=question,
-                            top_k=top_k,
-                            search_type=search_type
-                    )
+                        question=question,
+                        top_k=top_k,
+                        search_type=search_type
+                   )
                     documents: list[Document] = self.__question_repository.get_question_documents(question.question)
                     documents_str = "\n".join([document.content for document in documents])
+                    Logger.info("the question is retrieved_successfully", "ANSWER")
                     prompt: str = self.__build_prompt(question.question, documents_str)
-                    generated_answer = self._generate(prompt)
+                    generator_pipeline: TextGenerationPipeline = pipeline(
+                        "text-generation",
+                        model="Qwen/Qwen3-0.6B",
+                        device=Accelerator().device
+                    )
+                    generated_answer = self._generate(prompt, generator_pipeline)
                     question_answer: QuestionAnswer = QuestionAnswer(question=_question, answer=generated_answer)
                     self.__question_repository.create_question_answer(question_answer)
                 else:
@@ -83,6 +94,17 @@ class AnswerManager:
            .replace("{USER_QUESTION}", question)
         )
 
-    def _generate(self, prompt: str) -> str:
-        results: str = self.__pipeline(prompt, max_length=200)[0]["generated_text"]
+    def _generate(self, prompt: str, pipeline: TextGenerationPipeline) -> str:
+        results: str = pipeline(prompt, max_new_tokens=100)[0]["generated_text"]
         return results
+
+answer_manager: AnswerManager = AnswerManager(
+        search_engine=search_engine,
+        question_repository=question_repository,
+        config_manager=config_manager
+)
+
+__all__ = [
+    "answer_manager",
+    "AnswerManager"
+]
