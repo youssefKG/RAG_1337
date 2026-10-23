@@ -97,3 +97,6 @@ class QuestionRepositoryInterface(Protocol):
 
     def get_question_answer(self, question: str) -> QuestionAnswer | None:
         ...
+
+    def create_question_answer(self, question_answer: QuestionAnswer) -> None:
+        ...

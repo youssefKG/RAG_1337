@@ -59,7 +59,11 @@ class QuestionRepository:
         return [question_doc.document for question_doc in question_documents]
 
     def create_question_answer(self, question_answer: QuestionAnswer) -> None:
-        pass
+        _ = self.__question_answer_model.objects.create(
+                id=question_answer.id,
+                question_id=question_answer.question.id,
+                answer=question_answer.answer
+            )
 
     def delete_all(self) -> None:
         _ = self.__question_model.objects.all().delete()

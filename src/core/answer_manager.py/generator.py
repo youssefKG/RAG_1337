@@ -1,9 +1,8 @@
 from typing import Literal
 from core.search_engine import SearchEngine, SearchType
-from src.core.indexer import Indexer
 from src.server.repositories import QuestionRepositoryInterface
-from src.core.entities import  Question, Document, QuestionAnswer
-from src.core.validation_models import UnansweredQuestion, AnsweredQuestion, MinimalSearchResults
+from src.core.entities import Document, QuestionAnswer, Question
+from src.core.validation_models import UnansweredQuestion
 from src.core.config_manager import ConfigManager
 from transformers import pipeline, TextGenerationPipeline
 
@@ -39,6 +38,13 @@ class AnswerManager:
     def answer(self, question: UnansweredQuestion, top_k: int, is_hybrid: bool) -> str:
         preindexing_strategy: Literal["lexical", "hybrid", "none"] = self.__config_manager.config.indexing_strategy
         generated_answer: str
+        search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
+        _question: Question = Question(
+            id=question.question_id,
+            question=question.question,
+            search_type=search_type.name,
+            top_k=top_k
+        )
         match preindexing_strategy:
             case "none":
                 raise AnswerError(
@@ -54,7 +60,6 @@ class AnswerManager:
             case _:
                 cache_question_answer: QuestionAnswer | None = self.__question_repository.get_question_answer(question.question)
                 if cache_question_answer is None:
-                    search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
                     _ = self.__search_engine(
                             question=question,
                             top_k=top_k,
@@ -64,6 +69,8 @@ class AnswerManager:
                     documents_str = "\n".join([document.content for document in documents])
                     prompt: str = self.__build_prompt(question.question, documents_str)
                     generated_answer = self._generate(prompt)
+                    question_answer: QuestionAnswer = QuestionAnswer(question=_question, answer=generated_answer)
+                    self.__question_repository.create_question_answer(question_answer)
                 else:
                     generated_answer = cache_question_answer.answer
         return generated_answer
