@@ -1,15 +1,8 @@
 from typing import Literal
-from transformers import pipeline, TextGenerationPipeline
-from accelerate import Accelerator
-
 from src.core.utils import Logger
-from src.core.search_engine import SearchEngine, SearchType
-from src.server.repositories import QuestionRepositoryInterface, question_repository
 from src.core.entities import Document, QuestionAnswer, Question
-from src.core.validation_models import UnansweredQuestion
-from src.core.config_manager import ConfigManager
-from src.core.search_engine import search_engine
-from src.core.config_manager import config_manager
+from src.core.validation_models import MinimalSearchResults
+from src.core.config_manager import ConfigManager, config_manager
 
 PROMPT: str = """
     You are a helpful enterprise assistant. Answer the user's question using only the context provided below. Do not assume or extrapolate. If the answer is not present in the context, state "I cannot answer this based on the provided information."
@@ -31,24 +24,13 @@ class AnswerError(Exception):
 class AnswerManager:
     def __init__(
         self,
-        search_engine: SearchEngine,
-        question_repository: QuestionRepositoryInterface,
         config_manager: ConfigManager
     ) -> None:
-        self.__search_engine: SearchEngine = search_engine
-        self.__question_repository: QuestionRepositoryInterface = question_repository
         self.__config_manager: ConfigManager = config_manager
 
-    def answer(self, question: UnansweredQuestion, top_k: int, is_hybrid: bool) -> str:
+    def answer(self, question: str, top_k: int, is_hybrid: bool) -> str:
         preindexing_strategy: Literal["lexical", "hybrid", "none"] = self.__config_manager.config.indexing_strategy
         generated_answer: str
-        search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
-        _question: Question = Question(
-            id=question.question_id,
-            question=question.question,
-            search_type=search_type.name,
-            top_k=top_k
-        )
         match preindexing_strategy:
             case "none":
                 raise AnswerError(
@@ -62,31 +44,46 @@ class AnswerManager:
                     + "strategy to enable hybrid search."
                 )     
             case _:
-                cache_question_answer: QuestionAnswer | None = self.__question_repository.get_question_answer(question.question)
-                if cache_question_answer is None:
+                from src.server.repositories import question_repository
+                cache_question_answer: QuestionAnswer | None = question_repository.get_question_answer(question)
+                is_cache_question_searching_strategy_changed: bool = True if cache_question_answer and cache_question_answer.question.search_type == "HYBRID" else False != is_hybrid
+                if (
+                    cache_question_answer is None 
+                    or cache_question_answer.question.top_k != top_k
+                    or is_hybrid != is_cache_question_searching_strategy_changed
+                ):
+                    from src.core.search_engine import search_engine, SearchType
+                    from transformers import pipeline, TextGenerationPipeline
+                    from accelerate import Accelerator
+                    search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
                     Logger.warn("The question is not found in the cache. Running the retrieval", "ANSWER")
-                    _ = self.__search_engine(
+                    minimal_search_results: MinimalSearchResults = search_engine(
                         question=question,
                         top_k=top_k,
                         search_type=search_type
                    )
-                    documents: list[Document] = self.__question_repository.get_question_documents(question.question)
+                    documents: list[Document] = question_repository.get_question_documents(question)
                     documents_str = "\n".join([document.content for document in documents])
                     Logger.info("the question is retrieved_successfully", "ANSWER")
-                    prompt: str = self.__build_prompt(question.question, documents_str)
+                    prompt: str = self.__build_prompt(question, documents_str)
                     generator_pipeline: TextGenerationPipeline = pipeline(
                         "text-generation",
                         model="Qwen/Qwen3-0.6B",
                         device=Accelerator().device
                     )
-                    generated_answer = self._generate(prompt, generator_pipeline)
+                    generated_answer = generator_pipeline(prompt, max_new_tokens=100)[0]["generated_text"]
+                    _question: Question = Question(
+                        id=minimal_search_results.question_id,
+                        question=question,
+                        top_k=top_k,
+                        search_type=search_type.name
+                    )
                     question_answer: QuestionAnswer = QuestionAnswer(question=_question, answer=generated_answer)
-                    self.__question_repository.create_question_answer(question_answer)
+                    question_repository.create_question_answer(question_answer)
                 else:
+                    Logger.info("The question answer is found in cache", "ANSWER")
                     generated_answer = cache_question_answer.answer
         return generated_answer
-
-    # def answer_dataset(self, student_search_results:
 
     def __build_prompt(self, question: str, retrieved_documents: str) -> str:
         return (
@@ -94,13 +91,8 @@ class AnswerManager:
            .replace("{USER_QUESTION}", question)
         )
 
-    def _generate(self, prompt: str, pipeline: TextGenerationPipeline) -> str:
-        results: str = pipeline(prompt, max_new_tokens=100)[0]["generated_text"]
-        return results
 
 answer_manager: AnswerManager = AnswerManager(
-        search_engine=search_engine,
-        question_repository=question_repository,
         config_manager=config_manager
 )
 

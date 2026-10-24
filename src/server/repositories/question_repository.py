@@ -1,6 +1,5 @@
 from typing import cast
 from src.server.models import QuestionModel, QuestionAnswerModel, QuestionDocumentModel
-
 from src.core.entities import Question, QuestionDocument, QuestionAnswer, Document 
 
 class QuestionRepository:

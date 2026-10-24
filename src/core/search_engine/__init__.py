@@ -27,7 +27,7 @@ semantic_search: SemanticSearch =  SemanticSearch(
     document_repository=document_repository
 )
 
-search_engine = SearchEngine(
+search_engine: SearchEngine = SearchEngine(
     lexical_search=lexical_search,
     semantic_search=semantic_search,
     invert_index=invert_index,
