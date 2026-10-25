@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, TypeAlias, Generic, TypeVar, cast
 from pydantic import ValidationError
 from src.core.utils import Logger
 from src.core.entities import Document, QuestionAnswer, Question
@@ -6,7 +6,10 @@ from src.core.validation_models import MinimalSearchResults, StudentSearchResult
 from src.core.config_manager import ConfigManager, config_manager
 
 PROMPT: str = """
-    You are a helpful enterprise assistant. Answer the user's question using only the context provided below. Do not assume or extrapolate. If the answer is not present in the context, state "I cannot answer this based on the provided information."
+    You are a helpful enterprise assistant.
+    Answer the user's question using only the context provided below.
+    Do not assume or extrapolate.
+    If the answer is not present in the context, state "I cannot answer this based on the provided information."
     Context:
     {RETRIEVED_DOCUMENTS}
     Question:
@@ -22,16 +25,84 @@ class QuestionNotRetrievedYetError(Exception):
 class AnswerError(Exception):
     ...
 
+_PreindexingStrategy: TypeAlias =  Literal["lexical", "hybrid", "none"]
+
+T = TypeVar("T")
+
+class TextGenerationPipeline(Generic[T]):
+
+    pass
+
 class AnswerManager:
     def __init__(
         self,
         config_manager: ConfigManager
     ) -> None:
         self.__config_manager: ConfigManager = config_manager
+        self.__text_generation_pipeline: object | None = None
 
     def answer(self, question: str, top_k: int, is_hybrid: bool) -> str:
-        preindexing_strategy: Literal["lexical", "hybrid", "none"] = self.__config_manager.config.indexing_strategy
+        # check if theres is somme preindexing strategy and the predindexing
+        # is hybrid if the answer should be generated based on
+        # sematic search and lexical search
+        self.__check_preindexing_strategy(is_hybrid)
         generated_answer: str
+        from src.server.repositories import question_repository
+        # check if the question is already retrieved
+        cache_question_answer: QuestionAnswer | None = question_repository.get_question_answer(question)
+        if (
+                cache_question_answer is None
+                or self.__is_cache_question_changed(
+                    cache_question_answer,
+                    top_k,
+                    is_hybrid
+                )
+            ):
+            generated_answer = self.__answer_query_and_store_in_cache(
+                    question=question,
+                    is_hybrid=is_hybrid,
+                    top_k=top_k, 
+                    _text_generation_pipeline=self.__get_text_generation_pipeline
+            )
+        else:
+            Logger.info("The question answer is found in cache", "ANSWER")
+            generated_answer = cache_question_answer.answer
+        return generated_answer
+
+
+    def __is_cache_question_changed(
+        self,
+        cache_question_answer: QuestionAnswer,
+        top_k: int,
+        is_hybrid: bool
+    ) -> bool:
+        searching_strategy: Literal["HYBRID", "LEXICAL"] = "HYBRID" if is_hybrid else "LEXICAL"
+        if (
+            cache_question_answer.question.top_k != top_k or
+            searching_strategy != cache_question_answer.question.search_type
+        ):
+            return True
+        return False
+
+
+    def answer_dataset(
+        self,
+        student_search_results_path: str,
+        save_directory: str,
+        is_hybrid: bool
+    ) -> None:
+        self.__check_preindexing_strategy(is_hybrid)
+        student_search_results: StudentSearchResults = self.__load_student_search_results(student_search_results_path)
+        from transformers import TextGenerationPipeline
+        text_generation_pipeline: TextGenerationPipeline = cast(
+            TextGenerationPipeline,
+            self.__get_text_generation_pipeline
+        )
+        for search_result in student_search_results.search_results:
+            pass
+
+    def __check_preindexing_strategy(self, is_hybrid: bool) -> None:
+        preindexing_strategy: _PreindexingStrategy = self.__config_manager.config.indexing_strategy
         match preindexing_strategy:
             case "none":
                 raise AnswerError(
@@ -45,64 +116,55 @@ class AnswerManager:
                     + "strategy to enable hybrid search."
                 )     
             case _:
-                from src.server.repositories import question_repository
-                cache_question_answer: QuestionAnswer | None = question_repository.get_question_answer(question)
-                is_cache_question_searching_strategy_changed: bool = True if cache_question_answer and cache_question_answer.question.search_type == "HYBRID" else False != is_hybrid
-                if (
-                    cache_question_answer is None 
-                    or cache_question_answer.question.top_k != top_k
-                    or is_hybrid != is_cache_question_searching_strategy_changed
-                ):
-                    from src.core.search_engine import search_engine, SearchType
-                    from transformers import pipeline, TextGenerationPipeline
-                    from accelerate import Accelerator
-                    search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
-                    Logger.warn("The question is not found in the cache. Running the retrieval", "ANSWER")
-                    minimal_search_results: MinimalSearchResults = search_engine(
-                        question=question,
-                        top_k=top_k,
-                        search_type=search_type
-                   )
-                    documents: list[Document] = question_repository.get_question_documents(question)
-                    documents_str = "\n".join([document.content for document in documents])
-                    Logger.info("the question is retrieved_successfully", "ANSWER")
-                    prompt: str = self.__build_prompt(question, documents_str)
-                    generator_pipeline: TextGenerationPipeline = pipeline(
-                        "text-generation",
-                        model="Qwen/Qwen3-0.6B",
-                        device=Accelerator().device
-                    )
-                    generated_answer = generator_pipeline(prompt, max_new_tokens=100)[0]["generated_text"]
-                    _question: Question = Question(
-                        id=minimal_search_results.question_id,
-                        question=question,
-                        top_k=top_k,
-                        search_type=search_type.name
-                    )
-                    question_answer: QuestionAnswer = QuestionAnswer(question=_question, answer=generated_answer)
-                    question_repository.create_question_answer(question_answer)
-                else:
-                    Logger.info("The question answer is found in cache", "ANSWER")
-                    generated_answer = cache_question_answer.answer
+                ...
+
+    def __answer_query_and_store_in_cache(
+        self,
+        *,
+        question: str,
+        is_hybrid: bool,
+        top_k: int,
+        _text_generation_pipeline: object
+    ) -> str:
+        from src.core.search_engine import search_engine, SearchType
+        from src.server.repositories import question_repository
+        generated_answer: str
+        search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
+        Logger.warn("The question is not found in the cache. Running the retrieval", "ANSWER")
+        minimal_search_results: MinimalSearchResults = search_engine(
+            question=question,
+            top_k=top_k,
+            search_type=search_type
+       )
+        documents: list[Document] = question_repository.get_question_documents(question)
+        documents_str = "\n".join([document.content for document in documents])
+        Logger.info("the question is retrieved_successfully", "ANSWER")
+        prompt: str = self.__build_prompt(question, documents_str)
+        from transformers import TextGenerationPipeline
+        text_generation_pipeline: TextGenerationPipeline = cast(
+                TextGenerationPipeline,
+                _text_generation_pipeline
+        )
+        generated_answer = text_generation_pipeline(prompt, max_new_tokens=100)[0]["generated_text"]
+        _question: Question = Question(
+            id=minimal_search_results.question_id,
+            question=question,
+            top_k=top_k,
+            search_type=search_type.name
+        )
+        question_answer: QuestionAnswer = QuestionAnswer(question=_question, answer=generated_answer)
+        question_repository.create_question_answer(question_answer)
         return generated_answer
-    
-
-    def answer_dataset(self, student_search_results: str, save_directory: str, is_hybrid: bool) -> None:
-        pass
-
 
     def __load_student_search_results(self, student_search_results_path: str) -> StudentSearchResults:
         student_search_results: StudentSearchResults
         with open(student_search_results_path, "r") as file:
             content: str = file.read()
             try:
-                pass
+                student_search_results = StudentSearchResults.model_validate_json(content)
             except ValidationError as error:
-                pass
-
+                raise AnswerError(error.errors()[0]["msg"])
         return student_search_results
-
-
 
     def __build_prompt(self, question: str, retrieved_documents: str) -> str:
         return (
@@ -110,9 +172,21 @@ class AnswerManager:
            .replace("{USER_QUESTION}", question)
         )
 
+    @property
+    def __get_text_generation_pipeline(self) -> object:
+        if self.__text_generation_pipeline is None:
+            from transformers import pipeline
+            from accelerate import Accelerator
+            self.__text_generation_pipeline = pipeline(
+                "text-generation",
+                model="Qwen/Qwen3-0.6B",
+                device=Accelerator().device
+            )
+        return self.__text_generation_pipeline
+
 
 answer_manager: AnswerManager = AnswerManager(
-        config_manager=config_manager
+    config_manager=config_manager
 )
 
 __all__ = [

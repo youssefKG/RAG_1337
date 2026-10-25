@@ -118,6 +118,7 @@ class RageAgainstMachine:
             pass
         except AnswerError as error:
             Logger.error(str(error), "ANSWER DATASET")
+            sys.exit(1)
 
     def __check_hybrid(self, hybrid: str, stage: Stage) -> bool:
         if hybrid != "true" and hybrid != "false":

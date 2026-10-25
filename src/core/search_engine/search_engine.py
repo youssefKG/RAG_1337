@@ -70,7 +70,7 @@ class SearchEngine:
         if question.search_type == "LEXICAL":
             high_score_documents = lexical_documents
         else: # search_type =  hybrid
-            top_semantic_search = int(.5 * top_k)
+            top_semantic_search = int(.4 * top_k)
             top_lexical_search = top_k - top_semantic_search
             lexical_documents = lexical_documents[:top_lexical_search]
             semantic_documents: list[Document] = self.__semantic_search(
