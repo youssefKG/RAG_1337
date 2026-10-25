@@ -1,4 +1,3 @@
-import sys
 from typing import Literal, TypeAlias
 from enum import Enum
 from pydantic import BaseModel, ValidationError, Field
@@ -24,6 +23,10 @@ class ConfigModel(BaseModel):
 
 CONFIG_FILE_PATH = "src/config.json"
 
+class ConfigManagerError(Exception):
+    pass
+
+
 class ConfigManager:
     def __init__(self) -> None:
         self.__config: ConfigModel = self.__load_config_file()
@@ -34,7 +37,7 @@ class ConfigManager:
 
     def __load_config_file(self) -> ConfigModel:
         try:
-            permission_checker(
+            _ = permission_checker(
                 file_path=CONFIG_FILE_PATH,
                 exist=True,
                 read=True,
@@ -46,11 +49,9 @@ class ConfigManager:
                 config: ConfigModel = ConfigModel.model_validate_json(config_file_content)
                 return config
         except ValidationError as error:
-            Logger.error(error.errors()[0]["msg"], "CONFIG MANAGER")
-            sys.exit(1)
+            raise ConfigManagerError(error.errors()[0]["msg"])
         except Exception as error:
-            Logger.error(str(error), "CONFIG MANAGER")
-            sys.exit(1)
+            raise ConfigManagerError(str(error))
 
     @property
     def get_current_indexing_strategy(self) -> Literal["hybrid", "lexical", "none"]:
@@ -83,7 +84,7 @@ class ConfigManager:
         return indexing_strategy
     
     def update_indexing_config(self, *, max_chunk_size: int, is_hybrid: bool) -> None:
-        permission_checker(
+        _ = permission_checker(
             file_path=CONFIG_FILE_PATH,
             exist=True,
             read=True,
@@ -99,11 +100,9 @@ class ConfigManager:
             with open(CONFIG_FILE_PATH, "w") as config_file:
                 _  = config_file.write(self.__config.model_dump_json(indent=4))
         except ValidationError as error:
-            Logger.error(error.errors()[0]["msg"], "CONFIG MANAGER")
-            sys.exit(1)
+            raise ConfigManagerError(str(error.errors()[0]["msg"]))
         except Exception as error:
-            Logger.error(str(error), "CONFIG MANAGER")
-            sys.exit(1)
+            raise ConfigManagerError(str(error))
 
 config_manager: ConfigManager = ConfigManager()
 

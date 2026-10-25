@@ -1,7 +1,8 @@
 from typing import Literal
+from pydantic import ValidationError
 from src.core.utils import Logger
 from src.core.entities import Document, QuestionAnswer, Question
-from src.core.validation_models import MinimalSearchResults
+from src.core.validation_models import MinimalSearchResults, StudentSearchResults
 from src.core.config_manager import ConfigManager, config_manager
 
 PROMPT: str = """
@@ -84,6 +85,24 @@ class AnswerManager:
                     Logger.info("The question answer is found in cache", "ANSWER")
                     generated_answer = cache_question_answer.answer
         return generated_answer
+    
+
+    def answer_dataset(self, student_search_results: str, save_directory: str, is_hybrid: bool) -> None:
+        pass
+
+
+    def __load_student_search_results(self, student_search_results_path: str) -> StudentSearchResults:
+        student_search_results: StudentSearchResults
+        with open(student_search_results_path, "r") as file:
+            content: str = file.read()
+            try:
+                pass
+            except ValidationError as error:
+                pass
+
+        return student_search_results
+
+
 
     def __build_prompt(self, question: str, retrieved_documents: str) -> str:
         return (

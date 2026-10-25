@@ -33,6 +33,11 @@ _FileType: TypeAlias = tuple[
 
 BATCH_SIZE = 10000
 LEXICAL_BATCH_SIZE = 5000
+SEMANTIC_BATCH_SIZE = 1000
+
+
+class IndexerError(Exception):
+    pass
 
 class FileIter:
     def __init__(
@@ -52,20 +57,20 @@ class FileIter:
                 if not file_name.endswith(self.__file_extensions):
                     continue
                 # TODO: do not forget to check if the file is readable before you open it
-                permission_checker(
+                if permission_checker(
                     file_path=file_path,
                     read=True,
                     kill=False,
                     fn=lambda x: Logger.warn(x, Stage.INDEXING.name)
-                )
-                last_updated_time = os.path.getmtime(file_path)
-                try:
-                    with open(file_path, "r") as file:
-                        file_content: str = file.read()
-                        yield file_path, file_content, last_updated_time
-                except Exception as error:
-                    Logger.warn(str(error), Stage.INDEXING.name)
-                    sys.exit(1)
+                ):
+                    last_updated_time = os.path.getmtime(file_path)
+                    try:
+                        with open(file_path, "r") as file:
+                            file_content: str = file.read()
+                            yield file_path, file_content, last_updated_time
+                    except Exception as error:
+                        Logger.error(str(error), Stage.INDEXING.name)
+                        sys.exit(1)
 
     def __len__(self) -> int:
         return self.__length
@@ -200,11 +205,11 @@ class Indexer:
     def __semantic_indexing(self, documents: list[Document]) -> None:
         total_documents: list[Document] = documents
         batch_documents: list[Document]
-        for idx in tqdm(range(0, len(documents), 1000), desc="SEAMANTIC INDEXING"):
-            if idx > 1000:
-                batch_documents = total_documents[:1000]
+        for idx in tqdm(range(0, len(documents), SEMANTIC_BATCH_SIZE), desc="SEAMANTIC INDEXING"):
+            if idx > SEMANTIC_BATCH_SIZE:
+                batch_documents = total_documents[:SEMANTIC_BATCH_SIZE]
                 self.__vector_document_repository.create_many(batch_documents)
-                total_documents = total_documents[1000:]
+                total_documents = total_documents[SEMANTIC_BATCH_SIZE:]
             elif idx == len(documents) - 1:
                 self.__vector_document_repository.create_many(total_documents)
                 total_documents.clear()
@@ -258,6 +263,3 @@ class Indexer:
         ]
         term_frequency: Counter[str] = Counter(document_terms)
         return term_frequency
-
-
-__all__ = ["answer_manager"]

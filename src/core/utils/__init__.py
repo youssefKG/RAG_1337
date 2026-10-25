@@ -12,6 +12,8 @@ class Stage(Enum):
     RETRIEVAL = auto()
     SEARCH  = auto()
     SEARCH_DATASET = auto()
+    ANSWER = auto()
+    ANSWER_DATASET = auto()
 
 class COLORS(str, Enum):
     """ANSI color codes"""
@@ -49,8 +51,6 @@ def INIT_DB(sqlite_path_dir: str="./data/processed") -> None:
     _ = call_command("makemigrations", interactive=False)
     _ = call_command("migrate", interactive=False)
 
-
-
 time_formatter: Callable[[], str] = lambda: "{color}[{date}]{reset_color}".format(
     color=COLORS.LIGHT_GRAY.value,
     date=str(datetime.now()),
@@ -63,11 +63,9 @@ stage_formatter: Callable[[str], str] = (
     )
 )
 
-
 message_formatter: Callable[[str], str] = lambda message: "{color}{message}".format(
     color=COLORS.BOLD.value, message=message
 )
-
 
 class Logger:
     info_formater: str = "{bold}{color}[INFO]{reset_color}".format(
@@ -127,7 +125,6 @@ class Logger:
         )
         print(error_format)
 
-
 def permission_checker(
         *,
         file_path: str,
@@ -136,22 +133,26 @@ def permission_checker(
         exist: bool = False,
         kill: bool = True,
         fn: Callable[[str], None] | None = None
-        ) -> None:
+        ) -> bool:
     if exist and not os.access(file_path, os.F_OK):
         if fn is not None:
             fn(f"permission error: not exist {file_path}")
         if kill:
             sys.exit(126)
+        return False
     if write and not os.access(file_path, os.W_OK):
         if fn is not None:
             fn(f"permission error: cannot write {file_path}")
         if kill:
             sys.exit(126)
+        return False
     if read and not os.access(file_path, os.R_OK):
         if fn is not None:
             fn(f"permission error: cannot read {file_path}")
         if kill:
             sys.exit(126)
+        return False
+    return True
 
 def create_file_path(file_path: str) -> None:
     path = Path(file_path)
