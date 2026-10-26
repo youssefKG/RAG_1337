@@ -16,15 +16,13 @@ class SearchEngine:
         self,
          /, 
          *,
-         semantic_search: SearchMethod,
-         lexical_search: SearchMethod,
          invert_index: InvertIndex,
          question_repository: QuestionRepositoryInterface,
     ) -> None:
         self.__regex_pattern = re.compile(TOKENIZER_REGEX_PATTERN)
         self.__invert_index: InvertIndex = invert_index
-        self.__semantic_search: SearchMethod = semantic_search
-        self.__lexical_search: SearchMethod = lexical_search
+        self.__semantic_search: SearchMethod | None = None
+        self.__lexical_search: SearchMethod | None = None
         self.__question_repository: QuestionRepositoryInterface = question_repository
 
     def __call__(
@@ -65,15 +63,15 @@ class SearchEngine:
     def __run_search_and_store_in_cache(self, question: Question, top_k: int) -> MinimalSearchResults:
         query_terms: list[str] = self.__tokenize(question.question)
         self.__invert_index(query_terms)
-        lexical_documents: list[Document] = self.__lexical_search(question.question, top_k)
+        lexical_documents: list[Document] = self.__get_lexical_search(question.question, top_k)
         high_score_documents: list[Document]
         if question.search_type == "LEXICAL":
             high_score_documents = lexical_documents
         else: # search_type =  hybrid
-            top_semantic_search = int(.4 * top_k)
+            top_semantic_search = int(.3 * top_k)
             top_lexical_search = top_k - top_semantic_search
             lexical_documents = lexical_documents[:top_lexical_search]
-            semantic_documents: list[Document] = self.__semantic_search(
+            semantic_documents: list[Document] = self.__get_semantic_search(
                 question.question,
                 top_k
             )[:top_semantic_search]
@@ -97,6 +95,20 @@ class SearchEngine:
             question = question.question,
             retrieved_sources=retrieved_sources
         )
+
+    @property
+    def __get_semantic_search(self) -> SearchMethod:
+        if self.__semantic_search is None:
+            from .semantic_search import semantic_search
+            self.__semantic_search = semantic_search
+        return self.__semantic_search
+
+    @property
+    def __get_lexical_search(self) -> SearchMethod:
+        if self.__lexical_search is None:
+            from .lexical_search import lexical_search
+            self.__lexical_search = lexical_search
+        return self.__lexical_search
 
     def __get_documents_from_cache(self, question: Question) -> MinimalSearchResults:
         documents: list[Document] =  self.__question_repository.get_question_documents(question.question)

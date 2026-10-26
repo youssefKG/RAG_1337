@@ -6,7 +6,8 @@ from src.core.validation_models import (
     MinimalSearchResults,
     StudentSearchResults, 
     MinimalAnswer,
-    StudentSearchResultsAndAnswer
+    StudentSearchResultsAndAnswer,
+    MinimalSource
 )
 from src.core.config_manager import ConfigManager, config_manager
 
@@ -70,9 +71,6 @@ class AnswerManager:
             Logger.info("The question answer is found in cache", "ANSWER")
             generated_answer = cache_question_answer.answer
         return generated_answer
-
-
-
 
     def answer_dataset(
         self,
@@ -177,13 +175,10 @@ class AnswerManager:
             )
 
         from src.server.repositories import question_repository
-
         question_documents: list[Document] = (
             question_repository.get_question_documents(cache_question.question)
         )
-
         retrieved_sources = minimal_search_results.retrieved_sources
-
         if len(question_documents) != len(retrieved_sources):
             raise AnswerError(
                 f"Question validation failed for '{question}': "
@@ -191,27 +186,24 @@ class AnswerManager:
                 + f"(cached={len(question_documents)}, "
                 + f"retrieved={len(retrieved_sources)})."
             )
-
-        for index, (cache_document, document) in enumerate(
-            zip(question_documents, retrieved_sources)
-        ):
-            if (
-                cache_document.start_index != document.first_character_index
-                or cache_document.end_index != document.last_character_index
-                or cache_document.file.path != document.file_path
-            ):
+        for index, minimal_source in enumerate(retrieved_sources):
+           if not self.__contain(minimal_source, question_documents):
                 raise AnswerError(
                     f"Question validation failed for '{question}': "
-                    + f"document metadata mismatch at index {index}. "
-                    + f"Cached document: path='{cache_document.file.path}', "
-                    + f"start={cache_document.start_index}, "
-                    + f"end={cache_document.end_index}; "
-                    + f"retrieved source: path='{document.file_path}', "
-                    + f"start={document.first_character_index}, "
-                    + f"end={document.last_character_index}."
+                    + f"retrieved source at index {index} "
+                    + "does not match any cached question document."
                 )
-
         return question_documents
+
+    def __contain(self, minimal_source: MinimalSource, cache_documents: list[Document]) -> bool:
+        for document in cache_documents:
+            if (
+                document.start_index == minimal_source.first_character_index
+                and document.end_index == minimal_source.last_character_index
+                 and document.file.path == minimal_source.file_path
+            ):
+                return True
+        return False
 
     def __answer_query_and_store_in_cache(
         self,

@@ -1,6 +1,7 @@
 from typing import TypeAlias, Annotated
 from src.server.repositories import (
     TermRepositoryInterface,
+    term_repository
 )
 from collections import defaultdict
 
@@ -43,3 +44,6 @@ class InvertIndex:
     @property
     def invert_index(self) -> InvertIndexType:
         return self.__invert_index
+
+
+invert_index: InvertIndex = InvertIndex(term_repository=term_repository)

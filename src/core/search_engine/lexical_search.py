@@ -4,7 +4,7 @@ from typing import Annotated, TypeAlias, cast
 import math
 
 from src.core.entities import Document
-from .invert_index import InvertIndexType, PostingType
+from .invert_index import InvertIndexType, PostingType, invert_index
 from src.core.utils import TOKENIZER_REGEX_PATTERN, STOP_WORDS
 
 _TermIDFS: TypeAlias = dict[
@@ -95,3 +95,12 @@ class BM25:
             ) if word not in STOP_WORDS
         ]
         return query_terms
+
+
+from src.server.repositories import document_repository
+
+lexical_search: BM25 = BM25(
+    avg_documents_length=document_repository.get_avg_document_length,
+    total_number_of_documents=document_repository.count,
+    invert_index=invert_index.invert_index,
+)
