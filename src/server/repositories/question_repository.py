@@ -66,3 +66,13 @@ class QuestionRepository:
 
     def delete_all(self) -> None:
         _ = self.__question_model.objects.all().delete()
+
+    def create_many_questions_answers(self, questions_answers: list[QuestionAnswer]) -> None:
+        questions_answers_models: list[QuestionAnswerModel] = [
+            QuestionAnswerModel(
+                id=question_answer.id,
+                question_id=question_answer.question.id,
+                answer=question_answer.answer
+            ) for question_answer in questions_answers
+        ]
+        _ = self.__question_answer_model.objects.bulk_create(questions_answers_models, batch_size=100)

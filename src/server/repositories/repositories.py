@@ -100,3 +100,6 @@ class QuestionRepositoryInterface(Protocol):
 
     def create_question_answer(self, question_answer: QuestionAnswer) -> None:
         ...
+
+    def create_many_questions_answers(self, questions_answers: list[QuestionAnswer]) -> None:
+        ...

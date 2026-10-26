@@ -1,8 +1,8 @@
 import sys
 import os
 from pathlib import Path
-
 from src.core.utils import Logger, Stage, permission_checker
+from src.core.validation_models import StudentSearchResultsAndAnswer
 
 CORPUS_PATH = "data/raw/vllm-0.10.1"
 CODE_BASE_QUESTIONS = "data/public/UnansweredQuestions/dataset_code_public.json"
@@ -98,9 +98,9 @@ class RageAgainstMachine:
             Logger.error(str(error), "ANSWER")
             sys.exit(1)
 
-    def answer_dataset(self, student_search_results: str, save_directory: str, hybrid: str) -> None:
+    def answer_dataset(self, student_search_results_path: str, save_directory: str) -> None:
         _ = permission_checker(
-                file_path=student_search_results,
+                file_path=student_search_results_path,
                 exist=True,
                 read=True,
                 fn=lambda message: Logger.error(message, "ANSWER DATASET")
@@ -112,11 +112,17 @@ class RageAgainstMachine:
                 write=True,
                 fn=lambda message: Logger.error(message, "ANSWER DATASET")
             )
-        from src.core.answer_manager import AnswerManager, AnswerError
-        is_hybrid: bool = self.__check_hybrid(hybrid, Stage.ANSWER_DATASET)
+        from src.core.answer_manager import answer_manager, AnswerError
         try:
-            pass
+            student_search_results_and_answer: StudentSearchResultsAndAnswer = answer_manager.answer_dataset(
+                student_search_results_path
+            )
+            with open(save_directory, "w") as save_file:
+                _ = save_file.write(student_search_results_and_answer.model_dump_json(indent=4))
         except AnswerError as error:
+            Logger.error(str(error), "ANSWER DATASET")
+            sys.exit(1)
+        except Exception as error:
             Logger.error(str(error), "ANSWER DATASET")
             sys.exit(1)
 
@@ -134,7 +140,7 @@ class RageAgainstMachine:
                 f"Number of requested results {k} cannot be 0 or negative.",
                 stage.name
             )
-            sys.exit(0)
+            sys.exit(1)
 
     def __create_file_path_if_not_exist(self, file_path: str) -> None:
         if not os.access(file_path, os.F_OK):
