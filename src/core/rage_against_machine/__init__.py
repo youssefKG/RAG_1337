@@ -65,6 +65,28 @@ class RageAgainstMachine:
             Logger.error(str(error), "SEARCH DATASET")
             sys.exit(1)
 
+    def evaluate(self, student_search_results_path: str, dataset_path: str) -> None:
+        _ = permission_checker(
+                file_path=student_search_results_path,
+                exist=True,
+                read=True,
+                fn=lambda message: Logger.error(message, "RECALL@K")
+            )
+        _ = permission_checker(
+                file_path=dataset_path,
+                exist=True,
+                read=True,
+                fn=lambda message: Logger.error(message, "RECALL@K")
+            )
+        from src.core.recallk import recallk, RecallError, RecallStats
+        try:
+            recall_stats: RecallStats = recallk(student_search_results_path, dataset_path)
+            Logger.info(str(recall_stats), "RECALL@K")
+        except RecallError as error:
+            Logger.error(str(error), "RECALL@k")
+            sys.exit(1)
+
+
     def search(self, query: str, k: int, hybrid: str="false") -> None:
         self.__validate_k(k, Stage.SEARCH)
         if not query.strip():

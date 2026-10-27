@@ -218,7 +218,6 @@ class AnswerManager:
         generated_answer: str
         search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
         Logger.warn("The question is not found in the cache. Running the retrieval", "ANSWER")
-        # TODO: change question from str to unanswered question
         unanswered_question: UnansweredQuestion = UnansweredQuestion(question=question)
         minimal_search_results: MinimalSearchResults = search_engine(
             unanswered_question=unanswered_question,

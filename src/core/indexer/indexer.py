@@ -122,14 +122,20 @@ class Indexer:
         Logger.info(f"INDEXING STRATEGY: {indexing_strategy}", __name__)
         match indexing_strategy:
             case IndexingStrategy.LEXICAL:
-                Logger.info("Deleting the old indexing documents and vector documents", "INDEXING")
+                Logger.info(
+                    "Deleting the old indexing documents and vector documents",
+                    "INDEXING"
+                )
                 self.__file_repository.delete_all()
                 self.__question_repository.delete_all()
                 self.__vector_document_repository.delete_all()
                 files = files_to_index_callback()
                 _ = lexical_indexing_callback(files)
             case IndexingStrategy.HYBRID:
-                Logger.info("Deleting the old indexing documents and vector documents", "INDEXING")
+                Logger.info(
+                    "Deleting the old indexing documents and vector documents",
+                    "INDEXING"
+                )
                 self.__file_repository.delete_all()
                 self.__question_repository.delete_all()
                 self.__vector_document_repository.delete_all()
