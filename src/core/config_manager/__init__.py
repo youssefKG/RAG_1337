@@ -1,3 +1,4 @@
+import sys
 from typing import Literal, TypeAlias
 from enum import Enum
 from pydantic import BaseModel, ValidationError, Field
@@ -29,7 +30,15 @@ class ConfigManagerError(Exception):
 
 class ConfigManager:
     def __init__(self) -> None:
-        self.__config: ConfigModel = self.__load_config_file()
+        try:
+            self.__config: ConfigModel = self.__load_config_file()
+        except Exception as error:
+            Logger.error(
+                "THE CONFIG FILE MUST NOT BE TOUCHED OR CHANGING IT",
+                "LAODING CONFIG"
+            )
+            Logger.error(str(error), "LAODING CONFIG")
+            sys.exit(0)
 
     @property
     def config(self) -> ConfigModel:

@@ -160,6 +160,7 @@ class Indexer:
                 self.__file_repository.delete_by_id(file.id)
                 self.__vector_document_repository.delete_by_file_id(file.id)
                 files_to_index.append((file_path, file_content, last_modified_at))
+                Logger.warn(f"the file is been changed {file_path}", "INDEXING")
         return files_to_index
 
 

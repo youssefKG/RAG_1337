@@ -7,6 +7,7 @@ from .invert_index import InvertIndex
 from src.core.validation_models import (
     MinimalSearchResults,
     MinimalSource,
+    UnansweredQuestion
 )
 from src.server.repositories import QuestionRepositoryInterface
 
@@ -28,17 +29,23 @@ class SearchEngine:
     def __call__(
         self,
         *,
-        question: str,
+        unanswered_question: UnansweredQuestion,
         top_k: int,
         search_type: SearchType
     ) -> MinimalSearchResults:
         # get query Terms
+        question: str = unanswered_question.question
         cache_question: Question | None = self.__question_repository.get(question)
         minimal_search_results: MinimalSearchResults
-        if cache_question is None or cache_question.top_k != top_k or cache_question.search_type != search_type.name:
+        if (
+            cache_question is None or
+            cache_question.top_k != top_k or
+            cache_question.search_type != search_type.name
+        ):
             if cache_question:
                 self.__question_repository.delete(question)
             new_question: Question = Question(
+                id=unanswered_question.question_id,
                 question=question,
                 top_k=top_k,
                 search_type=search_type.name

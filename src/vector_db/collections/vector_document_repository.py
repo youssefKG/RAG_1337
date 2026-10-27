@@ -1,4 +1,4 @@
-from typing import cast, Annotated
+from typing import cast
 from .collection import MyCollection
 from chromadb import Collection
 from src.core.entities import Document 

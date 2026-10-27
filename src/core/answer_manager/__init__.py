@@ -83,12 +83,7 @@ class AnswerManager:
             )
         student_search_results: StudentSearchResults = \
                 self.__load_student_search_results(student_search_results_path)
-        from transformers import TextGenerationPipeline
         from src.server.repositories import question_repository
-        text_generation_pipeline: TextGenerationPipeline = cast(
-            TextGenerationPipeline,
-            self.__get_text_generation_pipeline
-        )
         questions_answers_to_create: list[QuestionAnswer] = list()
         generated_answer: str
         prompt: str
@@ -106,7 +101,7 @@ class AnswerManager:
             if cache_question_answer is None:
                 documents_str: str = "\n".join([document.content for document in documents])
                 prompt = self.__build_prompt(question, documents_str)
-                generated_answer = text_generation_pipeline(prompt, max_new_tokens=100)[0]["generated_text"]
+                generated_answer = self.__generate_answer(prompt)
                 question_answer: QuestionAnswer = QuestionAnswer(
                     question=cast(Question, cache_question),
                     answer=generated_answer
@@ -218,8 +213,9 @@ class AnswerManager:
         generated_answer: str
         search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
         Logger.warn("The question is not found in the cache. Running the retrieval", "ANSWER")
+        # TODO: change question from str to unanswered question
         minimal_search_results: MinimalSearchResults = search_engine(
-            question=question,
+            unanswered_question=question,
             top_k=top_k,
             search_type=search_type
        )
@@ -227,12 +223,7 @@ class AnswerManager:
         documents_str = "\n".join([document.content for document in documents])
         Logger.info("the question is retrieved_successfully", "ANSWER")
         prompt: str = self.__build_prompt(question, documents_str)
-        from transformers import TextGenerationPipeline
-        text_generation_pipeline: TextGenerationPipeline = cast(
-                TextGenerationPipeline,
-                _text_generation_pipeline
-        )
-        generated_answer = text_generation_pipeline(prompt, max_new_tokens=MAX_TOKENS)[0]["generated_text"]
+        generated_answer = self.__generate_answer(prompt)
         _question: Question = Question(
             id=minimal_search_results.question_id,
             question=question,
@@ -285,6 +276,13 @@ class AnswerManager:
             return True
         return False
 
+    def __generate_answer(self, prompt: str) -> str:
+        from transformers import TextGenerationPipeline
+        text_generation_pipeline: TextGenerationPipeline = cast(
+            TextGenerationPipeline,
+            self.__get_text_generation_pipeline
+        )
+        return text_generation_pipeline(prompt, max_new_tokens=MAX_TOKENS)[0]["generated_text"][len(prompt):]
 
 answer_manager: AnswerManager = AnswerManager(
     config_manager=config_manager
@@ -294,4 +292,3 @@ __all__ = [
     "answer_manager",
     "AnswerManager"
 ]
-

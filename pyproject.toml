@@ -5,8 +5,6 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "chromadb>=1.5.9",
-    "chromadb-client>=1.5.9",
     "django>=5.2.17",
     "django-stubs>=6.0.9",
     "fire>=0.7.1",
@@ -18,6 +16,7 @@ dependencies = [
     "torch>=2.14.1",
     "transformers>=5.20.2",
     "accelerate>=1.15.0",
+    "chromadb>=1.5.9",
 ]
 
 

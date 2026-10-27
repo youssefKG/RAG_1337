@@ -132,6 +132,7 @@ class RageAgainstMachine:
                 f"invalid value for hybrid {hybrid}. allowed values: true, false",
                 stage.name
             )
+            sys.exit(1)
         return hybrid == "true"
 
     def __validate_k(self, k: int, stage: Stage) -> None:

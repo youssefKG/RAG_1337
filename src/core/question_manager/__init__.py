@@ -46,7 +46,7 @@ class QuestionManager:
         search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
         for question in tqdm(rag_data_set.rag_questions, desc="Retrieval"):
             minimal_search_result: MinimalSearchResults = self.__search_engine(
-                question=question.question,
+                unanswered_question=question,
                 top_k=top_k,
                 search_type=search_type
             )
@@ -78,7 +78,7 @@ class QuestionManager:
         question: UnansweredQuestion = UnansweredQuestion(question=query)
         search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
         minimal_search_results: MinimalSearchResults = self.__search_engine(
-            question=question.question,
+            unanswered_question=question,
             top_k=top_k,
             search_type=search_type
         )
