@@ -6,7 +6,6 @@ from src.core.search_engine import SearchEngine, SearchType, search_engine
 from src.core.validation_models import RagDataset, StudentSearchResults, MinimalSearchResults, UnansweredQuestion
 from tqdm import tqdm
 
-
 class QuestionManagerError(Exception):
     ...
 
@@ -39,7 +38,8 @@ class QuestionManager:
              )
         elif indexing_strategy != "hybrid" and is_hybrid:
             raise QuestionManagerError(
-                f"Hybrid search is not supported because your pre-indexing method is {indexing_strategy}."
+                f"Hybrid search is not supported because "
+                + f"your pre-indexing method is {indexing_strategy}."
             )
         rag_data_set: RagDataset = self.__load_rag_dataset(dataset_path)
         search_results: list[MinimalSearchResults] = list()
@@ -70,10 +70,13 @@ class QuestionManager:
         preindexing_strategy: str = self.__config_manager.config.indexing_strategy
         if preindexing_strategy == "none":
             # TODO: Throw exception for the server instead of exit
-            raise QuestionManagerError("search cannot performed because no indexing is available")
+            raise QuestionManagerError(
+                        "search cannot performed because no indexing is available"
+                    )
         elif preindexing_strategy == "hybrid" and is_hybrid:
             raise QuestionManagerError(
-                f"Hybrid search is not supported because your pre-indexing method is {preindexing_strategy}."
+                f"Hybrid search is not supported because your" 
+                + f" pre-indexing method is {preindexing_strategy}."
             )
         question: UnansweredQuestion = UnansweredQuestion(question=query)
         search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL

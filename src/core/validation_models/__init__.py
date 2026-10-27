@@ -20,14 +20,11 @@ class MinimalSearchResults(BaseModel):
     question: str
     retrieved_sources: list[MinimalSource]
 
-
 class MinimalAnswer(MinimalSearchResults):
     answer: str
 
-
 class RagDataset(BaseModel):
     rag_questions: list[AnsweredQuestion | UnansweredQuestion]
-
 
 class StudentSearchResults(BaseModel):
     search_results: List[MinimalSearchResults]

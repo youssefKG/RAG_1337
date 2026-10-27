@@ -7,7 +7,8 @@ from src.core.validation_models import (
     StudentSearchResults, 
     MinimalAnswer,
     StudentSearchResultsAndAnswer,
-    MinimalSource
+    MinimalSource,
+    UnansweredQuestion
 )
 from src.core.config_manager import ConfigManager, config_manager
 
@@ -29,11 +30,11 @@ PROMPT: str = """
 class QuestionNotRetrievedYetError(Exception):
     pass
 
-
 class AnswerError(Exception):
     ...
 
 _PreindexingStrategy: TypeAlias =  Literal["lexical", "hybrid", "none"]
+
 MAX_TOKENS = 200
 
 class AnswerManager:
@@ -190,7 +191,11 @@ class AnswerManager:
                 )
         return question_documents
 
-    def __contain(self, minimal_source: MinimalSource, cache_documents: list[Document]) -> bool:
+    def __contain(
+        self,
+        minimal_source: MinimalSource,
+        cache_documents: list[Document]
+    ) -> bool:
         for document in cache_documents:
             if (
                 document.start_index == minimal_source.first_character_index
@@ -214,8 +219,9 @@ class AnswerManager:
         search_type: SearchType = SearchType.HYBRID if is_hybrid else SearchType.LEXICAL
         Logger.warn("The question is not found in the cache. Running the retrieval", "ANSWER")
         # TODO: change question from str to unanswered question
+        unanswered_question: UnansweredQuestion = UnansweredQuestion(question=question)
         minimal_search_results: MinimalSearchResults = search_engine(
-            unanswered_question=question,
+            unanswered_question=unanswered_question,
             top_k=top_k,
             search_type=search_type
        )
@@ -230,7 +236,10 @@ class AnswerManager:
             top_k=top_k,
             search_type=search_type.name
         )
-        question_answer: QuestionAnswer = QuestionAnswer(question=_question, answer=generated_answer)
+        question_answer: QuestionAnswer = QuestionAnswer(
+            question=_question,
+            answer=generated_answer
+        )
         question_repository.create_question_answer(question_answer)
         return generated_answer
 
@@ -246,8 +255,9 @@ class AnswerManager:
 
     def __build_prompt(self, question: str, retrieved_documents: str) -> str:
         return (
-            PROMPT .replace("{RETRIEVED_DOCUMENTS}", retrieved_documents)
-           .replace("{USER_QUESTION}", question)
+            PROMPT
+            .replace("{RETRIEVED_DOCUMENTS}", retrieved_documents)
+            .replace("{USER_QUESTION}", question)
         )
 
     @property
