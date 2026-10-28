@@ -1,17 +1,19 @@
 from typing import override
-from pydantic import ValidationError
+from pydantic import ValidationError, BaseModel
 from dataclasses import dataclass
 from src.core.validation_models import (
-    RagDataset,
     StudentSearchResults,
     AnsweredQuestion,
-    UnansweredQuestion,
     MinimalSearchResults
 )
 
-class GroundTruthModel(RagDataset):
+
+class AnsweredQuestionGroundTruth(AnsweredQuestion):
     difficulty: str
     is_valid: bool
+
+class GroundTruthModel(BaseModel):
+    rag_questions: list[AnsweredQuestionGroundTruth]
 
 
 
@@ -20,10 +22,10 @@ class RecallError(Exception):
 
 @dataclass(frozen=False)
 class RecallStats:
-    recall_1: float = 0.
-    recall_3: float = 0.
-    recall_5: float = 0.
-    recall_10: float = 0.
+    recall_3: float
+    recall_5: float
+    recall_10: float
+    recall_1: float
 
     @override
     def __str__(self) -> str:
@@ -47,7 +49,7 @@ class RecallK:
         )
         total_num_of_questions: int = len(ground_truth.rag_questions)
         student_questions: list[MinimalSearchResults] = student_search_results.search_results
-        ground_truth_questions: list[AnsweredQuestion | UnansweredQuestion] = ground_truth.rag_questions
+        ground_truth_questions: list[AnsweredQuestionGroundTruth] = ground_truth.rag_questions
         if len(student_questions) != len(ground_truth_questions):
             raise RecallError(
                 "The number of student questions does not match the "
@@ -56,21 +58,17 @@ class RecallK:
                 + f"ground-truth questions: {len(ground_truth_questions)}."
             )
 
-        recall_stats: RecallStats = RecallStats()
+        recall_stats: RecallStats = RecallStats(recall_1=0, recall_3=0, recall_5=0, recall_10=0)
         for student_question, ground_truth_question in zip(student_search_results.search_results, ground_truth.rag_questions):
-            if not isinstance(ground_truth_question, AnsweredQuestion):
-                # TODO: add proper error message
-                raise RecallError("")
-            else:
-                question_recall_stats: RecallStats = \
-                        self.__evaluate_student_question_search_against_ground_truth(
-                            student_question,
-                            ground_truth_question
-                        )
-                recall_stats.recall_1 += question_recall_stats.recall_1
-                recall_stats.recall_3 += question_recall_stats.recall_3
-                recall_stats.recall_5 += question_recall_stats.recall_5
-                recall_stats.recall_10 += question_recall_stats.recall_10
+            question_recall_stats: RecallStats = \
+                    self.__evaluate_student_question_search_against_ground_truth(
+                        student_question,
+                        ground_truth_question
+                    )
+            recall_stats.recall_1 += question_recall_stats.recall_1
+            recall_stats.recall_3 += question_recall_stats.recall_3
+            recall_stats.recall_5 += question_recall_stats.recall_5
+            recall_stats.recall_10 += question_recall_stats.recall_10
         recall_stats.recall_1 /= total_num_of_questions
         recall_stats.recall_3 /= total_num_of_questions
         recall_stats.recall_5 /= total_num_of_questions
@@ -97,7 +95,7 @@ class RecallK:
         student_question: MinimalSearchResults,
         truth_question: AnsweredQuestion
     ) -> RecallStats:
-        recall_stats: RecallStats = RecallStats()
+        recall_stats: RecallStats = RecallStats(recall_1=0, recall_3=0, recall_5=0, recall_10=0)
         if (
             student_question.question_id != truth_question.question_id
             or student_question.question != truth_question.question
@@ -118,6 +116,7 @@ class RecallK:
                 match idx + 1:
                     case 1:
                         recall_stats.recall_1 += 1
+                        print("hello")
                     case 3:
                         recall_stats.recall_3 += 1
                     case 5:
@@ -126,8 +125,6 @@ class RecallK:
                         recall_stats.recall_10 += 1
                     case _:
                         return recall_stats
-            else:
-                return recall_stats
         return recall_stats
                  
 
@@ -145,7 +142,6 @@ class RecallK:
         except Exception as error:
             raise RecallError(str(error))
         return student_search_results
-
 
 recallk: RecallK = RecallK()
 
