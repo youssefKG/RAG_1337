@@ -6,9 +6,7 @@ def main() -> None:
 
     _ = os.environ.setdefault("DJANGO_SETTINGS_MODULE", "src.config.settings")
     import django
-
     django.setup()
-    # INIT_DB()
 
     from src.core.rage_against_machine import RageAgainstMachine
 

@@ -4,9 +4,7 @@ from enum import Enum
 from pydantic import BaseModel, ValidationError, Field
 from src.core.utils import Logger, permission_checker
 
-SearchType: TypeAlias = Literal["hybrid", "semantic", "lexical"]
 ConfigKeyType: TypeAlias =  Literal["is_indexing_hybrid", "max_chunk_size", "search_type"]
-ConfigValueType: TypeAlias = int | SearchType | bool
 
 class IndexingStrategy(str, Enum):
     NONE = "none"
@@ -17,7 +15,6 @@ class IndexingStrategy(str, Enum):
 class ConfigModel(BaseModel):
     indexing_strategy: Literal["lexical", "hybrid", "none"] = Field(default="lexical")
     max_chunk_size: int = Field(default=2000)
-    search_type: SearchType = Field(default="lexical")
 
     class ConfigDict:
         extra: str = "forbid"
@@ -103,7 +100,6 @@ class ConfigManager:
         self.__config = ConfigModel(
             max_chunk_size=max_chunk_size,
             indexing_strategy="hybrid" if is_hybrid else "lexical",
-            search_type=self.__config.search_type
         )
         try:
             with open(CONFIG_FILE_PATH, "w") as config_file:

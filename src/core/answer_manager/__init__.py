@@ -126,10 +126,11 @@ class AnswerManager:
                     )
                 )
         question_repository.create_many_questions_answers(questions_answers_to_create)
-        student_search_results_and_answers: StudentSearchResultsAndAnswer = StudentSearchResultsAndAnswer(
-            search_results=minimal_answers,
-            k=student_search_results.k
-        )
+        student_search_results_and_answers: StudentSearchResultsAndAnswer = \
+            StudentSearchResultsAndAnswer(
+                search_results=minimal_answers,
+                k=student_search_results.k
+            )
         return student_search_results_and_answers
 
 
@@ -242,7 +243,10 @@ class AnswerManager:
         question_repository.create_question_answer(question_answer)
         return generated_answer
 
-    def __load_student_search_results(self, student_search_results_path: str) -> StudentSearchResults:
+    def __load_student_search_results(
+        self,
+        student_search_results_path: str
+    ) -> StudentSearchResults:
         student_search_results: StudentSearchResults
         with open(student_search_results_path, "r") as file:
             content: str = file.read()

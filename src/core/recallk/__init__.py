@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from src.core.validation_models import (
     StudentSearchResults,
     AnsweredQuestion,
-    MinimalSearchResults
+    MinimalSearchResults,
 )
 
 
@@ -30,10 +30,10 @@ class RecallStats:
     @override
     def __str__(self) -> str:
         return (
-            f"Recall@1:  {self.recall_1:.4f} | "
-            f"Recall@3:  {self.recall_3:.4f} | "
-            f"Recall@5:  {self.recall_5:.4f} | "
-            f"Recall@10: {self.recall_10:.4f}"
+            f"\nRecall@1:  {self.recall_1:.4f} ({self.recall_1 * 100:.1f}%)\n"
+            f"Recall@3:  {self.recall_3:.4f} ({self.recall_3 * 100:.1f}%)\n"
+            f"Recall@3:  {self.recall_5:.4f} ({self.recall_5 * 100:.1f}%)\n"
+            f"Recall@3:  {self.recall_10:.4f} ({self.recall_10 * 100:.1f}%)"
         )
 
 class RecallK:
@@ -58,7 +58,7 @@ class RecallK:
                 + f"ground-truth questions: {len(ground_truth_questions)}."
             )
 
-        recall_stats: RecallStats = RecallStats(recall_1=0, recall_3=0, recall_5=0, recall_10=0)
+        recall_stats: RecallStats = RecallStats(recall_1=0., recall_3=0., recall_5=0., recall_10=0.)
         for student_question, ground_truth_question in zip(student_search_results.search_results, ground_truth.rag_questions):
             question_recall_stats: RecallStats = \
                     self.__evaluate_student_question_search_against_ground_truth(
@@ -95,7 +95,12 @@ class RecallK:
         student_question: MinimalSearchResults,
         truth_question: AnsweredQuestion
     ) -> RecallStats:
-        recall_stats: RecallStats = RecallStats(recall_1=0, recall_3=0, recall_5=0, recall_10=0)
+        recall_stats: RecallStats = RecallStats(
+            recall_1=0.,
+            recall_3=0.,
+            recall_5=0.,
+            recall_10=0.
+        )
         if (
             student_question.question_id != truth_question.question_id
             or student_question.question != truth_question.question
@@ -107,26 +112,27 @@ class RecallK:
                 + f"Student question: {student_question.question!r}, "
                 + f"Truth question: {truth_question.question!r}."
             )
-        for idx, (retrieved_source, minimal_source) in enumerate(zip(student_question.retrieved_sources, truth_question.sources)):
-            if (
-                retrieved_source.file_path == minimal_source.file_path 
-                and retrieved_source.first_character_index == minimal_source.first_character_index 
-                and retrieved_source.last_character_index == minimal_source.last_character_index
+        for idx, retrieved_source in enumerate(student_question.retrieved_sources):
+            if any(
+                retrieved_source
+                for ground_truth_source in truth_question.sources
+                if retrieved_source.file_path == ground_truth_source.file_path
             ):
                 match idx + 1:
                     case 1:
-                        recall_stats.recall_1 += 1
-                        print("hello")
+                        recall_stats.recall_1 += 1.
                     case 3:
-                        recall_stats.recall_3 += 1
+                        recall_stats.recall_3 += 1.
                     case 5:
-                        recall_stats.recall_5 += 1
+                        recall_stats.recall_5 += 1.
                     case 10:
-                        recall_stats.recall_10 += 1
+                        recall_stats.recall_10 += 1.
                     case _:
-                        return recall_stats
+                        break
+        recall_stats.recall_3 += recall_stats.recall_1
+        recall_stats.recall_5 += recall_stats.recall_3
+        recall_stats.recall_10 += recall_stats.recall_5
         return recall_stats
-                 
 
     def __load_and_validate_student_search_results(
         self,

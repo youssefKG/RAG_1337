@@ -17,18 +17,12 @@ MAX_CHUNK_SIZE = 2000
 
 class RageAgainstMachine:
     def index(self, max_chunk_size: int = MAX_CHUNK_SIZE, hybrid: str = "false") -> None:
-        if hybrid != "true" and hybrid != "false":
-            Logger.error(
-                f"invalid value for hybrid {hybrid}. allowed values: true, false",
-                 Stage.INDEXING.name
-            )
-            sys.exit(1)
-        is_indexing_hybrid: bool = True if hybrid == "true" else False
+        is_hybrid = self.__check_hybrid(hybrid, Stage.INDEXING)
         from src.core.indexer import indexer
         indexer(
             corpus_path=CORPUS_PATH,
             max_chunk_size=max_chunk_size,
-            is_hybrid=is_indexing_hybrid
+            is_hybrid=is_hybrid
         )
 
     def search_dataset(
