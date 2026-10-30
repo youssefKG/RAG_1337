@@ -1,8 +1,10 @@
-from typing import Annotated, cast
+from typing import cast
+
+from django.db import DatabaseError
 
 from src.server.repositories.document_repository import DocumentRepository
-
 from src.server.models import DocumentTermModel
+from src.server.errors import CustomDatabaseError
 from src.core.entities import Term
 
 
@@ -16,14 +18,27 @@ class TermRepository:
         self.__all_terms = self.__model.objects.all()
 
     def get_by_terms_values(self, values: set[str]) -> list[Term]:
-        document_term_models: list[DocumentTermModel] = list(
-            self.__all_terms.filter(value__in=values).select_related("document")
-        )
+        try:
+            document_term_models: list[DocumentTermModel] = list(
+                self.__all_terms.filter(
+                    value__in=values
+                ).select_related("document")
+            )
+        except DatabaseError as error:
+            raise CustomDatabaseError(
+                "Failed to retrieve terms matching the provided values."
+            ) from error
+
         return cast(list[Term], document_term_models)
 
     @property
     def count(self) -> int:
-        return self.__model.objects.all().count()
+        try:
+            return self.__model.objects.all().count()
+        except DatabaseError as error:
+            raise CustomDatabaseError(
+                "Failed to count document terms in the database."
+            ) from error
 
     def create_many(
         self,
@@ -34,12 +49,25 @@ class TermRepository:
                 frequency=term.frequency,
                 value=term.value,
                 document_id=term.document.id,
-                id=term.id
-            ) for term in terms_documents
+                id=term.id,
+            )
+            for term in terms_documents
         ]
-        _: list[DocumentTermModel] = self.__model.objects.bulk_create(
-            documents_terms_model, batch_size=100000
-        )
+
+        try:
+            _: list[DocumentTermModel] = self.__model.objects.bulk_create(
+                documents_terms_model,
+                batch_size=100000,
+            )
+        except DatabaseError as error:
+            raise CustomDatabaseError(
+                f"Failed to create {len(terms_documents)} document terms in the database."
+            ) from error
 
     def delete_all(self) -> None:
-        _ = self.__model.objects.all().delete()
+        try:
+            _ = self.__model.objects.all().delete()
+        except DatabaseError as error:
+            raise CustomDatabaseError(
+                "Failed to delete all document terms from the database."
+            ) from error

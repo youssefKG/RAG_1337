@@ -63,10 +63,10 @@ class AnswerManager:
             )
         ):
             generated_answer = self.__answer_query_and_store_in_cache(
-                    question=question,
-                    is_hybrid=is_hybrid,
-                    top_k=top_k, 
-                    _text_generation_pipeline=self.__get_text_generation_pipeline
+                question=question,
+                is_hybrid=is_hybrid,
+                top_k=top_k, 
+                _text_generation_pipeline=self.__get_text_generation_pipeline
             )
         else:
             Logger.info("The question answer is found in cache", "ANSWER")

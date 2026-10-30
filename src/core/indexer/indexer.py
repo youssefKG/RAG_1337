@@ -37,7 +37,7 @@ SEMANTIC_BATCH_SIZE = 1000
 
 
 class IndexerError(Exception):
-    pass
+    ...
 
 class FileIter:
     def __init__(

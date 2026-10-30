@@ -16,6 +16,7 @@ DATA_PROCESSED_PATH = "data/processed/"
 MAX_CHUNK_SIZE = 2000
 
 class RageAgainstMachine:
+
     def index(self, max_chunk_size: int = MAX_CHUNK_SIZE, hybrid: str = "false") -> None:
         is_hybrid = self.__check_hybrid(hybrid, Stage.INDEXING)
         from src.core.indexer import indexer
@@ -152,7 +153,7 @@ class RageAgainstMachine:
         return hybrid == "true"
 
     def __validate_k(self, k: int, stage: Stage) -> None:
-        if k <= 0:
+        if k <= 0 or k > 10:
             Logger.error(
                 f"Number of requested results {k} cannot be 0 or negative.",
                 stage.name

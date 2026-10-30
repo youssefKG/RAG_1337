@@ -1,4 +1,4 @@
-from .indexer import Indexer
+from .indexer import Indexer, IndexerError
 from src.server.repositories import (
     document_repository,
     term_repository,
@@ -17,4 +17,4 @@ indexer: Indexer = Indexer(
     question_repository=question_repository
 )
 
-__all__ = ["indexer", "Indexer"]
+__all__ = ["indexer", "Indexer", "IndexerError"]
