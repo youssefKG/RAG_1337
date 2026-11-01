@@ -18,6 +18,7 @@ from src.server.repositories import (
 )
 from src.core.vector_repositories_interfaces import VectorDocumentRepositoryInterface
 from src.core.utils import Logger, permission_checker, Stage
+from src.server.errors import CustomDatabaseError
 
 ChunkType: TypeAlias = tuple[
     Annotated[str, "chunk"],
@@ -159,14 +160,17 @@ class Indexer:
         file_iter: FileIter = FileIter(corpus_path=corpust_path, files_extensions=(".py", ".txt", ".md"))
         files_to_index: list[_FileType] = list()
         for file_path, file_content, last_modified_at in tqdm(file_iter, total=len(file_iter), desc="Search for changed file"):
-            file: File | None = self.__file_repository.get_by_path(file_path)
-            if file is None:
-                files_to_index.append((file_path, file_content, last_modified_at))
-            elif file.last_modified_at != last_modified_at:
-                self.__file_repository.delete_by_id(file.id)
-                self.__vector_document_repository.delete_by_file_id(file.id)
-                files_to_index.append((file_path, file_content, last_modified_at))
-                Logger.warn(f"the file is been changed {file_path}", "INDEXING")
+            try:
+                file: File | None = self.__file_repository.get_by_path(file_path)
+                if file is None:
+                    files_to_index.append((file_path, file_content, last_modified_at))
+                elif file.last_modified_at != last_modified_at:
+                    self.__file_repository.delete_by_id(file.id)
+                    self.__vector_document_repository.delete_by_file_id(file.id)
+                    files_to_index.append((file_path, file_content, last_modified_at))
+                    Logger.warn(f"the file is been changed {file_path}", "INDEXING")
+            except CustomDatabaseError as error:
+                raise IndexerError(str(CustomDatabaseError)) from error
         return files_to_index
 
 

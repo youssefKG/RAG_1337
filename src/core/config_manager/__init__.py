@@ -24,7 +24,6 @@ CONFIG_FILE_PATH = "src/config.json"
 class ConfigManagerError(Exception):
     pass
 
-
 class ConfigManager:
     def __init__(self) -> None:
         try:

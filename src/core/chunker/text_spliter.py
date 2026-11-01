@@ -10,7 +10,7 @@ class TextSpliter:
         *,
         language: Language,
         max_chunk_size: int = 290,
-        overlap_size: int = 0,
+        overlap_size: int = 1000,
         source: str = "",
     ) -> None:
         self._max_chunk_size: int = max_chunk_size

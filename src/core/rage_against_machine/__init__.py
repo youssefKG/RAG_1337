@@ -16,15 +16,21 @@ DATA_PROCESSED_PATH = "data/processed/"
 MAX_CHUNK_SIZE = 2000
 
 class RageAgainstMachine:
-
     def index(self, max_chunk_size: int = MAX_CHUNK_SIZE, hybrid: str = "false") -> None:
         is_hybrid = self.__check_hybrid(hybrid, Stage.INDEXING)
-        from src.core.indexer import indexer
-        indexer(
-            corpus_path=CORPUS_PATH,
-            max_chunk_size=max_chunk_size,
-            is_hybrid=is_hybrid
-        )
+        if max_chunk_size <= 400 or max_chunk_size >= 5000:
+            Logger.error("max chunk size must not be under of 400 or greater than 5000", "INDEXING")
+            sys.exit(1)
+        from src.core.indexer import indexer, IndexerError
+        try:
+            indexer(
+                corpus_path=CORPUS_PATH,
+                max_chunk_size=max_chunk_size,
+                is_hybrid=is_hybrid
+            )
+        except IndexerError as error:
+            Logger.error(str(error), "INDEXING")
+            sys.exit(1)
 
     def search_dataset(
         self,

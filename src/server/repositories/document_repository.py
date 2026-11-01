@@ -66,7 +66,7 @@ class DocumentRepository:
         try:
             _: list[DocumentModel] = self.__model.objects.bulk_create(
                 documents_models_to_create,
-                batch_size=10000,
+                batch_size=10000
             )
         except DatabaseError as error:
             raise CustomDatabaseError(f"Failed to create {len(documents)} documents in the database.") from error

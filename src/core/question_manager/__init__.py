@@ -9,6 +9,8 @@ from tqdm import tqdm
 class QuestionManagerError(Exception):
     ...
 
+
+
 class QuestionManager:
     def __init__(
         self,
@@ -30,16 +32,16 @@ class QuestionManager:
         is_hybrid: bool
     ) -> None:
         config: ConfigModel = self.__config_manager.config
-        indexing_strategy: Literal["lexical", "hybrid", "none"] = config.indexing_strategy
-        if indexing_strategy == "none":
+        preindexing_strategy: Literal["lexical", "hybrid", "none"] = config.indexing_strategy
+        if preindexing_strategy == "none":
             # TODO: raise exception instead of exit for the server
             raise QuestionManagerError(
                 "Search cannot be performed because no indexing is available.",
              )
-        elif indexing_strategy != "hybrid" and is_hybrid:
+        elif preindexing_strategy == "lexical" and is_hybrid:
             raise QuestionManagerError(
                 f"Hybrid search is not supported because "
-                + f"your pre-indexing method is {indexing_strategy}."
+                + f"your pre-indexing method is {preindexing_strategy}."
             )
         rag_data_set: RagDataset = self.__load_rag_dataset(dataset_path)
         search_results: list[MinimalSearchResults] = list()
@@ -73,7 +75,7 @@ class QuestionManager:
             raise QuestionManagerError(
                         "search cannot performed because no indexing is available"
                     )
-        elif preindexing_strategy == "hybrid" and is_hybrid:
+        elif preindexing_strategy == "lexical" and is_hybrid:
             raise QuestionManagerError(
                 f"Hybrid search is not supported because your" 
                 + f" pre-indexing method is {preindexing_strategy}."

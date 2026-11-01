@@ -17,6 +17,7 @@ dependencies = [
     "transformers>=5.20.2",
     "accelerate>=1.15.0",
     "chromadb>=1.5.9",
+    "flake8>=7.4.1",
 ]
 
 
