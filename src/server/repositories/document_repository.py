@@ -21,7 +21,9 @@ class DocumentRepository:
                 ).distinct()
             )
         except DatabaseError as error:
-            raise CustomDatabaseError("Failed to retrieve documents matching the provided terms.") from error
+            raise CustomDatabaseError(
+                "Failed to retrieve documents matching the provided terms."
+            ) from error
 
         return cast(list[Document], documents_models)
 
@@ -32,20 +34,27 @@ class DocumentRepository:
                 list(self.__model.objects.all())
             )
         except DatabaseError as error:
-            raise CustomDatabaseError("Failed to retrieve all documents from the database.") from error
+            raise CustomDatabaseError(
+                "Failed to retrieve all documents from the database."
+            ) from error
 
     @property
     def count(self) -> int:
         try:
             return self.__model.objects.all().count()
         except DatabaseError as error:
-            raise CustomDatabaseError("Failed to count documents in the database.") from error
+            raise CustomDatabaseError(
+                "Failed to count documents in the database."
+            ) from error
 
     def delete_by_file_id(self, file_id: str) -> None:
         try:
             _ = self.__model.objects.filter(file__id=file_id).delete()
         except DatabaseError as error:
-            raise CustomDatabaseError(f"Failed to delete documents associated with file ID '{file_id}'.") from error
+            raise CustomDatabaseError(
+                "Failed to delete documents associated with file ID:"
+                + f" '{file_id}'."
+            ) from error
 
     def create_many(
         self,
@@ -69,13 +78,17 @@ class DocumentRepository:
                 batch_size=10000
             )
         except DatabaseError as error:
-            raise CustomDatabaseError(f"Failed to create {len(documents)} documents in the database.") from error
+            raise CustomDatabaseError(
+                f"Failed to create {len(documents)} documents in the database."
+            ) from error
 
     def delete_all(self) -> None:
         try:
             _ = self.__model.objects.all().delete()
         except DatabaseError as error:
-            raise CustomDatabaseError("Failed to delete all documents from the database.") from error
+            raise CustomDatabaseError(
+                "Failed to delete all documents from the database."
+            ) from error
 
     @property
     def get_avg_document_length(self) -> float:
@@ -84,7 +97,9 @@ class DocumentRepository:
                 Avg("length", default=0)
             )
         except DatabaseError as error:
-            raise CustomDatabaseError("Failed to calculate the average document length.") from error
+            raise CustomDatabaseError(
+                "Failed to calculate the average document length."
+            ) from error
 
         return cast(float, avg_dl["length__avg"])
 
@@ -95,6 +110,7 @@ class DocumentRepository:
                 list(self.__model.objects.filter(id__in=ids))
             )
         except DatabaseError as error:
-            raise CustomDatabaseError("Failed to retrieve documents by their IDs.") from error
-
+            raise CustomDatabaseError(
+                "Failed to retrieve documents by their IDs."
+            ) from error
         return documents

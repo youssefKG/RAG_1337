@@ -1,8 +1,7 @@
-from django.db import DatabaseError
 
 
-class CustomDatabaseError(DatabaseError):
-    pass
+class CustomDatabaseError(Exception):
+    ...
 
 
 __all__ = ["CustomDatabaseError"]

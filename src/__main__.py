@@ -4,7 +4,10 @@ def main() -> None:
     from typing import cast
     from fire import Fire
 
-    _ = os.environ.setdefault("DJANGO_SETTINGS_MODULE", "src.server.config.settings")
+    _ = os.environ.setdefault(
+        "DJANGO_SETTINGS_MODULE",
+        "src.server.config.settings"
+    )
     import django
     django.setup()
 

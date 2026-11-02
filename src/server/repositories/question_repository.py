@@ -8,14 +8,22 @@ from src.server.models import (
     QuestionDocumentModel,
 )
 from src.server.errors import CustomDatabaseError
-from src.core.entities import Question, QuestionDocument, QuestionAnswer, Document
+from src.core.entities import (
+    Question,
+    QuestionDocument,
+    QuestionAnswer, Document
+)
 
 
 class QuestionRepository:
     def __init__(self) -> None:
         self.__question_model: type[QuestionModel] = QuestionModel
-        self.__question_answer_model: type[QuestionAnswerModel] = QuestionAnswerModel
-        self.__question_document_model: type[QuestionDocumentModel] = QuestionDocumentModel
+        self.__question_answer_model: type[QuestionAnswerModel] = (
+            QuestionAnswerModel
+        )
+        self.__question_document_model: type[QuestionDocumentModel] = (
+            QuestionDocumentModel
+        )
 
     def create_question(self, question: Question) -> None:
         try:
@@ -42,7 +50,9 @@ class QuestionRepository:
 
     def delete(self, question: str) -> None:
         try:
-            _ = self.__question_model.objects.filter(question=question).delete()
+            _ = self.__question_model.objects.filter(
+                question=question
+            ).delete()
         except DatabaseError as error:
             raise CustomDatabaseError(
                 "Failed to delete question from the database."
@@ -95,7 +105,8 @@ class QuestionRepository:
             )
         except DatabaseError as error:
             raise CustomDatabaseError(
-                f"Failed to create {len(question_documents)} question-document associations."
+                f"Failed to create {len(question_documents)}"
+                + " question-document associations."
             ) from error
 
     def get_question_documents(
@@ -130,7 +141,8 @@ class QuestionRepository:
             )
         except DatabaseError as error:
             raise CustomDatabaseError(
-                f"Failed to create answer for question ID '{question_answer.question.id}'."
+                "Failed to create answer for question ID"
+                + f" '{question_answer.question.id}'."
             ) from error
 
     def delete_all(self) -> None:

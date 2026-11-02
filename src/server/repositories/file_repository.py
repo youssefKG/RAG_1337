@@ -18,7 +18,9 @@ class FileRepository:
                 id=file.id,
             )
         except DatabaseError as error:
-            raise CustomDatabaseError(f"Failed to create file with path '{file.path}'.") from error
+            raise CustomDatabaseError(
+                f"Failed to create file with path '{file.path}'."
+            ) from error
 
         return cast(File, cast(object, created_file))
 
@@ -43,7 +45,9 @@ class FileRepository:
                 },
             )
         except DatabaseError as error:
-            raise CustomDatabaseError(f"Failed to retrieve or create file with path '{file.path}'.") from error
+            raise CustomDatabaseError(
+                f"Failed to retrieve or create file with path '{file.path}'."
+            ) from error
         return (cast(File, cast(object, file_model)), is_created)
 
     def create_many(self, files: list[File]) -> None:
@@ -60,19 +64,26 @@ class FileRepository:
                 files_to_create, batch_size=1000
             )
         except DatabaseError as error:
-            raise CustomDatabaseError(f"Failed to create {len(files)} files in the database.") from error
+            raise CustomDatabaseError(
+                f"Failed to create {len(files)} files in the database."
+            ) from error
 
     def delete_by_path(self, path: str) -> None:
         try:
             _ = self.__model.objects.filter(path=path).delete()
         except DatabaseError as error:
-            raise CustomDatabaseError(f"Failed to delete file with path '{path}'.") from error
+            raise CustomDatabaseError(
+                f"Failed to delete file with path '{path}'."
+            ) from error
 
     def delete_by_id(self, file_id: str) -> None:
         try:
             _ = self.__model.objects.filter(id=file_id).delete()
         except DatabaseError as error:
-            raise CustomDatabaseError(f"Failed to delete file with ID '{file_id}'.") from error
+            raise CustomDatabaseError(
+                    f"Failed to delete file with ID '{file_id}'."
+            ) from error
+
     def get_by_path(self, path: str) -> File | None:
         try:
             file_model: FileModel | None = (
@@ -83,7 +94,9 @@ class FileRepository:
 
             return cast(File, cast(object, file_model))
         except DatabaseError as error:
-            raise CustomDatabaseError(f"Failed to retrieve file with path '{path}'.") from error
+            raise CustomDatabaseError(
+                f"Failed to retrieve file with path '{path}'."
+            ) from error
 
     def all(self) -> list[File]:
         try:
@@ -91,7 +104,9 @@ class FileRepository:
                 self.__model.objects.all()
             )
         except DatabaseError as error:
-            raise CustomDatabaseError("Failed to retrieve all files from the database.") from error
+            raise CustomDatabaseError(
+                "Failed to retrieve all files from the database."
+            ) from error
 
         return cast(list[File], file_models)
 
@@ -99,7 +114,9 @@ class FileRepository:
         try:
             _ = self.__model.objects.all().delete()
         except DatabaseError as error:
-            raise CustomDatabaseError("Failed to delete all files from the database.") from error
+            raise CustomDatabaseError(
+                "Failed to delete all files from the database."
+            ) from error
 
     def update(
         self,
@@ -125,4 +142,6 @@ class FileRepository:
 
             file_model.save()
         except DatabaseError as error:
-            raise CustomDatabaseError(f"Failed to update file with ID '{id}'.") from error
+            raise CustomDatabaseError(
+                f"Failed to update file with ID '{id}'."
+            ) from error

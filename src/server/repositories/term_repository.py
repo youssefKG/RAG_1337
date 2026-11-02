@@ -50,8 +50,7 @@ class TermRepository:
                 value=term.value,
                 document_id=term.document.id,
                 id=term.id,
-            )
-            for term in terms_documents
+            ) for term in terms_documents
         ]
 
         try:
@@ -61,7 +60,8 @@ class TermRepository:
             )
         except DatabaseError as error:
             raise CustomDatabaseError(
-                f"Failed to create {len(terms_documents)} document terms in the database."
+                f"Failed to create {len(terms_documents)}"
+                + " document terms in the database."
             ) from error
 
     def delete_all(self) -> None:

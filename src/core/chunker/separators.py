@@ -5,7 +5,7 @@ PYTHON_SEPARATORS: list[str] = [
     "\n\n",
     "\n",
     " ",
-    ""
+    "",
 ]
 
 

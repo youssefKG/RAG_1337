@@ -3,6 +3,7 @@ from typing import Annotated
 from .languages import Language
 from .separators import PYTHON_SEPARATORS, MARKDOWN_SPERATORS, TEXT_SEPARATORS
 
+
 class TextSpliter:
     def __init__(
         self,
@@ -43,7 +44,7 @@ class TextSpliter:
                 break
             if re.search(s_, text):
                 separator = s_
-                new_separators = separators[i + 1 :]
+                new_separators = separators[i + 1:]
                 break
         splited_text: list[str] = self._split_text_with_regex(text, separator)
         good_splits: list[str] = list()
@@ -81,14 +82,18 @@ class TextSpliter:
         for s in splits:
             s_len = len(s)
             if (
-                s_len + total + (sep_len if len(current_merged_texts) > 0 else 0)
+                s_len
+                + total
+                + (sep_len if len(current_merged_texts) > 0 else 0)
                 >= self._max_chunk_size
             ):
                 if len(current_merged_texts) > 0:
                     txt: str = "".join(current_merged_texts)
                     merged_splits.append(txt)
                     while total > self._overlap_size or (
-                        total + s_len + (len(sep) if len(current_merged_texts) else 0)
+                        total
+                        + s_len
+                        + (len(sep) if len(current_merged_texts) else 0)
                         > self._max_chunk_size
                         and total > 0
                     ):

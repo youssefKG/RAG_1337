@@ -12,13 +12,14 @@ class AnsweredQuestionGroundTruth(AnsweredQuestion):
     difficulty: str
     is_valid: bool
 
+
 class GroundTruthModel(BaseModel):
     rag_questions: list[AnsweredQuestionGroundTruth]
 
 
-
 class RecallError(Exception):
     ...
+
 
 @dataclass(frozen=False)
 class RecallStats:
@@ -36,20 +37,27 @@ class RecallStats:
             f"Recall@3:  {self.recall_10:.4f} ({self.recall_10 * 100:.1f}%)"
         )
 
+
 class RecallK:
 
     def __call__(
-        self,
-        student_search_results_path: str,
-        dataset_path: str
-     ) -> RecallStats:
-        ground_truth: GroundTruthModel = self.__load_and_validate_dataset_path(dataset_path)
+        self, student_search_results_path: str, dataset_path: str
+    ) -> RecallStats:
+        ground_truth: GroundTruthModel = self.__load_and_validate_dataset_path(
+            dataset_path
+        )
         student_search_results: StudentSearchResults = (
-            self.__load_and_validate_student_search_results(student_search_results_path)
+            self.__load_and_validate_student_search_results(
+                student_search_results_path
+            )
         )
         total_num_of_questions: int = len(ground_truth.rag_questions)
-        student_questions: list[MinimalSearchResults] = student_search_results.search_results
-        ground_truth_questions: list[AnsweredQuestionGroundTruth] = ground_truth.rag_questions
+        student_questions: list[MinimalSearchResults] = (
+            student_search_results.search_results
+        )
+        ground_truth_questions: list[AnsweredQuestionGroundTruth] = (
+            ground_truth.rag_questions
+        )
         if len(student_questions) != len(ground_truth_questions):
             raise RecallError(
                 "The number of student questions does not match the "
@@ -58,13 +66,17 @@ class RecallK:
                 + f"ground-truth questions: {len(ground_truth_questions)}."
             )
 
-        recall_stats: RecallStats = RecallStats(recall_1=0., recall_3=0., recall_5=0., recall_10=0.)
-        for student_question, ground_truth_question in zip(student_search_results.search_results, ground_truth.rag_questions):
-            question_recall_stats: RecallStats = \
-                    self.__evaluate_student_question_search_against_ground_truth(
-                        student_question,
-                        ground_truth_question
-                    )
+        recall_stats: RecallStats = RecallStats(
+            recall_1=0.0, recall_3=0.0, recall_5=0.0, recall_10=0.0
+        )
+        for student_question, ground_truth_question in zip(
+            student_search_results.search_results, ground_truth.rag_questions
+        ):
+            question_recall_stats: RecallStats = (
+                self.__evaluate_student_question_search_against_ground_truth(
+                    student_question, ground_truth_question
+                )
+            )
             recall_stats.recall_1 += question_recall_stats.recall_1
             recall_stats.recall_3 += question_recall_stats.recall_3
             recall_stats.recall_5 += question_recall_stats.recall_5
@@ -76,14 +88,15 @@ class RecallK:
         return recall_stats
 
     def __load_and_validate_dataset_path(
-        self,
-        dataset_path: str
+        self, dataset_path: str
     ) -> GroundTruthModel:
         ground_truth: GroundTruthModel
         try:
             with open(dataset_path, "r") as file:
                 file_content: str = file.read()
-                ground_truth = GroundTruthModel.model_validate_json(file_content)
+                ground_truth = GroundTruthModel.model_validate_json(
+                    file_content
+                )
         except ValidationError as error:
             raise RecallError(error.errors()[0]["msg"])
         except Exception as error:
@@ -93,13 +106,10 @@ class RecallK:
     def __evaluate_student_question_search_against_ground_truth(
         self,
         student_question: MinimalSearchResults,
-        truth_question: AnsweredQuestion
+        truth_question: AnsweredQuestion,
     ) -> RecallStats:
         recall_stats: RecallStats = RecallStats(
-            recall_1=0.,
-            recall_3=0.,
-            recall_5=0.,
-            recall_10=0.
+            recall_1=0.0, recall_3=0.0, recall_5=0.0, recall_10=0.0
         )
         if (
             student_question.question_id != truth_question.question_id
@@ -112,7 +122,9 @@ class RecallK:
                 + f"Student question: {student_question.question!r}, "
                 + f"Truth question: {truth_question.question!r}."
             )
-        for idx, retrieved_source in enumerate(student_question.retrieved_sources):
+        for idx, retrieved_source in enumerate(
+            student_question.retrieved_sources
+        ):
             if any(
                 retrieved_source
                 for ground_truth_source in truth_question.sources
@@ -120,13 +132,13 @@ class RecallK:
             ):
                 match idx + 1:
                     case 1:
-                        recall_stats.recall_1 += 1.
+                        recall_stats.recall_1 += 1.0
                     case 3:
-                        recall_stats.recall_3 += 1.
+                        recall_stats.recall_3 += 1.0
                     case 5:
-                        recall_stats.recall_5 += 1.
+                        recall_stats.recall_5 += 1.0
                     case 10:
-                        recall_stats.recall_10 += 1.
+                        recall_stats.recall_10 += 1.0
                     case _:
                         break
         recall_stats.recall_3 += recall_stats.recall_1
@@ -135,19 +147,21 @@ class RecallK:
         return recall_stats
 
     def __load_and_validate_student_search_results(
-        self,
-        student_search_results_path: str
+        self, student_search_results_path: str
     ) -> StudentSearchResults:
         student_search_results: StudentSearchResults
         try:
             with open(student_search_results_path, "r") as file:
                 file_content: str = file.read()
-                student_search_results = StudentSearchResults.model_validate_json(file_content)
+                student_search_results = (
+                    StudentSearchResults.model_validate_json(file_content)
+                )
         except ValidationError as error:
             raise RecallError(error.errors()[0]["msg"])
         except Exception as error:
             raise RecallError(str(error))
         return student_search_results
+
 
 recallk: RecallK = RecallK()
 

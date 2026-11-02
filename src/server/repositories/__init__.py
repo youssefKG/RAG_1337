@@ -8,6 +8,7 @@ from .repositories import (
     TermRepositoryInterface,
     QuestionRepositoryInterface
 )
+from django.db import transaction
 
 from .errors import DBError, DBNotFoundError, DBDuplicateValueError
 
@@ -18,6 +19,7 @@ term_repository: TermRepository = TermRepository(
     document_repository=document_repository
 )
 question_repository: QuestionRepository = QuestionRepository()
+transaction_atomic = transaction.atomic
 
 __all__ = [
     # file repository
@@ -38,5 +40,6 @@ __all__ = [
     "DBNotFoundError",
     # question
     "QuestionRepositoryInterface",
-    "question_repository"
+    "question_repository",
+    "transaction_atomic"
 ]

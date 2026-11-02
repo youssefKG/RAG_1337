@@ -1,11 +1,13 @@
 from dataclasses import dataclass, field
 import uuid
 
+
 @dataclass(frozen=False)
 class File:
     path: str
     last_modified_at: float
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
+
 
 @dataclass(frozen=False)
 class Document:
@@ -16,6 +18,7 @@ class Document:
     content: str
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
+
 @dataclass(frozen=False)
 class Term:
     document: Document
@@ -23,12 +26,14 @@ class Term:
     frequency: int
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
+
 @dataclass(frozen=False)
 class Question:
     question: str
     top_k: int
     search_type: str
-    id: str = field(default_factory=lambda : str(uuid.uuid4()))
+    id: str = field(default_factory=lambda: str(uuid.uuid4()))
+
 
 @dataclass
 class QuestionDocument:
@@ -36,10 +41,12 @@ class QuestionDocument:
     document: Document
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
+
 @dataclass(frozen=False)
 class QuestionAnswer:
     question: Question
     answer: str
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
-__all__ =  ["File", "Document", "Term", "QuestionDocument"]
+
+__all__ = ["File", "Document", "Term", "QuestionDocument"]

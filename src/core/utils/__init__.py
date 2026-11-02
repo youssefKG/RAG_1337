@@ -10,10 +10,11 @@ import sys
 class Stage(Enum):
     INDEXING = auto()
     RETRIEVAL = auto()
-    SEARCH  = auto()
+    SEARCH = auto()
     SEARCH_DATASET = auto()
     ANSWER = auto()
     ANSWER_DATASET = auto()
+
 
 class COLORS(str, Enum):
     """ANSI color codes"""
@@ -44,17 +45,21 @@ class COLORS(str, Enum):
     END = "\033[0m"
 
 
-def INIT_DB(sqlite_path_dir: str="./data/processed") -> None:
+def INIT_DB(sqlite_path_dir: str = "./data/processed") -> None:
     # import  os
     from django.core.management import call_command
+
     # os.makedirs(sqlite_path_dir)
     _ = call_command("makemigrations", interactive=False)
     _ = call_command("migrate", interactive=False)
 
-time_formatter: Callable[[], str] = lambda: "{color}[{date}]{reset_color}".format(
-    color=COLORS.LIGHT_GRAY.value,
-    date=str(datetime.now()),
-    reset_color=COLORS.END.value,
+
+time_formatter: Callable[[], str] = (
+    lambda: "{color}[{date}]{reset_color}".format(
+        color=COLORS.LIGHT_GRAY.value,
+        date=str(datetime.now()),
+        reset_color=COLORS.END.value,
+    )
 )
 
 stage_formatter: Callable[[str], str] = (
@@ -63,9 +68,12 @@ stage_formatter: Callable[[str], str] = (
     )
 )
 
-message_formatter: Callable[[str], str] = lambda message: "{color}{message}".format(
-    color=COLORS.BOLD.value, message=message
+message_formatter: Callable[[str], str] = (
+    lambda message: "{color}{message}".format(
+        color=COLORS.BOLD.value, message=message
+    )
 )
+
 
 class Logger:
     info_formater: str = "{bold}{color}[INFO]{reset_color}".format(
@@ -125,15 +133,16 @@ class Logger:
         )
         print(error_format)
 
+
 def permission_checker(
-        *,
-        file_path: str,
-        write: bool = False,
-        read: bool = False,
-        exist: bool = False,
-        kill: bool = True,
-        fn: Callable[[str], None] | None = None
-        ) -> bool:
+    *,
+    file_path: str,
+    write: bool = False,
+    read: bool = False,
+    exist: bool = False,
+    kill: bool = True,
+    fn: Callable[[str], None] | None = None,
+) -> bool:
     if exist and not os.access(file_path, os.F_OK):
         if fn is not None:
             fn(f"permission error: not exist {file_path}")
@@ -154,15 +163,17 @@ def permission_checker(
         return False
     return True
 
+
 def create_file_path(file_path: str) -> None:
     path = Path(file_path)
     path.parent.mkdir(parents=True, exist_ok=True)
 
+
 __all__ = [
-        "TOKENIZER_REGEX_PATTERN",
-        "STOP_WORDS",
-        "Logger",
-        "Stage",
-        "permission_checker",
-        "INIT_DB"
+    "TOKENIZER_REGEX_PATTERN",
+    "STOP_WORDS",
+    "Logger",
+    "Stage",
+    "permission_checker",
+    "INIT_DB",
 ]

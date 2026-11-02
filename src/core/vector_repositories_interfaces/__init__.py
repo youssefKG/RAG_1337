@@ -1,18 +1,17 @@
 from typing import Protocol
 from src.core.entities import Document
 
+
 class VectorDocumentRepositoryInterface(Protocol):
-    def create_many(self, documents: list[Document]) -> None:
-        ...
+    def create_many(self, documents: list[Document]) -> None: ...
 
-    def delete_all(self) -> None:
-        ...
+    def delete_all(self) -> None: ...
 
-    def delete_by_file_id(self, file_id: str) -> None:
-        ...
+    def delete_by_file_id(self, file_id: str) -> None: ...
 
-    def get_documents_ids_search(self, query: str, top_k: int) -> list[str]:
-        ...
+    def get_documents_ids_search(
+        self, query: str, top_k: int
+    ) -> list[str]: ...
 
 
-__all__ =  ["VectorDocumentRepositoryInterface"]
+__all__ = ["VectorDocumentRepositoryInterface"]
