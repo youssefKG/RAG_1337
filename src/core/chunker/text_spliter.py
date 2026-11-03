@@ -124,3 +124,44 @@ class TextSpliter:
                 return MARKDOWN_SPERATORS
             case Language.TEXT:
                 return TEXT_SEPARATORS
+
+
+class MyTextSpliter:
+    def __init__(self, max_chunk_size: int, separators: list[str]) -> None:
+        self.__max_chunk_size: int = max_chunk_size
+        self.__seprators: list[str] = separators
+
+    def split_text(self, text: str, separators: list[str]) -> list[str]:
+        good_chunks: list[str] = list()
+        chunks: list[str] = list()
+        seperator: str = separators[-1]
+        new_separators: list[str] = list()
+        for idx, sep in enumerate(separators):
+            if sep:
+                seperator = sep
+                new_separators = separators[idx + 1:]
+                break
+            elif re.search(text, sep):
+                seperator = sep
+                new_separators = separators[idx + 1: ]
+                break
+        for doc in self.__split_text_with_regex(text, seperator):
+            if len(doc) < self.__max_chunk_size:
+                good_chunks.append(doc)
+            else:
+                if good_chunks:
+                    other: list[str] = self.__merge(good_chunks, seperator)
+                    good_chunks = []
+                    chunks.extend(other)
+                if new_separators:
+                    other: list[str] = self.split_text(doc, new_seperator)
+                    good_chunks.append(doc)
+
+    def __split_text_with_regex(self,  text: str, sep: str) -> list[str]:
+        if sep:
+            return re.split(f"({sep})", text)
+        return list(text)
+
+    def __merge(self, good_splits: list[str], seperators: str) -> list[str]:
+        return list()
+

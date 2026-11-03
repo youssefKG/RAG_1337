@@ -23,7 +23,7 @@ class RageAgainstMachine:
         self, max_chunk_size: int = MAX_CHUNK_SIZE, hybrid: str = "false"
     ) -> None:
         is_hybrid = self.__check_hybrid(hybrid, Stage.INDEXING)
-        if max_chunk_size <= 400 or max_chunk_size > 2000:
+        if not 400 < max_chunk_size <= 2000:
             Logger.error(
                 "max chunk size must not be under of 400 or greater than 5000",
                 "INDEXING",
@@ -70,7 +70,6 @@ class RageAgainstMachine:
             question_manager,
             QuestionManagerError,
         )
-
         try:
             question_manager.search_datasets(
                 dataset_path=dataset_path,
