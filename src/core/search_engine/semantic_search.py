@@ -26,8 +26,8 @@ class SemanticSearch:
                 question, top_k
             )
         )
-        documents: list[Document] = (
-            self.__document_repository.get_by_ids(documents_ids)
+        documents: list[Document] = self.__document_repository.get_by_ids(
+            documents_ids
         )
         return documents
 

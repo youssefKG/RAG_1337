@@ -29,10 +29,7 @@ class DocumentRepository:
 
     def all(self) -> list[Document]:
         try:
-            return cast(
-                list[Document],
-                list(self.__model.objects.all())
-            )
+            return cast(list[Document], list(self.__model.objects.all()))
         except DatabaseError as error:
             raise CustomDatabaseError(
                 "Failed to retrieve all documents from the database."
@@ -74,8 +71,7 @@ class DocumentRepository:
 
         try:
             _: list[DocumentModel] = self.__model.objects.bulk_create(
-                documents_models_to_create,
-                batch_size=10000
+                documents_models_to_create, batch_size=10000
             )
         except DatabaseError as error:
             raise CustomDatabaseError(
@@ -93,9 +89,7 @@ class DocumentRepository:
     @property
     def get_avg_document_length(self) -> float:
         try:
-            avg_dl = self.__model.objects.aggregate(
-                Avg("length", default=0)
-            )
+            avg_dl = self.__model.objects.aggregate(Avg("length", default=0))
         except DatabaseError as error:
             raise CustomDatabaseError(
                 "Failed to calculate the average document length."
@@ -106,8 +100,7 @@ class DocumentRepository:
     def get_by_ids(self, ids: list[str]) -> list[Document]:
         try:
             documents: list[Document] = cast(
-                list[Document],
-                list(self.__model.objects.filter(id__in=ids))
+                list[Document], list(self.__model.objects.filter(id__in=ids))
             )
         except DatabaseError as error:
             raise CustomDatabaseError(

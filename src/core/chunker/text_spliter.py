@@ -9,14 +9,12 @@ class TextSpliter:
         self,
         /,
         *,
+        source: str,
         language: Language,
-        max_chunk_size: int = 290,
-        overlap_size: int = 1000,
-        source: str = "",
+        max_chunk_size: int = 2000,
     ) -> None:
         self._max_chunk_size: int = max_chunk_size
         self._language: Language = language
-        self._overlap_size: int = overlap_size
         self._source: str = source
 
     def split_text(
@@ -74,36 +72,21 @@ class TextSpliter:
             text_parts = list(text)
         return [s for s in text_parts if s]
 
-    def _merge_splits(self, splits: list[str], sep: str) -> list[str]:
+    def _merge_splits(self, good_splits: list[str], sep: str) -> list[str]:
         merged_splits: list[str] = list()
-        sep_len: int = len(sep)
-        current_merged_texts: list[str] = list()
         total: int = 0
-        for s in splits:
-            s_len = len(s)
-            if (
-                s_len
-                + total
-                + (sep_len if len(current_merged_texts) > 0 else 0)
-                >= self._max_chunk_size
-            ):
-                if len(current_merged_texts) > 0:
-                    txt: str = "".join(current_merged_texts)
-                    merged_splits.append(txt)
-                    while total > self._overlap_size or (
-                        total
-                        + s_len
-                        + (len(sep) if len(current_merged_texts) else 0)
-                        > self._max_chunk_size
-                        and total > 0
-                    ):
-                        total -= len(current_merged_texts[0]) + (
-                            sep_len if len(current_merged_texts) > 1 else 0
-                        )
-                        current_merged_texts = current_merged_texts[1:]
-            current_merged_texts.append(s)
-            total += s_len + (sep_len if len(current_merged_texts) > 1 else 0)
-        merged_splits.append("".join(current_merged_texts))
+        sep_len = len(sep)
+        current_merged_text: list[str] = list()
+        for doc in good_splits:
+            doc_len: int = len(doc)
+            if doc_len + total + (sep_len if current_merged_text else 0) >= self._max_chunk_size:
+                text: str = "".join(current_merged_text)
+                merged_splits.append(text)
+                total = 0
+                current_merged_text.clear()
+            total += doc_len + (sep_len if current_merged_text else 0)
+            current_merged_text.append(doc)
+        merged_splits.append("".join(current_merged_text))
         return merged_splits
 
     def __form_chunk(self, chunk: str) -> tuple[
@@ -124,44 +107,3 @@ class TextSpliter:
                 return MARKDOWN_SPERATORS
             case Language.TEXT:
                 return TEXT_SEPARATORS
-
-
-class MyTextSpliter:
-    def __init__(self, max_chunk_size: int, separators: list[str]) -> None:
-        self.__max_chunk_size: int = max_chunk_size
-        self.__seprators: list[str] = separators
-
-    def split_text(self, text: str, separators: list[str]) -> list[str]:
-        good_chunks: list[str] = list()
-        chunks: list[str] = list()
-        seperator: str = separators[-1]
-        new_separators: list[str] = list()
-        for idx, sep in enumerate(separators):
-            if sep:
-                seperator = sep
-                new_separators = separators[idx + 1:]
-                break
-            elif re.search(text, sep):
-                seperator = sep
-                new_separators = separators[idx + 1: ]
-                break
-        for doc in self.__split_text_with_regex(text, seperator):
-            if len(doc) < self.__max_chunk_size:
-                good_chunks.append(doc)
-            else:
-                if good_chunks:
-                    other: list[str] = self.__merge(good_chunks, seperator)
-                    good_chunks = []
-                    chunks.extend(other)
-                if new_separators:
-                    other: list[str] = self.split_text(doc, new_seperator)
-                    good_chunks.append(doc)
-
-    def __split_text_with_regex(self,  text: str, sep: str) -> list[str]:
-        if sep:
-            return re.split(f"({sep})", text)
-        return list(text)
-
-    def __merge(self, good_splits: list[str], seperators: str) -> list[str]:
-        return list()
-

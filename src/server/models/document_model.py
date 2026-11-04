@@ -3,7 +3,7 @@ from django.db.models import (
     ForeignKey,
     CASCADE,
     PositiveIntegerField,
-    CharField
+    CharField,
 )
 from .file_model import FileModel
 from typing import cast

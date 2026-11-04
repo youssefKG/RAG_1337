@@ -131,7 +131,7 @@ class Indexer:
         ] = lambda files: self.__lexical_indexing(
             files=files, max_chunk_size=max_chunk_size, corpus_path=corpus_path
         )
-        Logger.info(f"INDEXING STRATEGY: {indexing_strategy}", __name__)
+        Logger.info(f"INDEXING STRATEGY: {indexing_strategy.name}", __name__)
         try:
             with transaction_atomic():
                 match indexing_strategy:
@@ -180,9 +180,7 @@ class Indexer:
             corpus_path=corpust_path, files_extensions=(".py", ".txt", ".md")
         )
         files_to_index: list[_FileType] = list()
-        for file_path, file_content, last_modified_at in tqdm(
-            file_iter, total=len(file_iter), desc="Search for changed file"
-        ):
+        for file_path, file_content, last_modified_at in tqdm(file_iter, total=len(file_iter), desc="Search for changed file"):
             file: File | None = self.__file_repository.get_by_path(file_path)
             if file is None:
                 files_to_index.append(
@@ -269,7 +267,6 @@ class Indexer:
         documents_to_create: list[Document] = list()
         chunker: TextSpliter = TextSpliter(
             source=file_content,
-            overlap_size=0,
             max_chunk_size=max_chunk_size,
             language=language,
         )

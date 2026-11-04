@@ -11,5 +11,5 @@ __all__ = [
     "QuestionModel",
     "DocumentTermModel",
     "QuestionDocumentModel",
-    "QuestionAnswerModel"
+    "QuestionAnswerModel",
 ]

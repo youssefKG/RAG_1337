@@ -18,8 +18,9 @@ class IndexingStrategy(str, Enum):
 
 
 class ConfigModel(BaseModel):
-    indexing_strategy: Literal["lexical", "hybrid", "none"] = \
-        Field(default="lexical")
+    indexing_strategy: Literal["lexical", "hybrid", "none"] = Field(
+        default="lexical"
+    )
     max_chunk_size: int = Field(default=2000)
 
     class ConfigDict:
@@ -40,7 +41,7 @@ class ConfigManager:
         except Exception as error:
             Logger.error(
                 "THE CONFIG FILE MUST NOT BE TOUCHED OR CHANGING IT",
-                "LAODING CONFIG"
+                "LAODING CONFIG",
             )
             Logger.error(str(error), "LAODING CONFIG")
             sys.exit(0)
@@ -71,7 +72,7 @@ class ConfigManager:
 
     @property
     def get_current_indexing_strategy(
-        self
+        self,
     ) -> Literal["hybrid", "lexical", "none"]:
         return self.__config.indexing_strategy
 
@@ -108,10 +109,7 @@ class ConfigManager:
         return indexing_strategy
 
     def update_indexing_config(
-        self,
-        *,
-        max_chunk_size: int,
-        is_hybrid: bool
+        self, *, max_chunk_size: int, is_hybrid: bool
     ) -> None:
         _ = permission_checker(
             file_path=CONFIG_FILE_PATH,

@@ -81,14 +81,14 @@ class FileRepository:
             _ = self.__model.objects.filter(id=file_id).delete()
         except DatabaseError as error:
             raise CustomDatabaseError(
-                    f"Failed to delete file with ID '{file_id}'."
+                f"Failed to delete file with ID '{file_id}'."
             ) from error
 
     def get_by_path(self, path: str) -> File | None:
         try:
-            file_model: FileModel | None = (
-                self.__model.objects.filter(path=path).first()
-            )
+            file_model: FileModel | None = self.__model.objects.filter(
+                path=path
+            ).first()
             if file_model is None:
                 return None
 
@@ -100,9 +100,7 @@ class FileRepository:
 
     def all(self) -> list[File]:
         try:
-            file_models: list[FileModel] = list(
-                self.__model.objects.all()
-            )
+            file_models: list[FileModel] = list(self.__model.objects.all())
         except DatabaseError as error:
             raise CustomDatabaseError(
                 "Failed to retrieve all files from the database."
@@ -127,9 +125,9 @@ class FileRepository:
         last_modified_at: float | None = None,
     ) -> None:
         try:
-            file_model: FileModel | None = (
-                self.__model.objects.filter(id=id).first()
-            )
+            file_model: FileModel | None = self.__model.objects.filter(
+                id=id
+            ).first()
             if file_model is None:
                 # TODO: handle the case where no file is found
                 return

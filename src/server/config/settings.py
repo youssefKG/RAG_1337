@@ -20,7 +20,9 @@ print(BASE_DIR)
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-7-k(xu1*0ap1119j3r*8b_ivf-m0ugiyejoy$0g4#%cw-5uhm)"
+SECRET_KEY = (
+    "django-insecure-7-k(xu1*0ap1119j3r*8b_ivf-m0ugiyejoy$0g4#%cw-5uhm)"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -77,7 +79,6 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "data/processed/db.sqlite3",
-        # "init_command": "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;",
     }
 }
 

@@ -16,6 +16,7 @@ class SearchEngineError(Exception):
     ...
 
 
+
 class SearchEngine:
     def __init__(
         self,
@@ -40,8 +41,8 @@ class SearchEngine:
         search_type: SearchType,
     ) -> MinimalSearchResults:
         question: str = unanswered_question.question
-        cache_question: Question | None = (
-            self.__question_repository.get(question)
+        cache_question: Question | None = self.__question_repository.get(
+            question
         )
         minimal_search_results: MinimalSearchResults
         if (
@@ -58,26 +59,14 @@ class SearchEngine:
                 search_type=search_type.name,
             )
             self.__question_repository.create(new_question)
-            minimal_search_results = (
-                self.__run_search_and_store_in_cache(
-                    new_question, top_k
-                )
+            minimal_search_results = self.__run_search_and_store_in_cache(
+                new_question, top_k
             )
         else:
             minimal_search_results = self.__get_documents_from_cache(
                 cache_question
             )
         return minimal_search_results
-
-    def __tokenize(self, query: str) -> list[str]:
-        query_terms: list[str] = [
-            word
-            for word in cast(
-                list[str], self.__regex_pattern.findall(query.lower())
-            )
-            if word not in STOP_WORDS
-        ]
-        return query_terms
 
     def __run_search_and_store_in_cache(
         self, question: Question, top_k: int
@@ -94,14 +83,10 @@ class SearchEngine:
             top_semantic_search = int(0.3 * top_k)
             top_lexical_search = top_k - top_semantic_search
             lexical_documents = lexical_documents[:top_lexical_search]
-            semantic_documents: list[Document] = (
-                self.__get_semantic_search(question.question, top_k)[
-                    :top_semantic_search
-                ]
-            )
-            high_score_documents = (
-                lexical_documents + semantic_documents
-            )
+            semantic_documents: list[Document] = self.__get_semantic_search(
+                question.question, top_k
+            )[:top_semantic_search]
+            high_score_documents = lexical_documents + semantic_documents
         retrieved_sources: list[MinimalSource] = [
             MinimalSource(
                 file_path=doc.file.path,
@@ -122,6 +107,18 @@ class SearchEngine:
             question=question.question,
             retrieved_sources=retrieved_sources,
         )
+
+    def __tokenize(self, text: str) -> list[str]:
+        tokens = []
+        for token in list(re.findall(TOKENIZER_REGEX_PATTERN, text)):
+            if token in STOP_WORDS:
+                continue
+            tokens.append(token.lower())
+            expanded = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", token)
+            parts = expanded.replace("_", " ").lower().split()
+            if len(parts) > 1:
+                tokens.extend(parts)
+        return tokens
 
     @property
     def __get_semantic_search(self) -> SearchMethod:
@@ -155,11 +152,9 @@ class SearchEngine:
             )
             for doc in documents
         ]
-        minimal_search_results: MinimalSearchResults = (
-            MinimalSearchResults(
-                question_id=question.id,
-                question=question.question,
-                retrieved_sources=retrieved_sources,
-            )
+        minimal_search_results: MinimalSearchResults = MinimalSearchResults(
+            question_id=question.id,
+            question=question.question,
+            retrieved_sources=retrieved_sources,
         )
         return minimal_search_results

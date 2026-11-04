@@ -37,9 +37,7 @@ class BM25:
         self.__k: float = k
         self.__b: float = b
         self.__avg_document_length: float = avg_documents_length
-        self.__total_number_of_documents: int = (
-            total_number_of_documents
-        )
+        self.__total_number_of_documents: int = total_number_of_documents
         self.__invert_index: InvertIndexType = invert_index
         self.__idfs_score: _TermIDFS = _TermIDFS()
         self.__regex_pattern = re.compile(TOKENIZER_REGEX_PATTERN)

@@ -20,9 +20,9 @@ class TermRepository:
     def get_by_terms_values(self, values: set[str]) -> list[Term]:
         try:
             document_term_models: list[DocumentTermModel] = list(
-                self.__all_terms.filter(
-                    value__in=values
-                ).select_related("document")
+                self.__all_terms.filter(value__in=values).select_related(
+                    "document"
+                )
             )
         except DatabaseError as error:
             raise CustomDatabaseError(
@@ -50,7 +50,8 @@ class TermRepository:
                 value=term.value,
                 document_id=term.document.id,
                 id=term.id,
-            ) for term in terms_documents
+            )
+            for term in terms_documents
         ]
 
         try:

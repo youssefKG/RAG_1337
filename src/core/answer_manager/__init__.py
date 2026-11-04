@@ -48,9 +48,6 @@ class AnswerManager:
         self.__text_generation_pipeline: object | None = None
 
     def answer(self, question: str, top_k: int, is_hybrid: bool) -> str:
-        # check if theres is somme preindexing strategy and the predindexing
-        # is hybrid if the answer should be generated based on
-        # sematic search and lexical search
         try:
             self.__check_preindexing_strategy(is_hybrid)
             generated_answer: str
@@ -142,7 +139,7 @@ class AnswerManager:
                                 answer=generated_answer,
                                 question=question,
                                 question_id=minimal_search_results.question_id,
-                                retrieved_sources=retrieved_sources
+                                retrieved_sources=retrieved_sources,
                             )
                         )
                     else:
@@ -154,7 +151,7 @@ class AnswerManager:
                                 answer=cache_question_answer.answer,
                                 question=question,
                                 question_id=minimal_search_results.question_id,
-                                retrieved_sources=retrieved_sources
+                                retrieved_sources=retrieved_sources,
                             )
                         )
                 question_repository.create_many_questions_answers(
@@ -363,4 +360,7 @@ class AnswerManager:
 
 answer_manager: AnswerManager = AnswerManager(config_manager=config_manager)
 
-__all__ = ["answer_manager", "AnswerManager"]
+__all__ = [
+    "answer_manager",
+    "AnswerManager"
+]

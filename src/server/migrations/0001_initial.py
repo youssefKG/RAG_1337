@@ -96,7 +96,8 @@ class Migration(migrations.Migration):
             options={
                 "constraints": [
                     models.UniqueConstraint(
-                        fields=("value", "document_id"), name="unicite_produit_version"
+                        fields=("value", "document_id"),
+                        name="unicite_produit_version",
                     )
                 ],
             },

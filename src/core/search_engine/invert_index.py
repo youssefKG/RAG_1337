@@ -11,6 +11,7 @@ PostingType: TypeAlias = dict[
     Annotated[str, "document id"],
     tuple[Document, Annotated[int, "term frequency"]],
 ]
+
 InvertIndexType: TypeAlias = defaultdict[
     Annotated[str, "term value"], PostingType
 ]
@@ -23,18 +24,12 @@ class InvertIndex:
         *,
         term_repository: TermRepositoryInterface,
     ) -> None:
-        self.__term_repository: TermRepositoryInterface = (
-            term_repository
-        )
-        self.__invert_index: InvertIndexType = defaultdict(
-            PostingType
-        )
+        self.__term_repository: TermRepositoryInterface = term_repository
+        self.__invert_index: InvertIndexType = defaultdict(PostingType)
 
     def __call__(self, query_terms: list[str]) -> None:
         # add new terms to invert index from user query
-        new_terms: set[str] = set(query_terms) - set(
-            self.__invert_index
-        )
+        new_terms: set[str] = set(query_terms) - set(self.__invert_index)
         if new_terms:
             terms_documents: list[Term] = (
                 self.__term_repository.get_by_terms_values(new_terms)
@@ -45,9 +40,7 @@ class InvertIndex:
         self, terms_documents: list[Term]
     ) -> None:
         for doc_term in terms_documents:
-            self.__invert_index[doc_term.value][
-                doc_term.document.id
-            ] = (
+            self.__invert_index[doc_term.value][doc_term.document.id] = (
                 doc_term.document,
                 doc_term.frequency,
             )
@@ -57,6 +50,4 @@ class InvertIndex:
         return self.__invert_index
 
 
-invert_index: InvertIndex = InvertIndex(
-    term_repository=term_repository
-)
+invert_index: InvertIndex = InvertIndex(term_repository=term_repository)

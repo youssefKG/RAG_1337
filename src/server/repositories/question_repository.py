@@ -11,7 +11,8 @@ from src.server.errors import CustomDatabaseError
 from src.core.entities import (
     Question,
     QuestionDocument,
-    QuestionAnswer, Document
+    QuestionAnswer,
+    Document,
 )
 
 
@@ -127,10 +128,7 @@ class QuestionRepository:
                 "Failed to retrieve documents associated with the question."
             ) from error
 
-        return [
-            question_doc.document
-            for question_doc in question_documents
-        ]
+        return [question_doc.document for question_doc in question_documents]
 
     def create_question_answer(self, question_answer: QuestionAnswer) -> None:
         try:

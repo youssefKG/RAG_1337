@@ -70,6 +70,7 @@ class RageAgainstMachine:
             question_manager,
             QuestionManagerError,
         )
+
         try:
             question_manager.search_datasets(
                 dataset_path=dataset_path,

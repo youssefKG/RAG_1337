@@ -6,12 +6,11 @@ from .repositories import (
     FileRepositoryInterface,
     DocumentRepositoryInterface,
     TermRepositoryInterface,
-    QuestionRepositoryInterface
+    QuestionRepositoryInterface,
 )
 from django.db import transaction
 
 from .errors import DBError, DBNotFoundError, DBDuplicateValueError
-
 
 file_repository: FileRepository = FileRepository()
 document_repository = DocumentRepository(file_repository)
@@ -41,5 +40,5 @@ __all__ = [
     # question
     "QuestionRepositoryInterface",
     "question_repository",
-    "transaction_atomic"
+    "transaction_atomic",
 ]

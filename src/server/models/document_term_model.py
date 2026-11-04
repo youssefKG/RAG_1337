@@ -15,7 +15,9 @@ class DocumentTermModel(Model):
     id: str = cast(str, cast(object, CharField(primary_key=True)))
     frequency: int = cast(int, cast(object, PositiveIntegerField()))
     value: str = cast(str, cast(object, CharField()))
-    document: ForeignKey[DocumentModel] = ForeignKey(DocumentModel, on_delete=CASCADE)
+    document: ForeignKey[DocumentModel] = ForeignKey(
+        DocumentModel, on_delete=CASCADE
+    )
 
     class Meta:
         constraints = [
