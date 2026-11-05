@@ -14,7 +14,7 @@ class IndexingStrategy(str, Enum):
     NONE = "none"
     LEXICAL = "lexical"
     HYBRID = "hybrid"
-    SEMANTIC = "SEMANTIC"
+    SEMANTIC = "semantic"
 
 
 class ConfigModel(BaseModel):
@@ -49,6 +49,17 @@ class ConfigManager:
     @property
     def config(self) -> ConfigModel:
         return self.__config
+
+    @property
+    def indexing_strategy(self) -> IndexingStrategy:
+        match self.__config.indexing_strategy:
+            case "lexical":
+                return IndexingStrategy.LEXICAL
+            case "hybrid":
+                return IndexingStrategy.HYBRID
+            case "none":
+                return IndexingStrategy.NONE
+
 
     def __load_config_file(self) -> ConfigModel:
         try:

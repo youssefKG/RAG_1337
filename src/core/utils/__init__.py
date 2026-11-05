@@ -45,15 +45,6 @@ class COLORS(str, Enum):
     END = "\033[0m"
 
 
-def INIT_DB(sqlite_path_dir: str = "./data/processed") -> None:
-    # import  os
-    from django.core.management import call_command
-
-    # os.makedirs(sqlite_path_dir)
-    _ = call_command("makemigrations", interactive=False)
-    _ = call_command("migrate", interactive=False)
-
-
 time_formatter: Callable[[], str] = (
     lambda: "{color}[{date}]{reset_color}".format(
         color=COLORS.LIGHT_GRAY.value,

@@ -79,7 +79,11 @@ class TextSpliter:
         current_merged_text: list[str] = list()
         for doc in good_splits:
             doc_len: int = len(doc)
-            if doc_len + total + (sep_len if current_merged_text else 0) >= self._max_chunk_size:
+            if (
+                doc_len
+                + total
+                + (sep_len if current_merged_text else 0)
+             ) >= self._max_chunk_size:
                 text: str = "".join(current_merged_text)
                 merged_splits.append(text)
                 total = 0

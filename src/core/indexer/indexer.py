@@ -134,33 +134,16 @@ class Indexer:
         Logger.info(f"INDEXING STRATEGY: {indexing_strategy.name}", __name__)
         try:
             with transaction_atomic():
+                self.__prepare_new_indexing_strategy(indexing_strategy)
                 match indexing_strategy:
                     case IndexingStrategy.LEXICAL:
-                        Logger.info(
-                            "Deleting the old indexing documents"
-                            + " and vector documents",
-                            "INDEXING",
-                        )
-                        self.__file_repository.delete_all()
-                        self.__question_repository.delete_all()
-                        self.__vector_document_repository.delete_all()
                         files = files_to_index_callback()
                         _ = lexical_indexing_callback(files)
                     case IndexingStrategy.HYBRID:
-                        Logger.info(
-                            "Deleting the old indexing documents"
-                            + " and vector documents",
-                            "INDEXING",
-                        )
-                        self.__file_repository.delete_all()
-                        self.__question_repository.delete_all()
-                        self.__vector_document_repository.delete_all()
                         files = files_to_index_callback()
                         documents = lexical_indexing_callback(files)
                         self.__semantic_indexing(documents)
                     case IndexingStrategy.SEMANTIC:
-                        self.__vector_document_repository.delete_all()
-                        self.__question_repository.delete_all()
                         documents = self.__document_repository.all()
                         self.__semantic_indexing(documents)
                     case IndexingStrategy.NONE:
@@ -174,6 +157,35 @@ class Indexer:
             )
         except CustomDatabaseError as error:
             raise IndexerError(str(error)) from error
+
+    def __prepare_new_indexing_strategy(
+        self,
+        new_indexing_strategy: IndexingStrategy
+    ) -> None:
+        preindexing_strategy: IndexingStrategy = (
+            self.__config_manager.indexing_strategy
+        )
+        if new_indexing_strategy in (
+                IndexingStrategy.LEXICAL,
+                IndexingStrategy.HYBRID,
+                IndexingStrategy.SEMANTIC
+        ):
+            if new_indexing_strategy != IndexingStrategy.SEMANTIC:
+                if preindexing_strategy == IndexingStrategy.LEXICAL:
+                    Logger.info(
+                        "Deleting the old lexical indexing documents"
+                        + " and vector documents",
+                        "INDEXING",
+                    )
+                self.__file_repository.delete_all()
+            Logger.info("Delete the old semantic indexing if exist", "INDEXING")
+            self.__vector_document_repository.delete_all()
+            Logger.info(
+                "Delete all questions and their answers, " 
+                + "and their relevents docunments",
+                "INDEXING"
+            )
+            self.__question_repository.delete_all()
 
     def __get_files_to_index(self, corpust_path: str) -> list[_FileType]:
         file_iter: FileIter = FileIter(
@@ -271,8 +283,12 @@ class Indexer:
             language=language,
         )
         chunks: list[ChunkType] = chunker.split_text()
+        terms: Counter[str]
         for chunk, start_index, end_index in chunks:
-            terms: Counter[str] = self.__get_terms_freqeuncy(chunk)
+            if language == Language.PYTHON:
+                terms = self.__get_terms_freqeuncy_python(chunk)
+            else:
+                terms = self.__get_terms_freqeuncy_markdown_text(chunk)
             document: Document = Document(
                 file=file,
                 start_index=start_index,
@@ -295,7 +311,7 @@ class Indexer:
             return Language.MARKDOWN
         return Language.TEXT
 
-    def __get_terms_freqeuncy(self, document: str) -> Counter[str]:
+    def __get_terms_freqeuncy_markdown_text(self, document: str) -> Counter[str]:
         document_terms: list[str] = [
             word.strip()
             for word in cast(
@@ -306,3 +322,16 @@ class Indexer:
         ]
         term_frequency: Counter[str] = Counter(document_terms)
         return term_frequency
+
+    def __get_terms_freqeuncy_python(self, text: str) -> Counter[str]:
+        splited_text: list[str] = re.findall(TOKENIZER_REGEX_PATTERN, text)
+        tokens: list[str] = []
+        for token in splited_text:
+            if token in STOP_WORDS:
+                continue
+            tokens.append(token.lower())
+            expanded = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", token)
+            parts = expanded.replace("_", " ").lower().split()
+            if len(parts) > 1:
+                tokens.extend(parts)
+        return Counter(tokens)

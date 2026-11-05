@@ -95,7 +95,7 @@ class RagApi:
         except IndexerError as error:
             return HttpResponse(str(error), status=400)
         except Exception as error:
-            return HttpResponse(str(error))
+            return HttpResponse(str(error), status=400)
 
     @staticmethod
     @csrf_exempt

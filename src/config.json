@@ -1,4 +1,4 @@
 {
-    "indexing_strategy": "lexical",
+    "indexing_strategy": "none",
     "max_chunk_size": 2000
 }

@@ -40,11 +40,11 @@ class SearchEngine:
         top_k: int,
         search_type: SearchType,
     ) -> MinimalSearchResults:
+        minimal_search_results: MinimalSearchResults
         question: str = unanswered_question.question
         cache_question: Question | None = self.__question_repository.get(
             question
         )
-        minimal_search_results: MinimalSearchResults
         if (
             cache_question is None
             or cache_question.top_k != top_k
@@ -109,8 +109,9 @@ class SearchEngine:
         )
 
     def __tokenize(self, text: str) -> list[str]:
-        tokens = []
-        for token in list(re.findall(TOKENIZER_REGEX_PATTERN, text)):
+        splited_text: list[str] = re.findall(TOKENIZER_REGEX_PATTERN, text)
+        tokens: list[str] = []
+        for token in splited_text:
             if token in STOP_WORDS:
                 continue
             tokens.append(token.lower())

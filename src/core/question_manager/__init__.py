@@ -65,7 +65,13 @@ class QuestionManager:
                     student_search_results.model_dump_json(indent=4)
                 )
         except CustomDatabaseError as error:
+            raise QuestionManagerError(
+                "DATABASE ERROR: " 
+                + str(error)
+            ) from error
+        except Exception as error:
             raise QuestionManagerError(str(error)) from error
+
 
     def __load_rag_dataset(self, file_path: str) -> RagDataset:
         with open(file_path, "r") as file:
