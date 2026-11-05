@@ -175,7 +175,8 @@ class QuestionManager:
 
 
 question_manager: QuestionManager = QuestionManager(
-    search_engine=search_engine, config_manager=config_manager
+    search_engine=search_engine,
+    config_manager=config_manager
 )
 
 __all__ = ["QuestionManager", "question_manager"]

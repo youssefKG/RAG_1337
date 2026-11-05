@@ -144,6 +144,26 @@ class FileRepository:
                 f"Failed to delete file with ID '{file_id}'."
             ) from error
 
+
+    def delete_by_files_paths(self, files_paths: set[str]) -> None:
+        """Delete by files paths
+
+        Args:
+            files_paths: Path of the file to retrieve.
+
+        Returns: None
+
+        Raises:
+            CustomDatabaseError: If the database query fails.
+        """
+        try:
+            _ = self.__model.objects.filter(path__in=files_paths).delete()
+        except DatabaseError as error:
+            raise CustomDatabaseError(
+                "Failed to delete files with path {files_paths"
+            ) from error
+
+
     def get_by_path(self, path: str) -> File | None:
         """Retrieve a file by its path.
 

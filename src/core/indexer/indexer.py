@@ -48,17 +48,18 @@ from src.core.utils import Logger, permission_checker, Stage
 from src.server.errors import CustomDatabaseError
 
 
+_FileType: TypeAlias = tuple[
+    Annotated[str, "file_path"],
+    Annotated[str, "file_content"],
+    Annotated[float, "last updated time"],
+]
+
 ChunkType: TypeAlias = tuple[
     Annotated[str, "chunk"],
     Annotated[int, "start index"],
     Annotated[int, "end index"],
 ]
 
-_FileType: TypeAlias = tuple[
-    Annotated[str, "file_path"],
-    Annotated[str, "file_content"],
-    Annotated[float, "last updated time"],
-]
 
 BATCH_SIZE = 10000
 LEXICAL_BATCH_SIZE = 5000
@@ -245,9 +246,10 @@ class Indexer:
             )
         )
 
-        files_to_index_callback: Callable[[], list[_FileType]] = (
-            lambda: self.__get_files_to_index(corpus_path)
-        )
+        files_to_index_callback: Callable[
+            [], 
+            tuple[ list[_FileType], Annotated[set[str], "files_path"]]
+        ] = lambda: self.__get_files_to_index(corpus_path)
 
         lexical_indexing_callback: Callable[
             [list[_FileType]], list[Document]
@@ -256,18 +258,17 @@ class Indexer:
         )
 
         Logger.info(f"INDEXING STRATEGY: {indexing_strategy.name}", __name__)
+        files_paths: set[str] = set()
 
         try:
             with transaction_atomic():
                 self.__prepare_new_indexing_strategy(indexing_strategy)
-
                 match indexing_strategy:
                     case IndexingStrategy.LEXICAL:
-                        files = files_to_index_callback()
+                        files, files_paths = files_to_index_callback()
                         _ = lexical_indexing_callback(files)
-
                     case IndexingStrategy.HYBRID:
-                        files = files_to_index_callback()
+                        files, files_paths = files_to_index_callback()
                         documents = lexical_indexing_callback(files)
                         self.__semantic_indexing(documents)
 
@@ -276,14 +277,13 @@ class Indexer:
                         self.__semantic_indexing(documents)
 
                     case IndexingStrategy.NONE:
-                        files = files_to_index_callback()
-
+                        files, files_paths = files_to_index_callback()
                         if len(files) > 0:
                             documents = lexical_indexing_callback(files)
-
                             if is_hybrid:
                                 self.__semantic_indexing(documents)
-
+                if files_paths:
+                    self.__file_repository.delete_by_files_paths(files_paths)
             self.__config_manager.update_indexing_config(
                 max_chunk_size=max_chunk_size, is_hybrid=is_hybrid
             )
@@ -338,7 +338,10 @@ class Indexer:
             )
             self.__question_repository.delete_all()
 
-    def __get_files_to_index(self, corpust_path: str) -> list[_FileType]:
+    def __get_files_to_index(
+        self,
+        corpust_path: str
+    ) -> tuple[list[_FileType], Annotated[set[str], "files paths"]]:
         """
         Discover new and modified files that require indexing.
 
@@ -359,16 +362,17 @@ class Indexer:
             corpus_path=corpust_path,
             files_extensions=(".py", ".txt", ".md")
         )
+        files_paths: set[str] = set() 
 
         files_to_index: list[_FileType] = list()
-
         for file_path, file_content, last_modified_at in tqdm(
             file_iter,
             total=len(file_iter),
             desc="Search for changed file"
         ):
             file: File | None = self.__file_repository.get_by_path(file_path)
-
+            if file_path not in files_paths:
+                files_paths.add(file_path)
             if file is None:
                 files_to_index.append(
                     (file_path, file_content, last_modified_at)
@@ -377,16 +381,13 @@ class Indexer:
             elif file.last_modified_at != last_modified_at:
                 self.__file_repository.delete_by_id(file.id)
                 self.__vector_document_repository.delete_by_file_id(file.id)
-
                 files_to_index.append(
                     (file_path, file_content, last_modified_at)
                 )
-
                 Logger.warn(
                     f"the file is been changed {file_path}", "INDEXING"
                 )
-
-        return files_to_index
+        return files_to_index, files_paths
 
     def __lexical_indexing(
         self,

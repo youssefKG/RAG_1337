@@ -71,6 +71,19 @@ class FileRepositoryInterface(Protocol):
         """Delete all stored files."""
         ...
 
+    def delete_by_files_paths(self, files_paths: set[str]) -> None:
+        """Delete by files paths
+
+        Args:
+            files_paths: Path of the file to retrieve.
+
+        Returns: None
+
+        Raises:
+            CustomDatabaseError: If the database query fails.
+        """
+        ...
+
 
 class DocumentRepositoryInterface(Protocol):
     """Define the contract for document persistence and retrieval operations."""

@@ -23,7 +23,6 @@ Configuration:
 
 import sys
 import os
-from pathlib import Path
 
 from src.core.utils import Logger, Stage, permission_checker
 from src.core.validation_models import StudentSearchResultsAndAnswer
@@ -34,6 +33,9 @@ CORPUS_PATH = "data/raw/vllm-0.10.1"
 CODE_BASE_QUESTIONS = (
     "data/public/UnansweredQuestions/dataset_code_public.json"
 )
+
+
+SEARCH_DATASET_OUTPUT_PATH = ""
 
 DOC_BASE_QUESTIONS = (
     "data/public/UnansweredQuestions/dataset_docs_public.json"
@@ -153,7 +155,7 @@ class RageAgainstMachine:
             fn=lambda message: Logger.error(message, "SEARCH DATASET"),
         )
 
-        self.__create_file_path_if_not_exist(save_directory)
+        # self.__create_directory_if_not_exist(save_directory)
 
         _ = permission_checker(
             file_path=save_directory,
@@ -345,14 +347,11 @@ class RageAgainstMachine:
             fn=lambda message: Logger.error(message, "ANSWER DATASET"),
         )
 
-        self.__create_file_path_if_not_exist(save_directory)
-
-        _ = permission_checker(
-            file_path=save_directory,
-            exist=True,
-            write=True,
-            fn=lambda message: Logger.error(message, "ANSWER DATASET"),
-        )
+        # save_file_path: str = self.__get_save_file_path(
+        #     save_directory,
+        #     student_search_results_path,
+        #     "SEARCH DATASET"
+        # )
 
         from src.core.answer_manager import answer_manager, AnswerError
 
@@ -421,20 +420,16 @@ class RageAgainstMachine:
             )
             sys.exit(1)
 
-    def __create_file_path_if_not_exist(self, file_path: str) -> None:
-        """
-        Create a destination file and its parent directories if necessary.
-
-        If the specified path does not exist, its parent directories
-        are created and an empty file is initialized.
-
-        Args:
-            file_path: Destination file path.
-
-        Returns:
-            None.
-        """
-        if not os.access(file_path, os.F_OK):
-            save_directory_path: Path = Path(file_path)
-            save_directory_path.parent.mkdir(parents=True, exist_ok=True)
-            save_directory_path.touch()
+    def get_save_file_path(self, save_directory: str, file_path: str, stage: str) -> str:
+        new_file_path: str = os.path.join(save_directory, file_path)
+        new_directory: str = os.path.basename(new_file_path)
+        if not os.access(new_file_path, os.F_OK):
+            os.makedirs(new_directory, exist_ok=True)
+        else:
+            _ = permission_checker(
+                file_path=new_file_path,
+                exist=True,
+                write=True,
+                fn=lambda message: Logger.error(message, stage)
+            )
+        return new_file_path

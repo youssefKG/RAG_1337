@@ -136,19 +136,19 @@ def permission_checker(
 ) -> bool:
     if exist and not os.access(file_path, os.F_OK):
         if fn is not None:
-            fn(f"permission error: not exist {file_path}")
+            fn(f"Not Found: not exist '{file_path}'")
         if kill:
             sys.exit(126)
         return False
     if write and not os.access(file_path, os.W_OK):
         if fn is not None:
-            fn(f"permission error: cannot write {file_path}")
+            fn(f"Write Permission: cannot write to '{file_path}'")
         if kill:
             sys.exit(126)
         return False
     if read and not os.access(file_path, os.R_OK):
         if fn is not None:
-            fn(f"permission error: cannot read {file_path}")
+            fn(f"permission error: cannot read '{file_path}'")
         if kill:
             sys.exit(126)
         return False
