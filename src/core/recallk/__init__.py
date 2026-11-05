@@ -6,6 +6,7 @@ from src.core.validation_models import (
     AnsweredQuestion,
     MinimalSearchResults,
 )
+import numpy as np
 
 
 class AnsweredQuestionGroundTruth(AnsweredQuestion):
@@ -38,6 +39,28 @@ class RecallStats:
         )
 
 
+def recall_precision_at_k(y_true, y_pred, k=5):
+
+    recall_list = []
+    precision_list = []
+    
+    for true_docs, pred_docs in zip(y_true, y_pred):
+        top_k = pred_docs[:k]
+        hits = len([doc for doc in top_k if doc in true_docs])
+        recall_list.append(hits / len(true_docs) if true_docs else 0)
+        precision_list.append(hits / k)
+    
+    return {"Recall@{}".format(k): np.mean(recall_list),
+            "Precision@{}".format(k): np.mean(precision_list)}
+
+y_true = [['doc1', 'doc2'], ['doc3']]
+y_pred = [['doc2', 'doc4'], ['doc5']]
+
+metrics = recall_precision_at_k(y_true, y_pred, k=2)
+print(metrics)
+
+
+
 class RecallK:
 
     def __call__(
@@ -46,14 +69,11 @@ class RecallK:
         ground_truth: GroundTruthModel = self.__load_and_validate_dataset_path(
             dataset_path
         )
-        student_search_results: StudentSearchResults = (
+        student_questions: list[MinimalSearchResults] = (
             self.__load_and_validate_student_search_results(
                 student_search_results_path
             )
-        )
-        total_num_of_questions: int = len(ground_truth.rag_questions)
-        student_questions: list[MinimalSearchResults] = (
-            student_search_results.search_results
+            .search_results
         )
         ground_truth_questions: list[AnsweredQuestionGroundTruth] = (
             ground_truth.rag_questions
@@ -69,22 +89,6 @@ class RecallK:
         recall_stats: RecallStats = RecallStats(
             recall_1=0.0, recall_3=0.0, recall_5=0.0, recall_10=0.0
         )
-        for student_question, ground_truth_question in zip(
-            student_search_results.search_results, ground_truth.rag_questions
-        ):
-            question_recall_stats: RecallStats = (
-                self.__evaluate_student_question_search_against_ground_truth(
-                    student_question, ground_truth_question
-                )
-            )
-            recall_stats.recall_1 += question_recall_stats.recall_1
-            recall_stats.recall_3 += question_recall_stats.recall_3
-            recall_stats.recall_5 += question_recall_stats.recall_5
-            recall_stats.recall_10 += question_recall_stats.recall_10
-        recall_stats.recall_1 /= total_num_of_questions
-        recall_stats.recall_3 /= total_num_of_questions
-        recall_stats.recall_5 /= total_num_of_questions
-        recall_stats.recall_10 /= total_num_of_questions
         return recall_stats
 
     def __load_and_validate_dataset_path(
@@ -111,39 +115,17 @@ class RecallK:
         recall_stats: RecallStats = RecallStats(
             recall_1=0.0, recall_3=0.0, recall_5=0.0, recall_10=0.0
         )
-        if (
-            student_question.question_id != truth_question.question_id
-            or student_question.question != truth_question.question
-        ):
-            raise RecallError(
-                "The student question does not match the truth question. "
-                + f"Student question ID: {student_question.question_id}, "
-                + f"Truth question ID: {truth_question.question_id}. "
-                + f"Student question: {student_question.question!r}, "
-                + f"Truth question: {truth_question.question!r}."
-            )
-        for idx, retrieved_source in enumerate(
-            student_question.retrieved_sources
-        ):
-            if any(
-                retrieved_source
-                for ground_truth_source in truth_question.sources
-                if retrieved_source.file_path == ground_truth_source.file_path
-            ):
-                match idx + 1:
-                    case 1:
-                        recall_stats.recall_1 += 1.0
-                    case 3:
-                        recall_stats.recall_3 += 1.0
-                    case 5:
-                        recall_stats.recall_5 += 1.0
-                    case 10:
-                        recall_stats.recall_10 += 1.0
-                    case _:
-                        break
-        recall_stats.recall_3 += recall_stats.recall_1
-        recall_stats.recall_5 += recall_stats.recall_3
-        recall_stats.recall_10 += recall_stats.recall_5
+        # if (
+        #     student_question.question_id != truth_question.question_id
+        #     or student_question.question != truth_question.question
+        # ):
+        #     raise RecallError(
+        #         "The student question does not match the truth question. "
+        #         + f"Student question ID: {student_question.question_id}, "
+        #         + f"Truth question ID: {truth_question.question_id}. "
+        #         + f"Student question: {student_question.question!r}, "
+        #         + f"Truth question: {truth_question.question!r}."
+        #     )
         return recall_stats
 
     def __load_and_validate_student_search_results(

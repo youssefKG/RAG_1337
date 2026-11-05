@@ -81,16 +81,23 @@ class QuestionManager:
             student_search_results: StudentSearchResults = (
                 StudentSearchResults(search_results=search_results, k=top_k)
             )
-            _ = permission_checker(
-                file_path=save_directory,
-                exist=True,
-                write=True,
-                fn=lambda message: Logger.error(message, "SEARCH DATASETS"),
-            )
-            with open(save_directory, "w") as save_file:
-                _ = save_file.write(
-                    student_search_results.model_dump_json(indent=4)
-                )
+            try:
+                with open(save_directory, "w") as save_file:
+                    _ = save_file.write(
+                        student_search_results.model_dump_json(indent=4)
+                    )
+            except FileNotFoundError as error:
+                raise QuestionManagerError(
+                    f"File Not Found {save_directory}"
+                ) from error
+            except PermissionError as error:
+                raise QuestionManagerError(
+                    f"Permission Error(Could not write to path: {save_directory}"
+                ) from error
+            except Exception as error:
+                raise QuestionManagerError(
+                    f"Error writing to the file path: {save_directory}"
+                ) from error
         except CustomDatabaseError as error:
             raise QuestionManagerError(
                 "DATABASE ERROR: " 

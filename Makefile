@@ -6,6 +6,8 @@ CODE_PUBLIC_DATASET_PATH = "data/public/UnansweredQuestions/dataset_code_public.
 CODE_SAVE_DIRECTORY_PUBLIC_PATH = data/public/UnansweredQuestions/dataset_docs_public.json
 DOCS_PUBLIC_DATASET_PATH = data/public/UansweredQuestions/dataset_docs_public.json
 DOCS_SAVE_DIRECTORY_PUBLIC_PATH = data/output/public_doc.json
+DATA_PROCESSED_PATH = data/processed
+DATA_OUTPUT_PATH = data/output
 INDEX = $(PYTHON_VENV) -m src index
 EVALUATE = $(PYTHON_VENV) -m src evaluate
 SEARCH = $(PYTHON) -m src search --query
@@ -28,9 +30,8 @@ clean:
 	find . -type d -name '__pycache__' -exec rm -rf {} +
 	find . -type d -name '.mypy_cache' -exec rm -rf {} +
 	rm -rf .venv *.egg-info
-	rm -rf data/processed
-	echo $(UV_PROJECT_EVIRONMENT)
-	cat $(DEFAULT_CONFIG_PATH) > $(CONFIG_PATH)
+	rm -rf $(DATA_PROCESSED_PATH) $(DATA_OUTPUT_PATH)
+	@cat $(DEFAULT_CONFIG_PATH) > $(CONFIG_PATH)
 
 # ---------------------- DJANGO SERVER -----------------------
 server: 

@@ -7,18 +7,7 @@ system built around the vLLM 0.10.1 codebase and documentation.
 It exposes the RageAgainstMachine class, which coordinates indexing,
 document retrieval, answer generation, dataset processing, and
 retrieval evaluation.
-
 The system supports both standard and hybrid retrieval strategies.
-
-Configuration:
-    CORPUS_PATH: Source corpus directory.
-    CODE_BASE_QUESTIONS: Public code-related questions dataset.
-    DOC_BASE_QUESTIONS: Public documentation-related questions dataset.
-    DATASET_PATH: Directory containing evaluation datasets.
-    STUDENT_SEARCH_RESULTS_PATH: Student retrieval results file.
-    SAVE_DIRECTORY: Directory for storing search results.
-    DATA_PROCESSED_PATH: Directory for processed corpus data.
-    MAX_CHUNK_SIZE: Default maximum document chunk size.
 """
 
 import sys
@@ -27,30 +16,9 @@ import os
 from src.core.utils import Logger, Stage, permission_checker
 from src.core.validation_models import StudentSearchResultsAndAnswer
 
-
 CORPUS_PATH = "data/raw/vllm-0.10.1"
-
-CODE_BASE_QUESTIONS = (
-    "data/public/UnansweredQuestions/dataset_code_public.json"
-)
-
-
-SEARCH_DATASET_OUTPUT_PATH = ""
-
-DOC_BASE_QUESTIONS = (
-    "data/public/UnansweredQuestions/dataset_docs_public.json"
-)
-
-DATASET_PATH = "data/datasets/UnansweredQuestions"
-
-STUDENT_SEARCH_RESULTS_PATH = (
-    "data/datasets/UnansweredQuestions/dataset_docs_public.json"
-)
-
-SAVE_DIRECTORY = "data/output/search_results/UnansweredQuestions"
-
-DATA_PROCESSED_PATH = "data/processed/"
-
+ANSWER_DATASET_SAVE_DIRECTORY = "data/output/search_results_and_answer/"
+SEARCH_DATASET_SAVE_DIRECTORY = "data/output/search_results/"
 MAX_CHUNK_SIZE = 2000
 
 
@@ -120,8 +88,8 @@ class RageAgainstMachine:
 
     def search_dataset(
         self,
-        dataset_path: str = DATASET_PATH,
-        save_directory: str = "",
+        dataset_path: str,
+        save_directory: str = SEARCH_DATASET_SAVE_DIRECTORY,
         k: int = 5,
         hybrid: str = "false",
     ) -> None:
@@ -154,26 +122,19 @@ class RageAgainstMachine:
             read=True,
             fn=lambda message: Logger.error(message, "SEARCH DATASET"),
         )
-
-        # self.__create_directory_if_not_exist(save_directory)
-
-        _ = permission_checker(
-            file_path=save_directory,
-            exist=True,
-            write=True,
-            fn=lambda message: Logger.error(message, "SEARCH DATASET"),
+        save_file_path: str = self.__get_save_file_path(
+            save_directory,
+            dataset_path,
         )
-
         from src.core.question_manager import (
             question_manager,
             QuestionManagerError,
         )
-
         try:
             question_manager.search_datasets(
                 dataset_path=dataset_path,
                 top_k=k,
-                save_directory=save_directory,
+                save_directory=save_file_path,
                 is_hybrid=is_hybrid,
             )
         except QuestionManagerError as error:
@@ -263,18 +224,14 @@ class RageAgainstMachine:
             minimal_search_results = question_manager.search(
                 query, k, is_hybrid
             )
-
         except QuestionManagerError as error:
             Logger.error(str(error), "SEARCH")
             sys.exit(1)
-
         except Exception as error:
             Logger.error(str(error), "SEARCH")
             sys.exit(1)
-
         Logger.info(f"Query: {query}", "SEARCH")
         Logger.info("RETRIEVED_DOCUMENTS: ", "SEARCH")
-
         for document in minimal_search_results.retrieved_sources:
             print(
                 document.file_path,
@@ -312,13 +269,14 @@ class RageAgainstMachine:
         try:
             answer: str = answer_manager.answer(query, k, is_hybrid)
             Logger.info(answer, "ANSWER")
-
         except AnswerError as error:
             Logger.error(str(error), "ANSWER")
             sys.exit(1)
 
     def answer_dataset(
-        self, student_search_results_path: str, save_directory: str
+        self,
+        student_search_results_path: str,
+        save_directory: str=ANSWER_DATASET_SAVE_DIRECTORY
     ) -> None:
         """
         Generate answers for questions with previously retrieved documents.
@@ -346,25 +304,21 @@ class RageAgainstMachine:
             read=True,
             fn=lambda message: Logger.error(message, "ANSWER DATASET"),
         )
-
-        # save_file_path: str = self.__get_save_file_path(
-        #     save_directory,
-        #     student_search_results_path,
-        #     "SEARCH DATASET"
-        # )
+        save_file_path: str = self.__get_save_file_path(
+            save_directory,
+            student_search_results_path,
+        )
 
         from src.core.answer_manager import answer_manager, AnswerError
 
         try:
             student_search_results_and_answer: (
                 StudentSearchResultsAndAnswer
-            ) = answer_manager.answer_dataset(student_search_results_path)
-
-            with open(save_directory, "w") as save_file:
+            ) = answer_manager.answer_dataset(save_file_path)
+            with open(save_file_path, "w") as save_file:
                 _ = save_file.write(
                     student_search_results_and_answer.model_dump_json(indent=4)
                 )
-
         except AnswerError as error:
             Logger.error(str(error), "ANSWER DATASET")
             sys.exit(1)
@@ -420,16 +374,15 @@ class RageAgainstMachine:
             )
             sys.exit(1)
 
-    def get_save_file_path(self, save_directory: str, file_path: str, stage: str) -> str:
-        new_file_path: str = os.path.join(save_directory, file_path)
-        new_directory: str = os.path.basename(new_file_path)
-        if not os.access(new_file_path, os.F_OK):
-            os.makedirs(new_directory, exist_ok=True)
-        else:
-            _ = permission_checker(
-                file_path=new_file_path,
-                exist=True,
-                write=True,
-                fn=lambda message: Logger.error(message, stage)
-            )
-        return new_file_path
+    def __get_save_file_path(
+        self,
+        save_directory: str,
+        file_path: str,
+    ) -> str:
+        try:
+            os.makedirs(save_directory, exist_ok=True)
+            file_path_name: str = os.path.basename(file_path)
+            file_to_create_path: str = os.path.join(save_directory, file_path_name)
+            return file_to_create_path
+        except Exception as error:
+            raise Exception("Invalid path name {file_to_create_path}") from error

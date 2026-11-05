@@ -282,7 +282,7 @@ class Indexer:
                             documents = lexical_indexing_callback(files)
                             if is_hybrid:
                                 self.__semantic_indexing(documents)
-                if files_paths:
+                if not files_paths:
                     self.__file_repository.delete_by_files_paths(files_paths)
             self.__config_manager.update_indexing_config(
                 max_chunk_size=max_chunk_size, is_hybrid=is_hybrid
@@ -447,7 +447,6 @@ class Indexer:
                 self.__file_repository.create_many(files_to_create)
                 self.__document_repository.create_many(documents_to_create)
                 self.__term_repository.create_many(terms_to_create)
-
                 files_to_create.clear()
                 terms_to_create.clear()
                 documents_to_create.clear()
@@ -618,19 +617,14 @@ class Indexer:
                 occurrence frequencies.
         """
         splited_text: list[str] = re.findall(TOKENIZER_REGEX_PATTERN, text)
-
         tokens: list[str] = []
-
         for token in splited_text:
             if token in STOP_WORDS:
                 continue
-
             tokens.append(token.lower())
 
             expanded = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", token)
             parts = expanded.replace("_", " ").lower().split()
-
             if len(parts) > 1:
                 tokens.extend(parts)
-
         return Counter(tokens)
