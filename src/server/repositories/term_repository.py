@@ -1,3 +1,5 @@
+"""Provides database operations for document term entities."""
+
 from typing import cast
 
 from django.db import DatabaseError
@@ -9,15 +11,35 @@ from src.core.entities import Term
 
 
 class TermRepository:
+    """Manage document term persistence and retrieval operations."""
+
     def __init__(
         self,
         *,
         document_repository: DocumentRepository,
     ) -> None:
+        """Initialize the term repository.
+
+        Args:
+            document_repository: Repository responsible for document operations.
+        """
         self.__model: type[DocumentTermModel] = DocumentTermModel
         self.__all_terms = self.__model.objects.all()
 
     def get_by_terms_values(self, values: set[str]) -> list[Term]:
+        """Retrieve document terms matching the provided values.
+
+        Related documents are loaded alongside their associated terms.
+
+        Args:
+            values: Set of term values used to filter document terms.
+
+        Returns:
+            List of matching term entities.
+
+        Raises:
+            CustomDatabaseError: If the database query fails.
+        """
         try:
             document_term_models: list[DocumentTermModel] = list(
                 self.__all_terms.filter(value__in=values).select_related(
@@ -33,6 +55,14 @@ class TermRepository:
 
     @property
     def count(self) -> int:
+        """Return the total number of stored document terms.
+
+        Returns:
+            Number of document terms in the database.
+
+        Raises:
+            CustomDatabaseError: If the database count operation fails.
+        """
         try:
             return self.__model.objects.all().count()
         except DatabaseError as error:
@@ -44,6 +74,15 @@ class TermRepository:
         self,
         terms_documents: list[Term],
     ) -> None:
+        """Persist multiple document terms using bulk database insertion.
+
+        Args:
+            terms_documents: List of term entities containing their values,
+                frequencies, document references, and identifiers.
+
+        Raises:
+            CustomDatabaseError: If the bulk insertion fails.
+        """
         documents_terms_model: list[DocumentTermModel] = [
             DocumentTermModel(
                 frequency=term.frequency,
@@ -66,6 +105,11 @@ class TermRepository:
             ) from error
 
     def delete_all(self) -> None:
+        """Delete all document terms from the database.
+
+        Raises:
+            CustomDatabaseError: If the database deletion fails.
+        """
         try:
             _ = self.__model.objects.all().delete()
         except DatabaseError as error:

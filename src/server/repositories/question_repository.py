@@ -1,3 +1,5 @@
+"""Provides database operations for questions, answers, and document associations."""
+
 from typing import cast
 
 from django.db import DatabaseError
@@ -17,7 +19,10 @@ from src.core.entities import (
 
 
 class QuestionRepository:
+    """Manage question persistence and related answer and document operations."""
+
     def __init__(self) -> None:
+        """Initialize the question repository and its database models."""
         self.__question_model: type[QuestionModel] = QuestionModel
         self.__question_answer_model: type[QuestionAnswerModel] = (
             QuestionAnswerModel
@@ -27,6 +32,14 @@ class QuestionRepository:
         )
 
     def create_question(self, question: Question) -> None:
+        """Create a question using its identifier and content.
+
+        Args:
+            question: Question entity containing the identifier and content.
+
+        Raises:
+            CustomDatabaseError: If the database creation fails.
+        """
         try:
             _ = self.__question_model.objects.create(
                 id=question.id,
@@ -38,6 +51,17 @@ class QuestionRepository:
             ) from error
 
     def get(self, question: str) -> Question | None:
+        """Retrieve a question by its content.
+
+        Args:
+            question: Content of the question to retrieve.
+
+        Returns:
+            The matching question entity, or None if no question is found.
+
+        Raises:
+            CustomDatabaseError: If the database query fails.
+        """
         try:
             question_model: QuestionModel | None = (
                 self.__question_model.objects.filter(question=question).first()
@@ -50,6 +74,14 @@ class QuestionRepository:
         return cast(Question | None, question_model)
 
     def delete(self, question: str) -> None:
+        """Delete a question identified by its content.
+
+        Args:
+            question: Content of the question to delete.
+
+        Raises:
+            CustomDatabaseError: If the database deletion fails.
+        """
         try:
             _ = self.__question_model.objects.filter(
                 question=question
@@ -60,6 +92,15 @@ class QuestionRepository:
             ) from error
 
     def create(self, question: Question) -> None:
+        """Create a question with its search configuration.
+
+        Args:
+            question: Question entity containing its identifier, content,
+                top-k value, and search strategy.
+
+        Raises:
+            CustomDatabaseError: If the database creation fails.
+        """
         try:
             _ = self.__question_model.objects.create(
                 id=question.id,
@@ -73,6 +114,17 @@ class QuestionRepository:
             ) from error
 
     def get_question_answer(self, question: str) -> QuestionAnswer | None:
+        """Retrieve the answer associated with a question.
+
+        Args:
+            question: Content of the question whose answer is requested.
+
+        Returns:
+            The associated question-answer entity, or None if no answer exists.
+
+        Raises:
+            CustomDatabaseError: If the database query fails.
+        """
         try:
             question_answer_model: QuestionAnswerModel | None = (
                 self.__question_answer_model.objects.filter(
@@ -90,6 +142,15 @@ class QuestionRepository:
         self,
         question_documents: list[QuestionDocument],
     ) -> None:
+        """Create multiple question-document associations using bulk insertion.
+
+        Args:
+            question_documents: List of question-document associations
+                to persist.
+
+        Raises:
+            CustomDatabaseError: If the bulk insertion fails.
+        """
         question_document_models: list[QuestionDocumentModel] = [
             QuestionDocumentModel(
                 id=question_doc.id,
@@ -114,6 +175,17 @@ class QuestionRepository:
         self,
         question: str,
     ) -> list[Document]:
+        """Retrieve all documents associated with a question.
+
+        Args:
+            question: Content of the question used to identify its associations.
+
+        Returns:
+            List of documents associated with the specified question.
+
+        Raises:
+            CustomDatabaseError: If the database query fails.
+        """
         try:
             question_documents: list[QuestionDocument] = cast(
                 list[QuestionDocument],
@@ -131,6 +203,15 @@ class QuestionRepository:
         return [question_doc.document for question_doc in question_documents]
 
     def create_question_answer(self, question_answer: QuestionAnswer) -> None:
+        """Create an answer associated with a question.
+
+        Args:
+            question_answer: Question-answer entity containing the question
+                reference and answer content.
+
+        Raises:
+            CustomDatabaseError: If the database creation fails.
+        """
         try:
             _ = self.__question_answer_model.objects.create(
                 id=question_answer.id,
@@ -144,6 +225,11 @@ class QuestionRepository:
             ) from error
 
     def delete_all(self) -> None:
+        """Delete all questions from the database.
+
+        Raises:
+            CustomDatabaseError: If the database deletion fails.
+        """
         try:
             _ = self.__question_model.objects.all().delete()
         except DatabaseError as error:
@@ -155,6 +241,14 @@ class QuestionRepository:
         self,
         questions_answers: list[QuestionAnswer],
     ) -> None:
+        """Persist multiple question-answer pairs using bulk insertion.
+
+        Args:
+            questions_answers: List of question-answer entities to persist.
+
+        Raises:
+            CustomDatabaseError: If the bulk insertion fails.
+        """
         questions_answers_models: list[QuestionAnswerModel] = [
             QuestionAnswerModel(
                 id=question_answer.id,

@@ -1,3 +1,5 @@
+"""Provides database operations for file entities."""
+
 from typing import Annotated, cast
 from django.db import DatabaseError
 
@@ -7,10 +9,24 @@ from src.server.models import FileModel
 
 
 class FileRepository:
+    """Manage file persistence and retrieval operations."""
+
     def __init__(self) -> None:
+        """Initialize the file repository."""
         self.__model: type[FileModel] = FileModel
 
     def create(self, file: File) -> File:
+        """Create and persist a file in the database.
+
+        Args:
+            file: File entity containing the data to persist.
+
+        Returns:
+            The created file entity.
+
+        Raises:
+            CustomDatabaseError: If the database creation fails.
+        """
         try:
             created_file: FileModel = self.__model.objects.create(
                 path=file.path,
@@ -26,6 +42,14 @@ class FileRepository:
 
     @property
     def count(self) -> int:
+        """Return the total number of stored files.
+
+        Returns:
+            Number of files in the database.
+
+        Raises:
+            CustomDatabaseError: If the database count operation fails.
+        """
         try:
             return self.__model.objects.all().count()
         except DatabaseError as error:
@@ -36,6 +60,18 @@ class FileRepository:
     def get_or_create_by_path(
         self, file: File
     ) -> tuple[File, Annotated[bool, "is created"]]:
+        """Retrieve an existing file by path or create it if absent.
+
+        Args:
+            file: File entity containing the path and default values.
+
+        Returns:
+            A tuple containing the retrieved or created file and a boolean
+            indicating whether a new file was created.
+
+        Raises:
+            CustomDatabaseError: If the database operation fails.
+        """
         try:
             file_model, is_created = self.__model.objects.get_or_create(
                 path=file.path,
@@ -51,6 +87,14 @@ class FileRepository:
         return (cast(File, cast(object, file_model)), is_created)
 
     def create_many(self, files: list[File]) -> None:
+        """Persist multiple files using bulk database insertion.
+
+        Args:
+            files: List of file entities to insert into the database.
+
+        Raises:
+            CustomDatabaseError: If the bulk insertion fails.
+        """
         try:
             files_to_create: list[FileModel] = [
                 FileModel(
@@ -69,6 +113,14 @@ class FileRepository:
             ) from error
 
     def delete_by_path(self, path: str) -> None:
+        """Delete a file identified by its path.
+
+        Args:
+            path: Path of the file to delete.
+
+        Raises:
+            CustomDatabaseError: If the database deletion fails.
+        """
         try:
             _ = self.__model.objects.filter(path=path).delete()
         except DatabaseError as error:
@@ -77,6 +129,14 @@ class FileRepository:
             ) from error
 
     def delete_by_id(self, file_id: str) -> None:
+        """Delete a file identified by its ID.
+
+        Args:
+            file_id: Identifier of the file to delete.
+
+        Raises:
+            CustomDatabaseError: If the database deletion fails.
+        """
         try:
             _ = self.__model.objects.filter(id=file_id).delete()
         except DatabaseError as error:
@@ -85,6 +145,17 @@ class FileRepository:
             ) from error
 
     def get_by_path(self, path: str) -> File | None:
+        """Retrieve a file by its path.
+
+        Args:
+            path: Path of the file to retrieve.
+
+        Returns:
+            The matching file entity, or None if no file is found.
+
+        Raises:
+            CustomDatabaseError: If the database query fails.
+        """
         try:
             file_model: FileModel | None = self.__model.objects.filter(
                 path=path
@@ -99,6 +170,14 @@ class FileRepository:
             ) from error
 
     def all(self) -> list[File]:
+        """Retrieve all files stored in the database.
+
+        Returns:
+            List containing all stored file entities.
+
+        Raises:
+            CustomDatabaseError: If the database query fails.
+        """
         try:
             file_models: list[FileModel] = list(self.__model.objects.all())
         except DatabaseError as error:
@@ -109,6 +188,11 @@ class FileRepository:
         return cast(list[File], file_models)
 
     def delete_all(self) -> None:
+        """Delete all files from the database.
+
+        Raises:
+            CustomDatabaseError: If the database deletion fails.
+        """
         try:
             _ = self.__model.objects.all().delete()
         except DatabaseError as error:
@@ -124,6 +208,16 @@ class FileRepository:
         path: str | None = None,
         last_modified_at: float | None = None,
     ) -> None:
+        """Update the attributes of an existing file.
+
+        Args:
+            id: Identifier of the file to update.
+            path: New file path, if provided.
+            last_modified_at: New modification timestamp, if provided.
+
+        Raises:
+            CustomDatabaseError: If the database update fails.
+        """
         try:
             file_model: FileModel | None = self.__model.objects.filter(
                 id=id

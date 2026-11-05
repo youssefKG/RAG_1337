@@ -1,61 +1,130 @@
-PYTHON_VENV = uv run python3
+# ============================ CONFIGURATION ============================
 
-# ----------------------------- RAG VARS ----------------------------
-SEARCH_DATASET = $(PYTHON_VENV) -m src search_dataset
-CODE_PUBLIC_DATASET_PATH = "data/public/UnansweredQuestions/dataset_code_public.json"
-CODE_SAVE_DIRECTORY_PUBLIC_PATH = data/public/UnansweredQuestions/dataset_docs_public.json
-DOCS_PUBLIC_DATASET_PATH = data/public/UansweredQuestions/dataset_docs_public.json
-DOCS_SAVE_DIRECTORY_PUBLIC_PATH = data/output/public_doc.json
-INDEX = $(PYTHON_VENV) -m src index
-EVALUATE = $(PYTHON_VENV) -m src evaluate
-SEARCH = $(PYTHON) -m src search --query
-ANSWER = $(PYTHON_VENV) -m src answer --query
-ANSWER_DATASET = $(PYTHON) -m answer_dataset
+UV = uv
+PYTHON = $(UV) run python
+MYPY = $(UV) run mypy
+FLAKE8 = $(UV) run flake8
+
 DEFAULT_CONFIG_PATH = ./src/default_config.json
 CONFIG_PATH = ./src/config.json
 
+# ============================== RAG DATA ==============================
 
-# ---------------------- LINT VARS -----------------------------
-MYPY_VENV = uv run mypy 
-MYPY_FLAGS_NORMAL = --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+PUBLIC_DATASET_DIR = data/public/UnansweredQuestions
+OUTPUT_DIR = data/output
+
+CODE_PUBLIC_DATASET = $(PUBLIC_DATASET_DIR)/dataset_code_public.json
+DOCS_PUBLIC_DATASET = $(PUBLIC_DATASET_DIR)/dataset_docs_public.json
+
+CODE_PUBLIC_OUTPUT = $(PUBLIC_DATASET_DIR)/dataset_docs_public.json
+DOCS_PUBLIC_OUTPUT = $(OUTPUT_DIR)/public_doc.json
+
+# ============================== RAG CLI ===============================
+
+CLI = $(PYTHON) -m src
+
+SEARCH_DATASET = $(CLI) search_dataset
+INDEX = $(CLI) index
+EVALUATE = $(CLI) evaluate
+SEARCH = $(CLI) search --query
+ANSWER = $(CLI) answer --query
+ANSWER_DATASET = $(CLI) answer_dataset
+
+# ============================== LINTING ===============================
+
+MYPY_FLAGS_NORMAL = 
+	--warn-return-any 
+	--warn-unused-ignores 
+	--ignore-missing-imports 
+	--disallow-untyped-defs 
+	--check-untyped-defs
+
 MYPY_FLAGS_STRICT = --strict
-FLAKE8_VENV = uv run flake8
 
+# ============================== DEFAULT ===============================
+
+.PHONY: run
 run:
-	uv run python -m src
+	$(CLI)
 
-clean: 
-	rm -rf ./data/processed/
-	find . -type d -name '__pycache__' -exec rm -rf {} +
-	find . -type d -name '.mypy_cache' -exec rm -rf {} +
-	rm -rf .venv *.egg-info
-	echo $(UV_PROJECT_EVIRONMENT)
-	cat $(DEFAULT_CONFIG_PATH) > $(CONFIG_PATH)
+# ============================== SERVER ================================
 
-# ---------------------- DJANGO SERVER -----------------------
-server: 
-	$(UV_VENV) -m src.server.manage runserver
+.PHONY: server
+server:
+	$(PYTHON) -m src.server.manage runserver
 
-# ---------------- LINT RULES ------------------------------------
+# ============================== INSTALL ===============================
+
+.PHONY: install
+install:
+	$(UV) sync
+	$(PYTHON) -m src.server.manage makemigrations server
+	$(PYTHON) -m src.server.manage migrate
+
+# ============================== INDEXING ==============================
+
+.PHONY: index
+index:
+	$(INDEX)
+
+# ============================== DATASETS ==============================
+
+.PHONY: public-code public-docs
+
+public-code:
+	$(SEARCH_DATASET) 
+		--dataset_path $(CODE_PUBLIC_DATASET) 
+		--save_directory $(CODE_PUBLIC_OUTPUT) 
+		--k 10
+
+public-docs:
+	$(SEARCH_DATASET) 
+		--dataset_path $(DOCS_PUBLIC_DATASET) 
+		--save_directory $(DOCS_PUBLIC_OUTPUT) 
+		--k 10
+
+# ============================== EVALUATION ============================
+
+.PHONY: evaluate
+evaluate:
+	$(EVALUATE)
+
+# ============================== SEARCH & ANSWERS ======================
+
+.PHONY: search answer answer-dataset
+
+search:
+	$(SEARCH) "$(QUERY)"
+
+answer:
+	$(ANSWER) "$(QUERY)"
+
+answer-dataset:
+	$(ANSWER_DATASET)
+
+# ============================== LINTING ===============================
+
+.PHONY: lint lint-strict
+
 lint:
-	$(MYPY_VENV) -m src $(FLAGS) $(MYPY_FLAGS_NORMAL)
-	$(FLAKE8_VENV) src
+	$(MYPY) -m src $(MYPY_FLAGS_NORMAL)
+	$(FLAKE8) src
 
 lint-strict:
-	 $(MYPY_VENV) -m src $(MYPY_FLAGS_STRICT)
+	$(MYPY) -m src $(MYPY_FLAGS_STRICT)
 
-# ------------------ RAG CLI RULES
-public_code:
-	$(SEARCH_DATASET) --dataset_path  $(CODE_PUBLIC_DATASET_PATH) --save_directory $(CODE_SAVE_DIRECTORY_PUBLIC_PATH) --k 10
-public_docs:
-	$(SEARCH_DATASET) --dataset_path  $(DOCS_PUBLIC_DATASET_PATH) --save_directory $(DOCS_SAVE_DIRECTORY_PUBLIC_PATH) --k 10
+# ============================== CLEANUP ===============================
 
-index: 
-	$(PYTHON_VENV) -m src index
+.PHONY: clean clean-cache reset-config
 
-install:
-	uv sync
-	$(PYTHON_VENV) -m src.server.manage makemigrations server
-	$(PYTHON_VENV) -m src.server.manage migrate
+clean:
+	rm -rf data/processed/
+	find . -type d -name '__pycache__' -exec rm -rf {} +
+	find . -type d -name '.mypy_cache' -exec rm -rf {} +
 
-.PHONNY: public
+clean-cache:
+	rm -rf .mypy_cache .pytest_cache
+	find . -type d -name '__pycache__' -exec rm -rf {} +
+
+reset-config:
+	cp $(DEFAULT_CONFIG_PATH) $(CONFIG_PATH)
