@@ -14,13 +14,25 @@ from src.core.utils import Logger, permission_checker
 
 
 class QuestionManagerError(Exception):
-    ...
+    """Raised when a question management operation fails."""
 
 
 class QuestionManager:
+    """Manage question retrieval and dataset search operations.
+
+    Provides interfaces for searching individual questions and evaluating
+    retrieval performance against a dataset.
+    """
+
     def __init__(
         self, *, search_engine: SearchEngine, config_manager: ConfigManager
     ) -> None:
+        """Initialize the question manager.
+
+        Args:
+            search_engine: Engine responsible for retrieving relevant documents.
+            config_manager: Manager providing indexing and search configuration.
+        """
         self.__search_engine: SearchEngine = search_engine
         self.__config_manager: ConfigManager = ConfigManager()
 
@@ -32,6 +44,21 @@ class QuestionManager:
         top_k: int,
         is_hybrid: bool,
     ) -> None:
+        """Evaluate document retrieval against a RAG question dataset.
+
+        Loads a dataset, retrieves relevant documents for each question,
+        and saves the aggregated retrieval results as JSON.
+
+        Args:
+            dataset_path: Path to the input RAG dataset.
+            save_directory: Destination path for the search results JSON file.
+            top_k: Maximum number of documents retrieved per question.
+            is_hybrid: Whether to use hybrid retrieval instead of lexical retrieval.
+
+        Raises:
+            QuestionManagerError: If dataset processing, retrieval, or
+                result serialization fails.
+        """
         self.__check_preindexing_strategy(is_hybrid)
         rag_data_set: RagDataset = self.__load_rag_dataset(dataset_path)
         search_results: list[MinimalSearchResults] = list()
@@ -72,8 +99,19 @@ class QuestionManager:
         except Exception as error:
             raise QuestionManagerError(str(error)) from error
 
-
     def __load_rag_dataset(self, file_path: str) -> RagDataset:
+        """Load and validate a RAG dataset from a JSON file.
+
+        Args:
+            file_path: Path to the JSON dataset.
+
+        Returns:
+            The validated RAG dataset.
+
+        Raises:
+            QuestionManagerError: If the dataset does not conform to the
+                expected schema.
+        """
         with open(file_path, "r") as file:
             try:
                 rag_dataset: RagDataset = RagDataset.model_validate_json(
@@ -86,6 +124,20 @@ class QuestionManager:
     def search(
         self, query: str, top_k: int, is_hybrid: bool
     ) -> MinimalSearchResults:
+        """Retrieve documents relevant to an individual question.
+
+        Args:
+            query: User's search query.
+            top_k: Maximum number of documents to retrieve.
+            is_hybrid: Whether to use hybrid retrieval instead of lexical retrieval.
+
+        Returns:
+            Search results containing the most relevant documents.
+
+        Raises:
+            QuestionManagerError: If the configured indexing strategy does
+                not support the requested retrieval method.
+        """
         self.__check_preindexing_strategy(is_hybrid)
         question: UnansweredQuestion = UnansweredQuestion(question=query)
         search_type: SearchType = (
@@ -97,6 +149,16 @@ class QuestionManager:
         return minimal_search_results
 
     def __check_preindexing_strategy(self, is_hybrid: bool) -> None:
+        """Validate the requested search method against the indexing strategy.
+
+        Args:
+            is_hybrid: Whether hybrid retrieval is requested.
+
+        Raises:
+            QuestionManagerError: If indexing is unavailable or the
+                requested retrieval method is incompatible with the
+                existing index.
+        """
         preindexing_strategy: str = (
             self.__config_manager.config.indexing_strategy
         )

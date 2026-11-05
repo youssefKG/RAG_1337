@@ -1,3 +1,5 @@
+"""Manage application configuration and indexing strategy decisions."""
+
 import sys
 from typing import Literal, TypeAlias
 from enum import Enum
@@ -5,37 +7,68 @@ from enum import Enum
 from pydantic import BaseModel, ValidationError, Field
 from src.core.utils import Logger, permission_checker
 
+
 ConfigKeyType: TypeAlias = Literal[
     "is_indexing_hybrid", "max_chunk_size", "search_type"
 ]
+"""Supported configuration keys."""
 
 
 class IndexingStrategy(str, Enum):
+    """Represent the indexing operations available to the application."""
+
     NONE = "none"
+    """No indexing operation is required."""
+
     LEXICAL = "lexical"
+    """Perform lexical indexing."""
+
     HYBRID = "hybrid"
+    """Perform both lexical and semantic indexing."""
+
     SEMANTIC = "semantic"
+    """Perform semantic indexing."""
 
 
 class ConfigModel(BaseModel):
+    """Define and validate the application's configuration structure.
+
+    Attributes:
+        indexing_strategy: Currently configured indexing strategy.
+        max_chunk_size: Maximum preferred size of indexed text chunks.
+    """
+
     indexing_strategy: Literal["lexical", "hybrid", "none"] = Field(
         default="lexical"
     )
     max_chunk_size: int = Field(default=2000)
 
     class ConfigDict:
+        """Configure validation behavior for the configuration model."""
+
         extra: str = "forbid"
 
 
 CONFIG_FILE_PATH = "src/config.json"
+"""Path to the application's configuration file."""
 
 
 class ConfigManagerError(Exception):
-    pass
+    """Represent errors encountered while loading or updating configuration."""
 
 
 class ConfigManager:
+    """Load, expose, and update application configuration.
+
+    The manager determines which indexing operation is required based on
+    the currently stored configuration and the requested indexing options.
+    """
+
     def __init__(self) -> None:
+        """Initialize the manager by loading the configuration file.
+
+        Exits the application if the configuration cannot be loaded.
+        """
         try:
             self.__config: ConfigModel = self.__load_config_file()
         except Exception as error:
@@ -48,10 +81,12 @@ class ConfigManager:
 
     @property
     def config(self) -> ConfigModel:
+        """Return the currently loaded configuration."""
         return self.__config
 
     @property
     def indexing_strategy(self) -> IndexingStrategy:
+        """Return the configured indexing strategy as an enum value."""
         match self.__config.indexing_strategy:
             case "lexical":
                 return IndexingStrategy.LEXICAL
@@ -60,8 +95,19 @@ class ConfigManager:
             case "none":
                 return IndexingStrategy.NONE
 
-
     def __load_config_file(self) -> ConfigModel:
+        """Read and validate the configuration file.
+
+        Checks file permissions before reading its contents and validates
+        the JSON data against ConfigModel.
+
+        Returns:
+            The validated configuration model.
+
+        Raises:
+            ConfigManagerError: If the file cannot be accessed, read,
+                or validated.
+        """
         try:
             _ = permission_checker(
                 file_path=CONFIG_FILE_PATH,
@@ -85,11 +131,24 @@ class ConfigManager:
     def get_current_indexing_strategy(
         self,
     ) -> Literal["hybrid", "lexical", "none"]:
+        """Return the indexing strategy currently stored in configuration."""
         return self.__config.indexing_strategy
 
     def get_indexing_strategy(
         self, max_chunk_size: int, is_hybrid: bool
     ) -> IndexingStrategy:
+        """Determine which indexing operation is required.
+
+        Compares the requested chunk size and hybrid indexing setting
+        against the currently stored configuration.
+
+        Args:
+            max_chunk_size: Requested maximum text chunk size.
+            is_hybrid: Whether hybrid indexing is requested.
+
+        Returns:
+            The indexing strategy required to apply the requested settings.
+        """
         indexing_strategy: IndexingStrategy = IndexingStrategy.NONE
         config_max_chunk_size: int = self.__config.max_chunk_size
         is_max_chunk_size_changed: bool = (
@@ -122,6 +181,15 @@ class ConfigManager:
     def update_indexing_config(
         self, *, max_chunk_size: int, is_hybrid: bool
     ) -> None:
+        """Update the configuration and persist it to the JSON file.
+
+        Args:
+            max_chunk_size: New maximum text chunk size.
+            is_hybrid: Whether hybrid indexing should be enabled.
+
+        Raises:
+            ConfigManagerError: If writing the configuration fails.
+        """
         _ = permission_checker(
             file_path=CONFIG_FILE_PATH,
             exist=True,
@@ -143,5 +211,6 @@ class ConfigManager:
 
 
 config_manager: ConfigManager = ConfigManager()
+"""Application-wide configuration manager instance."""
 
 __all__ = ["config_manager", "ConfigManager", "IndexingStrategy"]
