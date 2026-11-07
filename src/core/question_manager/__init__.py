@@ -10,7 +10,6 @@ from src.core.validation_models import (
 from tqdm import tqdm
 from src.server.repositories import transaction_atomic
 from src.server.errors import CustomDatabaseError
-from src.core.utils import Logger, permission_checker
 
 
 class QuestionManagerError(Exception):
