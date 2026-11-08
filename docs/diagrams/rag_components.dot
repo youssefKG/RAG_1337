@@ -1,0 +1,74 @@
+digraph RAGComponents {
+    graph [
+        bgcolor="#0f172a",
+        rankdir=LR,
+        splines=ortho,
+        nodesep=0.48,
+        ranksep=0.72,
+        pad=0.35,
+        fontname="Inter,Arial"
+    ];
+    node [
+        shape=box,
+        style="rounded,filled",
+        fontname="Inter,Arial",
+        fontsize=11,
+        margin="0.16,0.10",
+        color="#475569",
+        fontcolor="#e2e8f0",
+        fillcolor="#1e293b"
+    ];
+    edge [
+        color="#94a3b8",
+        penwidth=1.5,
+        arrowsize=0.7,
+        fontname="Inter,Arial",
+        fontsize=9,
+        fontcolor="#cbd5e1"
+    ];
+
+    corpus [label="vLLM source corpus\n.py / .md / .txt", fillcolor="#172554", color="#3b82f6"];
+    cli [label="CLI\nsrc/__main__.py", fillcolor="#312e81", color="#818cf8"];
+    app [label="RageAgainstMachine\napplication facade", fillcolor="#4c1d95", color="#a78bfa"];
+    config [label="ConfigManager\nsrc/config.json", fillcolor="#334155", color="#94a3b8"];
+    indexer [label="Indexer", fillcolor="#064e3b", color="#34d399"];
+    chunker [label="TextSpliter\nlanguage-aware chunks", fillcolor="#065f46", color="#34d399"];
+    terms [label="Term extraction\ntokenizer + stop words", fillcolor="#065f46", color="#34d399"];
+    sqlite [label="SQLite\nsrc/db.sqlite3", shape=cylinder, fillcolor="#422006", color="#f59e0b"];
+    inverted [label="In-memory\ninverted index", fillcolor="#713f12", color="#fbbf24"];
+    search [label="SearchEngine", fillcolor="#7c2d12", color="#fb923c"];
+    bm25 [label="BM25\nlexical retrieval", fillcolor="#9a3412", color="#fdba74"];
+    semantic [label="Semantic search", fillcolor="#831843", color="#f472b6"];
+    chroma [label="ChromaDB\nvector database", shape=cylinder, fillcolor="#500724", color="#f472b6"];
+    answer [label="AnswerManager", fillcolor="#581c87", color="#c084fc"];
+    qwen [label="Qwen/Qwen3-0.6B\nTransformers", fillcolor="#701a75", color="#e879f9"];
+    output [label="Search results /\nanswers", fillcolor="#164e63", color="#22d3ee"];
+    eval [label="Recall@K\nevaluator", fillcolor="#164e63", color="#22d3ee"];
+    datasets [label="Evaluation datasets\ndata/public", fillcolor="#164e63", color="#22d3ee"];
+
+    corpus -> indexer;
+    cli -> app;
+    config -> app;
+    app -> indexer;
+    indexer -> chunker;
+    chunker -> terms;
+    terms -> sqlite;
+    indexer -> chroma;
+    app -> search;
+    sqlite -> inverted;
+    inverted -> bm25;
+    search -> bm25;
+    search -> semantic;
+    semantic -> chroma;
+    bm25 -> search;
+    semantic -> search;
+    search -> sqlite;
+    app -> answer;
+    answer -> search;
+    answer -> qwen;
+    answer -> sqlite;
+    search -> output;
+    answer -> output;
+    datasets -> eval;
+    output -> eval;
+}

@@ -1,0 +1,51 @@
+digraph RAGClasses {
+    graph [bgcolor="#0f172a", rankdir=LR, splines=ortho, nodesep=0.5, ranksep=0.75, pad=0.35, fontname="Inter,Arial"];
+    node [shape=record, style="rounded,filled", fontname="Inter,Arial", fontsize=9, margin="0.12,0.08", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];
+    edge [color="#94a3b8", penwidth=1.4, arrowsize=0.7, fontname="Inter,Arial", fontsize=8, fontcolor="#cbd5e1"];
+
+    app [label="{RageAgainstMachine|+ index()|+ search()|+ answer()|+ search_dataset()|+ answer_dataset()|+ evaluate()}", fillcolor="#4c1d95", color="#a78bfa"];
+    config [label="{ConfigManager|+ config|+ indexing_strategy|+ get_indexing_strategy()|+ update_indexing_config()}", fillcolor="#334155", color="#94a3b8"];
+    indexer [label="{Indexer|+ call()| - get_files_to_index()| - lexical_indexing()| - semantic_indexing()}", fillcolor="#064e3b", color="#34d399"];
+    splitter [label="{TextSpliter| - source| - language| - max_chunk_size|+ split_text()| - merge_splits()}", fillcolor="#065f46", color="#34d399"];
+    search [label="{SearchEngine|+ call()| - tokenize()| - cache results}", fillcolor="#7c2d12", color="#fb923c"];
+    invert [label="{InvertIndex|+ call(query_terms)|+ invert_index}", fillcolor="#713f12", color="#fbbf24"];
+    bm25 [label="{BM25|+ call(question, top_k)| - score_document()| - get_idf_score()}", fillcolor="#9a3412", color="#fdba74"];
+    semantic [label="{SemanticSearch|+ call(question, top_k)}", fillcolor="#831843", color="#f472b6"];
+    answer [label="{AnswerManager|+ answer()|+ answer_dataset()| - build_prompt()| - generate_answer()}", fillcolor="#581c87", color="#c084fc"];
+    vector_repo [label="{VectorDocumentRepository|+ create_many()|+ get_documents_ids_search()|+ delete_all()}", fillcolor="#500724", color="#f472b6"];
+    doc_repo [label="{DocumentRepository|+ create_many()|+ get_by_ids()|+ all()}", fillcolor="#164e63", color="#22d3ee"];
+    question_repo [label="{QuestionRepository|+ create()|+ get()|+ get_question_documents()|+ get_question_answer()}", fillcolor="#164e63", color="#22d3ee"];
+    recall [label="{RecallK|+ call()| - sources_overlap()}", fillcolor="#164e63", color="#22d3ee"];
+    file [label="{File|id|path|last_modified_at}", fillcolor="#172554", color="#3b82f6"];
+    document [label="{Document|id|content|length|start_index|end_index}", fillcolor="#1e3a8a", color="#60a5fa"];
+    term [label="{Term|value|frequency}", fillcolor="#164e63", color="#22d3ee"];
+    question [label="{Question|id|question|top_k|search_type}", fillcolor="#4c1d95", color="#a78bfa"];
+    qanswer [label="{QuestionAnswer|question|answer}", fillcolor="#701a75", color="#e879f9"];
+    model [label="{Qwen3|external model|+ generate(prompt)}", fillcolor="#701a75", color="#e879f9"];
+
+    app -> config;
+    app -> indexer;
+    app -> search;
+    app -> answer;
+    app -> recall;
+    indexer -> splitter;
+    indexer -> doc_repo;
+    indexer -> vector_repo;
+    search -> invert;
+    search -> bm25;
+    search -> semantic;
+    search -> question_repo;
+    semantic -> vector_repo;
+    semantic -> doc_repo;
+    answer -> search;
+    answer -> question_repo;
+    answer -> model;
+    indexer -> file;
+    doc_repo -> document;
+    doc_repo -> term;
+    question_repo -> question;
+    question_repo -> qanswer;
+    splitter -> document [label=" creates chunks"];
+    document -> term [label=" has"];
+    question -> document [label=" retrieves"];
+}

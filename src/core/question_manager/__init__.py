@@ -172,7 +172,6 @@ class QuestionManager:
             self.__config_manager.config.indexing_strategy
         )
         if preindexing_strategy == "none":
-            # TODO: Throw exception for the server instead of exit
             raise QuestionManagerError(
                 "search cannot performed because no indexing is available"
             )
