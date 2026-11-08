@@ -3,6 +3,7 @@ from enum import Enum, auto
 from typing import Callable
 from pathlib import Path
 from .constants import TOKENIZER_REGEX_PATTERN, STOP_WORDS
+from pydantic import ValidationError
 import os
 import sys
 
@@ -160,11 +161,15 @@ def create_file_path(file_path: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
 
+def get_validation_error_message(error: ValidationError, file_path: str) -> str:
+    field: str | int = error.errors()[0]["loc"][0]
+    field_message: str = error.errors()[0]["msg"]
+    return f"Validation Error {file_path}: {field} {field_message}"
+
 __all__ = [
     "TOKENIZER_REGEX_PATTERN",
     "STOP_WORDS",
     "Logger",
     "Stage",
     "permission_checker",
-    "INIT_DB",
 ]

@@ -1,18 +1,8 @@
-"""
-URL configuration for server project.
 
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+"""Define URL routes and API endpoints for the RAG server.
+
+Provides HTTP endpoints for corpus indexing, document retrieval,
+and answer generation.
 """
 
 from django.urls import path
@@ -27,11 +17,21 @@ import json
 
 CORPUS_PATH = "data/raw/vllm-0.10.1"
 
+
 class CustomError(Exception):
-    ...
+    """Represent a custom exception raised by the RAG API."""
 
 
 def get_pydantic_errors_json(errors: ValidationError) -> str:
+    """Convert Pydantic validation errors into a JSON string.
+
+    Args:
+        errors: Validation errors raised during model validation.
+
+    Returns:
+        JSON-formatted validation errors containing field names
+        and corresponding error messages.
+    """
     validation_errors: list[dict[str, str]] = [
         {"field": str(err["loc"][0]), "message": err["msg"]}
         for err in errors.errors()
@@ -41,36 +41,86 @@ def get_pydantic_errors_json(errors: ValidationError) -> str:
 
 
 class IndexerParams(BaseModel):
+    """Define parameters accepted by the corpus indexing endpoint.
+
+    Attributes:
+        max_chunk_size: Maximum allowed size of an indexed document chunk.
+        is_hybrid: Whether semantic indexing should be enabled.
+    """
+
     max_chunk_size: int = Field(default=2000, le=2000, gt=400)
     is_hybrid: bool = False
 
 
 class IndexerResponse(BaseModel):
+    """Represent the response returned after corpus indexing.
+
+    Attributes:
+        message: Message describing the indexing operation.
+    """
+
     message: str
 
 
 class SearchParams(BaseModel):
+    """Define parameters accepted by the document search endpoint.
+
+    Attributes:
+        query: Search query submitted by the client.
+        k: Maximum number of documents to retrieve.
+        is_hybrid: Whether hybrid retrieval should be used.
+    """
+
     query: str = Field(min_length=3)
     k: int = Field(default=5, le=10, gt=0)
     is_hybrid: bool = False
 
 
 class AnswerParams(BaseModel):
+    """Define parameters accepted by the answer generation endpoint.
+
+    Attributes:
+        k: Maximum number of documents to retrieve.
+        query: Question submitted by the client.
+        is_hybrid: Whether hybrid retrieval should be used.
+    """
+
     k: int = Field(default=5, gt=0, le=10)
     query: str = Field(min_length=3)
     is_hybrid: bool = False
 
 
 class AnswerResponse(BaseModel):
+    """Represent the response returned by the answer endpoint.
+
+    Attributes:
+        query: Original question submitted by the client.
+        answer: Generated answer, if successful.
+        error_message: Error description, if answer generation fails.
+    """
+
     query: str
     answer: str | None = None
     error_message: str | None = None
 
 
 class RagApi:
+    """Expose HTTP endpoints for RAG operations."""
+
     @staticmethod
     @csrf_exempt
     def index(request: HttpRequest):
+        """Index the configured corpus through an HTTP POST request.
+
+        Validates indexing parameters, invokes the indexer, and returns
+        either an indexing response or an error message.
+
+        Args:
+            request: Incoming Django HTTP request.
+
+        Returns:
+            HTTP response describing the indexing result or failure.
+        """
         if request.method != "POST":
             return HttpResponse(
                 "Method not allowed. Only POST requests are supported.",
@@ -100,6 +150,17 @@ class RagApi:
     @staticmethod
     @csrf_exempt
     def search(request: HttpRequest) -> HttpResponse:
+        """Retrieve documents relevant to a submitted search query.
+
+        Validates search parameters and delegates document retrieval
+        to the question manager.
+
+        Args:
+            request: Incoming Django HTTP request.
+
+        Returns:
+            HTTP response containing search results or an error message.
+        """
         if request.method != "POST":
             return HttpResponse(
                 "Method not allowed. Only POST request are supported"
@@ -131,6 +192,17 @@ class RagApi:
     @staticmethod
     @csrf_exempt
     def answer(request: HttpRequest) -> HttpResponse:
+        """Generate an answer for a submitted question.
+
+        Validates request parameters and delegates answer generation
+        to the answer manager.
+
+        Args:
+            request: Incoming Django HTTP request.
+
+        Returns:
+            HTTP response containing the generated answer or an error.
+        """
         if request.method != "POST":
             return HttpResponse(
                 "Method not allowed. Only POST request are supported"

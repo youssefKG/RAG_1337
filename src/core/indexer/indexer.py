@@ -289,7 +289,9 @@ class Indexer:
             )
 
         except CustomDatabaseError as error:
-            raise IndexerError(str(error)) from error
+            raise IndexerError(
+                f"Database Error {str(error)}"
+            ) from error
 
     def __prepare_new_indexing_strategy(
         self,
@@ -365,11 +367,7 @@ class Indexer:
         files_paths: set[str] = set() 
 
         files_to_index: list[_FileType] = list()
-        for file_path, file_content, last_modified_at in tqdm(
-            file_iter,
-            total=len(file_iter),
-            desc="Search for changed file"
-        ):
+        for file_path, file_content, last_modified_at in file_iter:
             file: File | None = self.__file_repository.get_by_path(file_path)
             if file_path not in files_paths:
                 files_paths.add(file_path)

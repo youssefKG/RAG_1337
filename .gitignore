@@ -1,18 +1,161 @@
-# Python-generated files
+
+# ============================================================
+# PYTHON
+# ============================================================
+
 __pycache__/
-*.py[oc]
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# ============================================================
+# VIRTUAL ENVIRONMENTS
+# ============================================================
+
+.venv/
+venv/
+env/
+ENV/
+
+# ============================================================
+# UV / PYTHON PACKAGING
+# ============================================================
+
+.python-version
+*.egg-info/
+.eggs/
 build/
 dist/
 wheels/
-*.egg-info
+pip-wheel-metadata/
+share/python-wheels/
 
-# Virtual environments
-.venv
-
-output.txt
-src/db.sqlite3
-
-# vllm project
-vllm-0.10.1
+# ============================================================
+# ENVIRONMENT VARIABLES / SECRETS
+# ============================================================
 
 .env
+.env.*
+!.env.example
+
+# Private keys and certificates
+*.pem
+*.key
+*.crt
+
+# ============================================================
+# DJANGO
+# ============================================================
+
+*.sqlite3
+*.sqlite3-journal
+db.sqlite3
+
+staticfiles/
+media/
+
+# ============================================================
+# RAG / DATA / VECTOR DATABASES
+# ============================================================
+
+# Generated data
+data/processed/
+data/output/
+src/data/processed/
+src/data/output/
+
+# Vector databases
+chroma_db/
+chromadb/
+faiss_index/
+vector_store/
+.vectordb/
+
+# Embeddings and model-generated artifacts
+embeddings/
+*.faiss
+*.index
+
+# ============================================================
+# VLLM / MODELS / MACHINE LEARNING
+# ============================================================
+
+vllm-0.10.1/
+models/
+checkpoints/
+weights/
+runs/
+wandb/
+mlruns/
+
+# Hugging Face cache
+.cache/huggingface/
+.cache/torch/
+.cache/vllm/
+
+# ============================================================
+# LOGS / OUTPUT
+# ============================================================
+
+*.log
+logs/
+output.txt
+*.out
+
+# ============================================================
+# TESTING / COVERAGE
+# ============================================================
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+test-results/
+
+# ============================================================
+# NOTEBOOKS
+# ============================================================
+
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ============================================================
+# IDE / EDITORS
+# ============================================================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ============================================================
+# OPERATING SYSTEM
+# ============================================================
+
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+
+# ============================================================
+# TEMPORARY FILES
+# ============================================================
+
+*.tmp
+*.temp
+*.bak
+*.orig
+*.old
+.cache/
+tmp/
+temp/

@@ -10,7 +10,6 @@ from .repositories import (
 )
 from django.db import transaction
 
-from .errors import DBError, DBNotFoundError, DBDuplicateValueError
 
 file_repository: FileRepository = FileRepository()
 document_repository = DocumentRepository(file_repository)
@@ -33,10 +32,6 @@ __all__ = [
     "term_repository",
     "TermRepository",
     "TermRepositoryInterface",
-    # database errors:
-    "DBError",
-    "DBDuplicateValueError",
-    "DBNotFoundError",
     # question
     "QuestionRepositoryInterface",
     "question_repository",

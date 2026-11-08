@@ -1,6 +1,7 @@
 from pydantic import ValidationError
 from src.core.config_manager import ConfigManager, config_manager
 from src.core.search_engine import SearchEngine, SearchType, search_engine
+from src.core.utils import get_validation_error_message
 from src.core.validation_models import (
     RagDataset,
     StudentSearchResults,
@@ -125,7 +126,9 @@ class QuestionManager:
                 )
                 return rag_dataset
             except ValidationError as error:
-                raise QuestionManagerError(error.errors()[0]["msg"])
+                raise QuestionManagerError(
+                    get_validation_error_message(error, file_path)
+                ) from error
 
     def search(
         self, query: str, top_k: int, is_hybrid: bool

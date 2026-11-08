@@ -62,14 +62,15 @@ class RageAgainstMachine:
         Raises:
             SystemExit: If validation or indexing fails.
         """
-        is_hybrid = self.__check_hybrid(hybrid, Stage.INDEXING)
 
         if not 400 < max_chunk_size <= 2000:
             Logger.error(
-                "max chunk size must not be under of 400 or greater than 5000",
+                "max chunk size must not be under of 400 or greater than 2000",
                 "INDEXING",
             )
             sys.exit(1)
+
+        is_hybrid = self.__check_hybrid(hybrid, Stage.INDEXING)
 
         from src.core.indexer import indexer, IndexerError
 

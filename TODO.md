@@ -1,15 +1,15 @@
 6 nov:
   - [] fix the batching in semantic
-  - [] add the recallk
+  - [X] add the recallk
   - [] fix the duplicated documents in hybrid retrieval
   - [] solve the problem halucination in answering
   - [] increase retrieval search for documents from 0.79 to .80
-  - [] check the indexing work correctly
+  - [X] check the indexing work correctly
   - [] check the answer work correctly
   - [] check the search work correctly
   - [] check the search_datasets work correctly
   - [] check the answer_dataset workd correctly
-  - [] validate the argument for the program(search, search_dataset, index, recall, asnwer, answer_dataset)
+  - [X] validate the argument for the program(search, search_dataset, index, recall, asnwer, answer_dataset)
   - [] organize the makefile
   - [] test the cli commands
 

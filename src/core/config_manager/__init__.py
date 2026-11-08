@@ -5,6 +5,7 @@ from typing import Literal, TypeAlias
 from enum import Enum
 
 from pydantic import BaseModel, ValidationError, Field
+from src.core.utils import get_validation_error_message
 from src.core.utils import Logger, permission_checker
 
 
@@ -123,7 +124,9 @@ class ConfigManager:
                 )
                 return config
         except ValidationError as error:
-            raise ConfigManagerError(error.errors()[0]["msg"])
+            raise ConfigManagerError(
+                get_validation_error_message(error, CONFIG_FILE_PATH)
+            ) from error
         except Exception as error:
             raise ConfigManagerError(str(error))
 
@@ -205,7 +208,9 @@ class ConfigManager:
             with open(CONFIG_FILE_PATH, "w") as config_file:
                 _ = config_file.write(self.__config.model_dump_json(indent=4))
         except ValidationError as error:
-            raise ConfigManagerError(str(error.errors()[0]["msg"]))
+            raise ConfigManagerError(
+                get_validation_error_message(error, CONFIG_FILE_PATH)
+            ) from error
         except Exception as error:
             raise ConfigManagerError(str(error))
 
