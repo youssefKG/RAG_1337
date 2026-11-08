@@ -55,38 +55,24 @@ ignored by Git.
 
 ## UML diagrams
 
-The architecture diagrams are provided as SVG images for reliable rendering in
-GitHub, VS Code, and other Markdown viewers. The editable Graphviz sources are
-available in [`docs/diagrams/`](docs/diagrams/).
+The project is documented with two readable SVG diagrams. The editable
+Graphviz sources are available in [`docs/diagrams/`](docs/diagrams/).
 
-### Component diagram
-
-![RAG component architecture](docs/diagrams/generated/rag_components.svg)
-
-This diagram shows the corpus ingestion, indexing, lexical and semantic
-retrieval, answer generation, persistence, and evaluation components.
-
-### Retrieval and answer sequence
-
-![RAG retrieval and answer sequence](docs/diagrams/generated/rag_sequence.svg)
-
-This diagram shows how a user question travels through validation, cache
-lookup, retrieval, prompt construction, model generation, and answer caching.
-
-### Persistence and database UML diagram
-
-![RAG persistence and database model](docs/diagrams/generated/rag_database.svg)
-
-This diagram shows the SQLite entities and relationships, together with the
-ChromaDB vector collection used by semantic retrieval.
-
-### Core class diagram
+### Class diagram
 
 ![RAG core class diagram](docs/diagrams/generated/rag_classes.svg)
 
-This class diagram covers the important runtime classes for orchestration,
-configuration, indexing, chunking, retrieval, answer generation, repositories,
-evaluation, and domain entities.
+This class diagram presents the main orchestration, configuration, indexing,
+chunking, retrieval, answer generation, repository, evaluation, and domain
+classes.
+
+### Activity diagram
+
+![RAG activity diagram](docs/diagrams/generated/rag_activity.svg)
+
+This activity diagram presents the complete question-answer flow, including
+validation, cache lookup, BM25 retrieval, optional semantic retrieval through
+ChromaDB, grounded prompt generation, answer persistence, and output.
 
 ## Chunking strategy
 

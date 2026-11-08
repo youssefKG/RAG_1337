@@ -1,0 +1,64 @@
+digraph RAGActivity {
+    graph [
+        bgcolor="white",
+        rankdir=TB,
+        splines=ortho,
+        nodesep=0.55,
+        ranksep=0.65,
+        pad=0.35,
+        fontname="Arial",
+        label="RAG activity diagram",
+        labelloc=t,
+        fontsize=20,
+        fontcolor="#0f172a"
+    ];
+    node [
+        shape=box,
+        style="rounded,filled",
+        fontname="Arial",
+        fontsize=12,
+        margin="0.22,0.14",
+        color="#334155",
+        fontcolor="#0f172a",
+        fillcolor="#f8fafc"
+    ];
+    edge [
+        color="#475569",
+        penwidth=1.6,
+        arrowsize=0.75,
+        fontname="Arial",
+        fontsize=10,
+        fontcolor="#334155"
+    ];
+
+    start [shape=circle, label="", width=0.22, fixedsize=true, fillcolor="#0f172a", color="#0f172a"];
+    query [label="Receive user question\n(query, k, hybrid)", fillcolor="#dbeafe", color="#2563eb"];
+    validate [label="Validate query, k,\nand retrieval mode", fillcolor="#dbeafe", color="#2563eb"];
+    valid [shape=diamond, label="Valid?", width=1.2, height=0.8, fillcolor="#fef3c7", color="#d97706"];
+    error [label="Report validation error\nand stop", fillcolor="#fee2e2", color="#dc2626"];
+    cache [label="Check SQLite cache\nfor question and answer", fillcolor="#fef3c7", color="#d97706"];
+    cached [shape=diamond, label="Matching\ncache?", width=1.35, height=0.9, fillcolor="#fef3c7", color="#d97706"];
+    retrieve [label="Retrieve document chunks", fillcolor="#dcfce7", color="#16a34a"];
+    lexical [label="Lexical retrieval\nTokenize → inverted index → BM25", fillcolor="#dcfce7", color="#16a34a"];
+    hybrid [shape=diamond, label="Hybrid mode?", width=1.35, height=0.9, fillcolor="#fef3c7", color="#d97706"];
+    semantic [label="Semantic retrieval\nQuery ChromaDB vectors", fillcolor="#fce7f3", color="#db2777"];
+    combine [label="Combine and order\nretrieved chunks", fillcolor="#dcfce7", color="#16a34a"];
+    prompt [label="Build grounded prompt\nwith retrieved context", fillcolor="#ede9fe", color="#7c3aed"];
+    generate [label="Generate answer\nwith Qwen/Qwen3-0.6B", fillcolor="#ede9fe", color="#7c3aed"];
+    store [label="Store question, sources,\nand answer in SQLite", fillcolor="#fef3c7", color="#d97706"];
+    output [label="Display answer or\nretrieved sources", fillcolor="#dbeafe", color="#2563eb"];
+    finish [shape=doublecircle, label="", width=0.25, fixedsize=true, fillcolor="#0f172a", color="#0f172a"];
+
+    start -> query -> validate -> valid;
+    valid -> error [label="no"];
+    error -> finish;
+    valid -> cache [label="yes"];
+    cache -> cached;
+    cached -> output [label="yes"];
+    cached -> retrieve [label="no"];
+    retrieve -> lexical -> hybrid;
+    hybrid -> semantic [label="yes"];
+    semantic -> combine;
+    hybrid -> combine [label="no"];
+    combine -> prompt -> generate -> store -> output -> finish;
+}

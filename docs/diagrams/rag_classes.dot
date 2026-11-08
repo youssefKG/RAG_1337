@@ -1,7 +1,7 @@
 digraph RAGClasses {
-    graph [bgcolor="#0f172a", rankdir=LR, splines=ortho, nodesep=0.5, ranksep=0.75, pad=0.35, fontname="Inter,Arial"];
-    node [shape=record, style="rounded,filled", fontname="Inter,Arial", fontsize=9, margin="0.12,0.08", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];
-    edge [color="#94a3b8", penwidth=1.4, arrowsize=0.7, fontname="Inter,Arial", fontsize=8, fontcolor="#cbd5e1"];
+    graph [bgcolor="white", rankdir=LR, splines=ortho, nodesep=0.75, ranksep=1.0, pad=0.45, fontname="Arial", label="RAG core class diagram", labelloc=t, fontsize=20, fontcolor="#0f172a"];
+    node [shape=record, style="rounded,filled", fontname="Arial", fontsize=11, margin="0.16,0.10", color="#334155", fontcolor="#0f172a", fillcolor="#f8fafc"];
+    edge [color="#475569", penwidth=1.5, arrowsize=0.7, fontname="Arial", fontsize=9, fontcolor="#334155"];
 
     app [label="{RageAgainstMachine|+ index()|+ search()|+ answer()|+ search_dataset()|+ answer_dataset()|+ evaluate()}", fillcolor="#4c1d95", color="#a78bfa"];
     config [label="{ConfigManager|+ config|+ indexing_strategy|+ get_indexing_strategy()|+ update_indexing_config()}", fillcolor="#334155", color="#94a3b8"];
