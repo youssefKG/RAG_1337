@@ -64,7 +64,13 @@ class AnswerManager:
         self.__config_manager: ConfigManager = config_manager
         self.__text_generation_pipeline: object | None = None
 
-    def answer(self, question: str, top_k: int, is_hybrid: bool) -> str:
+    def answer(
+        self,
+        question: str,
+        top_k: int,
+        is_hybrid: bool,
+        max_tokens: int
+    ) -> str:
         """Generate an answer for a question or return its cached answer.
 
         The cached answer is reused when its retrieval parameters match
@@ -99,13 +105,17 @@ class AnswerManager:
                 if (
                     cache_question_answer is None
                     or self.__is_cache_question_answer_changed(
-                        cache_question_answer, top_k, is_hybrid
+                        cache_question_answer,
+                        top_k,
+                        is_hybrid,
+                        max_tokens=max_tokens
                     )
                 ):
                     generated_answer = self.__answer_query_and_store_in_cache(
                         question=question,
                         is_hybrid=is_hybrid,
                         top_k=top_k,
+                        max_tokens=max_tokens
                     )
                 else:
                     Logger.info(
@@ -119,6 +129,7 @@ class AnswerManager:
     def answer_dataset(
         self,
         student_search_results_path: str,
+        max_tokens: int
     ) -> StudentSearchResultsAndAnswer:
         """Generate answers for questions contained in search results.
 
@@ -179,10 +190,14 @@ class AnswerManager:
                             [document.content for document in documents]
                         )
                         prompt = self.__build_prompt(question, documents_str)
-                        generated_answer = self.__generate_answer(prompt)
+                        generated_answer = self.__generate_answer(
+                            prompt,
+                            max_tokens=max_tokens
+                        )
                         question_answer: QuestionAnswer = QuestionAnswer(
                             question=cast(Question, cache_question),
                             answer=generated_answer,
+                            max_tokens=max_tokens
                         )
                         questions_answers_to_create.append(question_answer)
                         minimal_answers.append(
@@ -343,6 +358,7 @@ class AnswerManager:
         question: str,
         is_hybrid: bool,
         top_k: int,
+        max_tokens: int
     ) -> str:
         """Retrieve documents, generate an answer, and cache the result.
 
@@ -386,7 +402,7 @@ class AnswerManager:
             )
             Logger.info("the question is retrieved_successfully", "ANSWER")
             prompt: str = self.__build_prompt(question, documents_str)
-            generated_answer = self.__generate_answer(prompt)
+            generated_answer = self.__generate_answer(prompt, max_tokens)
             _question: Question = Question(
                 id=minimal_search_results.question_id,
                 question=question,
@@ -394,7 +410,9 @@ class AnswerManager:
                 search_type=search_type.name,
             )
             question_answer: QuestionAnswer = QuestionAnswer(
-                question=_question, answer=generated_answer
+                question=_question,
+                answer=generated_answer,
+                max_tokens=max_tokens
             )
             question_repository.create_question_answer(question_answer)
             return generated_answer
@@ -430,7 +448,8 @@ class AnswerManager:
         return student_search_results
 
     def __build_prompt(self, question: str, retrieved_documents: str) -> str:
-        """Build the language-model prompt using a question and retrieved context.
+        """Build the language-model prompt using a question
+            and retrieved context.
 
         Args:
             question: User question to include in the prompt.
@@ -469,6 +488,7 @@ class AnswerManager:
         cache_question_answer: QuestionAnswer,
         top_k: int,
         is_hybrid: bool,
+        max_tokens: int
     ) -> bool:
         """Determine whether cached answer retrieval parameters are outdated.
 
@@ -490,11 +510,12 @@ class AnswerManager:
         if (
             cache_question_answer.question.top_k != top_k
             or searching_strategy != cache_question_answer.question.search_type
+            or cache_question_answer.max_tokens != max_tokens
         ):
             return True
         return False
 
-    def __generate_answer(self, prompt: str) -> str:
+    def __generate_answer(self, prompt: str, max_tokens: int) -> str:
         """Generate an answer using the configured language model.
 
         Args:
@@ -509,7 +530,7 @@ class AnswerManager:
         text_generation_pipeline: TextGenerationPipeline = cast(
             TextGenerationPipeline, self.__get_text_generation_pipeline
         )
-        return text_generation_pipeline(prompt, max_new_tokens=MAX_TOKENS)[0][
+        return text_generation_pipeline(prompt, max_new_tokens=max_tokens)[0][
             "generated_text"
         ][len(prompt):]
 

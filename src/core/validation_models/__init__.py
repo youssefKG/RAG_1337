@@ -33,7 +33,7 @@ class UnansweredQuestion(BaseModel):
     """
 
     question_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    question: str
+    question: str = Field(min_length=3)
 
 
 class AnsweredQuestion(UnansweredQuestion):
@@ -58,7 +58,7 @@ class MinimalSearchResults(BaseModel):
     """
 
     question_id: str
-    question: str
+    question: str = Field(min_length=3)
     retrieved_sources: list[MinimalSource]
 
 
@@ -92,7 +92,7 @@ class StudentSearchResults(BaseModel):
     """
 
     search_results: List[MinimalSearchResults]
-    k: int
+    k: int = Field(gt=0)
 
 
 class StudentSearchResultsAndAnswer(BaseModel):
@@ -104,7 +104,7 @@ class StudentSearchResultsAndAnswer(BaseModel):
     """
 
     search_results: List[MinimalAnswer]
-    k: int
+    k: int = Field(gt=0)
 
 
 __all__ = [
@@ -116,4 +116,3 @@ __all__ = [
     "MinimalAnswer",
     "StudentSearchResultsAndAnswer",
 ]
-

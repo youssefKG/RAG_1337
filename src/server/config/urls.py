@@ -1,4 +1,3 @@
-
 """Define URL routes and API endpoints for the RAG server.
 
 Provides HTTP endpoints for corpus indexing, document retrieval,

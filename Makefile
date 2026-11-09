@@ -117,7 +117,7 @@ install:
 .PHONY: server
 
 server:
-	$(PYTHON_MODULE) server.manage runserver
+	$(PYTHON) -m src.server.manage runserver
 
 # ----------------------------- DEBUG -----------------------------
 

@@ -25,6 +25,11 @@ class SearchEngineError(Exception):
     """Raised when a search engine operation fails."""
 
 
+class NoDocumentsFoundWarning(Exception):
+    """Raised when a no relevent documents found."""
+    pass
+
+
 class SearchEngine:
     """Coordinate lexical and semantic document retrieval.
 
@@ -135,6 +140,12 @@ class SearchEngine:
                 question.question, top_k
             )[:top_semantic_search]
             high_score_documents = lexical_documents + semantic_documents
+        if not high_score_documents:
+            raise NoDocumentsFoundWarning(
+                "No relevant documents were found in"
+                + " the knowledge base."
+                + f"for question: '{question.question}"
+            )
 
         retrieved_sources: list[MinimalSource] = [
             MinimalSource(

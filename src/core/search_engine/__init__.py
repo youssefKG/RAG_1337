@@ -5,11 +5,17 @@ from .search_engine import SearchEngine, SearchEngineError
 from .types import SearchType
 from .invert_index import invert_index
 
-
 search_engine: SearchEngine = SearchEngine(
-    invert_index=invert_index, question_repository=question_repository
+    invert_index=invert_index,
+    question_repository=question_repository
 )
-"""Shared search engine instance configured with the application repositories."""
+
+
+"""
+Shared search engine instance configured with
+the application repositories.
+"""
+
 
 __all__ = [
     "search_engine",

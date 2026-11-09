@@ -16,14 +16,20 @@ from collections import defaultdict
 
 from src.core.entities import Document, Term
 
+
 PostingType: TypeAlias = dict[
     Annotated[str, "document id"],
     tuple[Document, Annotated[int, "term frequency"]],
 ]
 
+
 InvertIndexType: TypeAlias = defaultdict[
-    Annotated[str, "term value"], PostingType
+        Annotated[str, "term value"], PostingType
 ]
+
+
+class InvertIndexError(Exception):
+    ...
 
 
 class InvertIndex:
@@ -87,4 +93,6 @@ class InvertIndex:
         return self.__invert_index
 
 
-invert_index: InvertIndex = InvertIndex(term_repository=term_repository)
+invert_index: InvertIndex = InvertIndex(
+    term_repository=term_repository
+)

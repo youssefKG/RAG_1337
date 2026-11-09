@@ -30,9 +30,6 @@ def validate_commands_args() -> None:
         )
         sys.exit(1)
 
-# View current limit (typically 1000)
-
-# Increase the recursion limit
 
 def main() -> None:
     """Initialize Django and execute the CLI application.

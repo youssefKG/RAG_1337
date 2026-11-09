@@ -30,8 +30,10 @@ class QuestionManager:
         """Initialize the question manager.
 
         Args:
-            search_engine: Engine responsible for retrieving relevant documents.
-            config_manager: Manager providing indexing and search configuration.
+            search_engine: Engine responsible for retrieving
+            relevant documents.
+            config_manager: Manager providing indexing and
+            search configuration.
         """
         self.__search_engine: SearchEngine = search_engine
         self.__config_manager: ConfigManager = ConfigManager()
@@ -51,9 +53,10 @@ class QuestionManager:
 
         Args:
             dataset_path: Path to the input RAG dataset.
-            save_directory: Destination path for the search results JSON file.
-            top_k: Maximum number of documents retrieved per question.
-            is_hybrid: Whether to use hybrid retrieval instead of lexical retrieval.
+            save_directory: Destination path for the search
+            results JSON file. top_k: Maximum number of documents
+            retrieved per question. is_hybrid: Whether to use hybrid
+            retrieval instead of lexical retrieval.
 
         Raises:
             QuestionManagerError: If dataset processing, retrieval, or
@@ -92,7 +95,8 @@ class QuestionManager:
                 ) from error
             except PermissionError as error:
                 raise QuestionManagerError(
-                    f"Permission Error(Could not write to path: {save_directory}"
+                    "Permission Error Could not write to path: "
+                    + f"{save_directory}"
                 ) from error
             except Exception as error:
                 raise QuestionManagerError(
@@ -100,7 +104,7 @@ class QuestionManager:
                 ) from error
         except CustomDatabaseError as error:
             raise QuestionManagerError(
-                "DATABASE ERROR: " 
+                "DATABASE ERROR: "
                 + str(error)
             ) from error
         except Exception as error:
@@ -138,7 +142,8 @@ class QuestionManager:
         Args:
             query: User's search query.
             top_k: Maximum number of documents to retrieve.
-            is_hybrid: Whether to use hybrid retrieval instead of lexical retrieval.
+            is_hybrid: Whether to use hybrid retrieval instead
+            of lexical retrieval.
 
         Returns:
             Search results containing the most relevant documents.

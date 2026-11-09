@@ -144,7 +144,6 @@ class FileRepository:
                 f"Failed to delete file with ID '{file_id}'."
             ) from error
 
-
     def delete_by_files_paths(self, files_paths: set[str]) -> None:
         """Delete by files paths
 
@@ -162,7 +161,6 @@ class FileRepository:
             raise CustomDatabaseError(
                 "Failed to delete files with path {files_paths"
             ) from error
-
 
     def get_by_path(self, path: str) -> File | None:
         """Retrieve a file by its path.
@@ -243,15 +241,11 @@ class FileRepository:
                 id=id
             ).first()
             if file_model is None:
-                # TODO: handle the case where no file is found
                 return
-
             if path is not None:
                 file_model.path = path
-
             if last_modified_at is not None:
                 file_model.last_modified_at = last_modified_at
-
             file_model.save()
         except DatabaseError as error:
             raise CustomDatabaseError(

@@ -21,7 +21,8 @@ class TermRepository:
         """Initialize the term repository.
 
         Args:
-            document_repository: Repository responsible for document operations.
+            document_repository: Repository
+            responsible for document operations.
         """
         self.__model: type[DocumentTermModel] = DocumentTermModel
         self.__all_terms = self.__model.objects.all()
@@ -96,7 +97,7 @@ class TermRepository:
         try:
             _: list[DocumentTermModel] = self.__model.objects.bulk_create(
                 documents_terms_model,
-                batch_size=100000,
+                batch_size=50000,
             )
         except DatabaseError as error:
             raise CustomDatabaseError(

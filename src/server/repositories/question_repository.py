@@ -1,4 +1,5 @@
-"""Provides database operations for questions, answers, and document associations."""
+"""Provides database operations for questions,
+answers, and document associations."""
 
 from typing import cast
 
@@ -19,7 +20,8 @@ from src.core.entities import (
 
 
 class QuestionRepository:
-    """Manage question persistence and related answer and document operations."""
+    """Manage question persistence and related
+    answer and document operations."""
 
     def __init__(self) -> None:
         """Initialize the question repository and its database models."""
@@ -178,7 +180,8 @@ class QuestionRepository:
         """Retrieve all documents associated with a question.
 
         Args:
-            question: Content of the question used to identify its associations.
+            question: Content of the question used
+            to identify its associations.
 
         Returns:
             List of documents associated with the specified question.
@@ -217,6 +220,7 @@ class QuestionRepository:
                 id=question_answer.id,
                 question_id=question_answer.question.id,
                 answer=question_answer.answer,
+                max_tokens=question_answer.max_tokens,
             )
         except DatabaseError as error:
             raise CustomDatabaseError(

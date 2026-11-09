@@ -137,7 +137,7 @@ def permission_checker(
 ) -> bool:
     if exist and not os.access(file_path, os.F_OK):
         if fn is not None:
-            fn(f"Not Found: not exist '{file_path}'")
+            fn(f"File Not Found: '{file_path}'")
         if kill:
             sys.exit(126)
         return False
@@ -161,10 +161,14 @@ def create_file_path(file_path: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
 
-def get_validation_error_message(error: ValidationError, file_path: str) -> str:
+def get_validation_error_message(
+    error: ValidationError,
+    file_path: str
+) -> str:
     field: str | int = error.errors()[0]["loc"][0]
     field_message: str = error.errors()[0]["msg"]
     return f"Validation Error {file_path}: {field} {field_message}"
+
 
 __all__ = [
     "TOKENIZER_REGEX_PATTERN",

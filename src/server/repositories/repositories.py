@@ -1,4 +1,5 @@
-"""Defines repository protocols for data persistence and retrieval."""
+"""Defines repository protocols for data
+persistence and retrieval."""
 
 from typing import Annotated, Protocol
 from src.core.entities import (
@@ -12,7 +13,8 @@ from src.core.entities import (
 
 
 class FileRepositoryInterface(Protocol):
-    """Define the contract for file persistence and retrieval operations."""
+    """Define the contract for file persistence
+    and retrieval operations."""
 
     def create(self, file: File) -> File:
         """Persist a file and return the created file entity."""
@@ -27,7 +29,8 @@ class FileRepositoryInterface(Protocol):
         ...
 
     def get_by_path(self, path: str) -> File | None:
-        """Retrieve a file by its path, returning None if it does not exist."""
+        """Retrieve a file by its path,
+        returning None if it does not exist."""
         ...
 
     def create_many(self, files: list[File]) -> None:
@@ -86,7 +89,8 @@ class FileRepositoryInterface(Protocol):
 
 
 class DocumentRepositoryInterface(Protocol):
-    """Define the contract for document persistence and retrieval operations."""
+    """Define the contract for document persistence
+    and retrieval operations."""
 
     def create_many(
         self,
@@ -151,7 +155,8 @@ class TermRepositoryInterface(Protocol):
 
 
 class QuestionRepositoryInterface(Protocol):
-    """Define the contract for question, answer, and document association operations."""
+    """Define the contract for question, answer,
+    and document association operations."""
 
     def get(self, question: str) -> Question | None:
         """Retrieve a question by its content."""
@@ -183,9 +188,7 @@ class QuestionRepositoryInterface(Protocol):
         """Retrieve the answer associated with a question."""
         ...
 
-    def create_question_answer(
-        self, question_answer: QuestionAnswer
-    ) -> None:
+    def create_question_answer(self, question_answer: QuestionAnswer) -> None:
         """Persist an answer associated with a question."""
         ...
 

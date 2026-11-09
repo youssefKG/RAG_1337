@@ -281,7 +281,7 @@ class RecallK:
 
         if not relevant_sources:
             raise RecallError(
-                f"No relevant sources found for question "
+                "No relevant sources found for question "
                 + f"{truth_question.question_id}."
             )
 

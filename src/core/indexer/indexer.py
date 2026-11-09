@@ -16,7 +16,6 @@ The indexing process supports lexical, semantic, hybrid, and
 incremental indexing strategies.
 
 Batch configuration:
-    BATCH_SIZE: General indexing batch size.
     LEXICAL_BATCH_SIZE: Maximum lexical document batch threshold.
     SEMANTIC_BATCH_SIZE: Semantic document batch size.
 """
@@ -61,9 +60,8 @@ ChunkType: TypeAlias = tuple[
 ]
 
 
-BATCH_SIZE = 10000
-LEXICAL_BATCH_SIZE = 5000
-SEMANTIC_BATCH_SIZE = 1000
+LEXICAL_BATCH_SIZE = 8000
+SEMANTIC_BATCH_SIZE = 800
 
 
 class IndexerError(Exception):
@@ -247,8 +245,8 @@ class Indexer:
         )
 
         files_to_index_callback: Callable[
-            [], 
-            tuple[ list[_FileType], Annotated[set[str], "files_path"]]
+            [],
+            tuple[list[_FileType], Annotated[set[str], "files_path"]]
         ] = lambda: self.__get_files_to_index(corpus_path)
 
         lexical_indexing_callback: Callable[
@@ -330,7 +328,10 @@ class Indexer:
 
                 self.__file_repository.delete_all()
 
-            Logger.info("Delete the old semantic indexing if exist", "INDEXING")
+            Logger.info(
+                "Delete the old semantic indexing if exist",
+                "INDEXING"
+            )
             self.__vector_document_repository.delete_all()
 
             Logger.info(
@@ -364,7 +365,7 @@ class Indexer:
             corpus_path=corpust_path,
             files_extensions=(".py", ".txt", ".md")
         )
-        files_paths: set[str] = set() 
+        files_paths: set[str] = set()
 
         files_to_index: list[_FileType] = list()
         for file_path, file_content, last_modified_at in file_iter:
@@ -472,21 +473,16 @@ class Indexer:
         """
         total_documents: list[Document] = documents
         batch_documents: list[Document]
-
         for idx in tqdm(
-            range(0, len(documents), SEMANTIC_BATCH_SIZE),
-            desc="SEAMANTIC INDEXING",
+            range(
+                    0,
+                    len(total_documents),
+                    SEMANTIC_BATCH_SIZE
+                ),
+            desc="Semantic Indexing: "
         ):
-            if idx > SEMANTIC_BATCH_SIZE:
-                batch_documents = total_documents[:SEMANTIC_BATCH_SIZE]
-
-                self.__vector_document_repository.create_many(batch_documents)
-
-                total_documents = total_documents[SEMANTIC_BATCH_SIZE:]
-
-            elif idx == len(documents) - 1:
-                self.__vector_document_repository.create_many(total_documents)
-                total_documents.clear()
+            batch_documents = total_documents[idx:idx + SEMANTIC_BATCH_SIZE]
+            self.__vector_document_repository.create_many(batch_documents)
 
     def __index_file_lexical(
         self,
@@ -568,7 +564,6 @@ class Indexer:
             return Language.PYTHON
         elif file_path.endswith(".md"):
             return Language.MARKDOWN
-
         return Language.TEXT
 
     def __get_terms_freqeuncy_markdown_text(

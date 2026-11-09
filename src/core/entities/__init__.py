@@ -99,6 +99,7 @@ class QuestionAnswer:
 
     question: Question
     answer: str
+    max_tokens: int
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
 

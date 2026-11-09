@@ -20,6 +20,7 @@ CORPUS_PATH = "data/raw/vllm-0.10.1"
 ANSWER_DATASET_SAVE_DIRECTORY = "data/output/search_results_and_answer/"
 SEARCH_DATASET_SAVE_DIRECTORY = "data/output/search_results/"
 MAX_CHUNK_SIZE = 2000
+MAX_TOKENS = 50
 
 
 class RageAgainstMachine:
@@ -63,10 +64,16 @@ class RageAgainstMachine:
             SystemExit: If validation or indexing fails.
         """
 
-        if not 400 < max_chunk_size <= 2000:
+        if not 400 <= max_chunk_size <= 2000:
             Logger.error(
                 "max chunk size must not be under of 400 or greater than 2000",
                 "INDEXING",
+            )
+            sys.exit(1)
+        if not str(max_chunk_size).isdigit():
+            Logger.error(
+                f"Invalid max_chunk_size: {max_chunk_size}",
+                "INDEXING"
             )
             sys.exit(1)
 
@@ -240,7 +247,13 @@ class RageAgainstMachine:
                 + f"{document.last_character_index}]",
             )
 
-    def answer(self, query: str, k: int, hybrid: str = "false") -> None:
+    def answer(
+        self,
+        query: str,
+        k: int,
+        hybrid: str = "false",
+        max_tokens: int = MAX_TOKENS
+    ) -> None:
         """
         Generate an answer using the retrieved document context.
 
@@ -258,6 +271,7 @@ class RageAgainstMachine:
                 or answer generation encounters an error.
         """
         self.__validate_k(k, Stage.ANSWER)
+        self.__validate_max_tokens(max_tokens, Stage.ANSWER)
 
         is_hybrid: bool = self.__check_hybrid(hybrid, Stage.ANSWER)
 
@@ -268,7 +282,12 @@ class RageAgainstMachine:
         from src.core.answer_manager import answer_manager, AnswerError
 
         try:
-            answer: str = answer_manager.answer(query, k, is_hybrid)
+            answer: str = answer_manager.answer(
+                query,
+                k,
+                is_hybrid,
+                max_tokens
+            )
             Logger.info(answer, "ANSWER")
         except AnswerError as error:
             Logger.error(str(error), "ANSWER")
@@ -277,7 +296,8 @@ class RageAgainstMachine:
     def answer_dataset(
         self,
         student_search_results_path: str,
-        save_directory: str=ANSWER_DATASET_SAVE_DIRECTORY
+        save_directory: str = ANSWER_DATASET_SAVE_DIRECTORY,
+        max_tokens: int = MAX_TOKENS
     ) -> None:
         """
         Generate answers for questions with previously retrieved documents.
@@ -305,6 +325,7 @@ class RageAgainstMachine:
             read=True,
             fn=lambda message: Logger.error(message, "ANSWER DATASET"),
         )
+        self.__validate_max_tokens(max_tokens, Stage.ANSWER_DATASET)
         save_file_path: str = self.__get_save_file_path(
             save_directory,
             student_search_results_path,
@@ -315,7 +336,7 @@ class RageAgainstMachine:
         try:
             student_search_results_and_answer: (
                 StudentSearchResultsAndAnswer
-            ) = answer_manager.answer_dataset(save_file_path)
+            ) = answer_manager.answer_dataset(save_file_path, max_tokens)
             with open(save_file_path, "w") as save_file:
                 _ = save_file.write(
                     student_search_results_and_answer.model_dump_json(indent=4)
@@ -323,7 +344,6 @@ class RageAgainstMachine:
         except AnswerError as error:
             Logger.error(str(error), "ANSWER DATASET")
             sys.exit(1)
-
         except Exception as error:
             Logger.error(str(error), "ANSWER DATASET")
             sys.exit(1)
@@ -368,6 +388,9 @@ class RageAgainstMachine:
         Raises:
             SystemExit: If k is less than or equal to zero or greater than 10.
         """
+        if not str(k).isdigit():
+            Logger.error(f"Invalid k value: {k}", stage.name)
+            sys.exit(1)
         if k <= 0 or k > 10:
             Logger.error(
                 f"Number of requested results {k} cannot be 0 or negative.",
@@ -380,10 +403,63 @@ class RageAgainstMachine:
         save_directory: str,
         file_path: str,
     ) -> str:
+        """
+        Creates the save directory if it does not
+        exist and builds the destination file path
+        using the original file name.
+
+        Args:
+            save_directory (str): Directory where the file will be saved.
+            file_path (str): Original file path used to extract the file name.
+
+        Returns:
+            str: Full path of the file in the save directory.
+
+        Raises:
+            Exception: If the directory creation or file
+            path construction fails.
+        """
+        file_to_create_path: str = str()
         try:
             os.makedirs(save_directory, exist_ok=True)
             file_path_name: str = os.path.basename(file_path)
-            file_to_create_path: str = os.path.join(save_directory, file_path_name)
+            file_to_create_path = os.path.join(save_directory, file_path_name)
             return file_to_create_path
         except Exception as error:
-            raise Exception("Invalid path name {file_to_create_path}") from error
+            raise Exception(
+                f"Invalid path name {file_to_create_path}"
+            ) from error
+
+    def __validate_max_tokens(
+        self,
+        max_tokens: int,
+        stage: Stage
+    ) -> None:
+        """
+        Validates the maximum number of tokens allowed for a processing stage.
+
+        Ensures that max_tokens is a numeric value within the allowed range
+        of 10 to 200, inclusive. Logs an error and terminates the application
+        if validation fails.
+
+        Args:
+            max_tokens (int): Maximum number of tokens to validate.
+            stage (Stage): Processing stage associated with the validation.
+
+        Returns:
+            None
+
+        Raises:
+            SystemExit: If max_tokens is not numeric or falls outside the
+                permitted range.
+        """
+        if not str(max_tokens).isdigit():
+            Logger.error(f"Invalid k value: {max_tokens}", stage.name)
+            sys.exit(1)
+
+        if not 10 <= max_tokens <= 200:
+            Logger.error(
+                "max chunk size must not be under of 10 or greater than 200",
+                "INDEXING",
+            )
+            sys.exit(1)

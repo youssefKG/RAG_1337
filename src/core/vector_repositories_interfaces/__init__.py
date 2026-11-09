@@ -48,4 +48,3 @@ class VectorDocumentRepositoryInterface(Protocol):
 
 
 __all__ = ["VectorDocumentRepositoryInterface"]
-

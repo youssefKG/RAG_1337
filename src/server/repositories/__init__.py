@@ -10,7 +10,6 @@ from .repositories import (
 )
 from django.db import transaction
 
-
 file_repository: FileRepository = FileRepository()
 document_repository = DocumentRepository(file_repository)
 term_repository: TermRepository = TermRepository(

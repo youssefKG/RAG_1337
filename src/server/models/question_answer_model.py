@@ -1,6 +1,12 @@
 """Database model for storing answers associated with questions."""
 
-from django.db.models import Model, CharField, ForeignKey, CASCADE
+from django.db.models import (
+    Model,
+    CharField,
+    ForeignKey,
+    CASCADE,
+    IntegerField
+)
 from typing import cast
 
 from .question_model import QuestionModel
@@ -21,3 +27,4 @@ class QuestionAnswerModel(Model):
         cast(object, ForeignKey(to=QuestionModel, on_delete=CASCADE)),
     )
     answer: str = cast(str, cast(object, CharField()))
+    max_tokens: str = cast(str,  cast(object, IntegerField()))

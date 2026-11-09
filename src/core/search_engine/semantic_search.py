@@ -62,5 +62,6 @@ class SemanticSearch:
 
 
 semantic_search = SemanticSearch(
-    vector_document_repository, document_repository
+    vector_document_repository,
+    document_repository
 )
