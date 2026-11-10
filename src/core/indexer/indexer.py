@@ -524,9 +524,11 @@ class Indexer:
 
         for chunk, start_index, end_index in chunks:
             if language == Language.PYTHON:
-                terms = self.__get_terms_freqeuncy_python(chunk)
+                terms = self.__get_terms_freqeuncy_python(chunk + file.path)
             else:
-                terms = self.__get_terms_freqeuncy_markdown_text(chunk)
+                terms = self.__get_terms_freqeuncy_markdown_text(
+                    chunk + file.path
+                )
 
             document: Document = Document(
                 file=file,

@@ -258,6 +258,7 @@ class QuestionRepository:
                 id=question_answer.id,
                 question_id=question_answer.question.id,
                 answer=question_answer.answer,
+                max_tokens=question_answer.max_tokens
             )
             for question_answer in questions_answers
         ]

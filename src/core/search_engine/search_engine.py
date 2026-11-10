@@ -180,7 +180,10 @@ class SearchEngine:
         Returns:
             A list of normalized tokens.
         """
-        splited_text: list[str] = re.findall(TOKENIZER_REGEX_PATTERN, text)
+        splited_text: list[str] = re.findall(
+            TOKENIZER_REGEX_PATTERN,
+            text.lower()
+        )
         tokens: list[str] = []
         for token in splited_text:
             if token in STOP_WORDS:

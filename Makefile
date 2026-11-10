@@ -38,8 +38,6 @@ FLAKE8 := uv run flake8
 
 # ----------------------------- DEFAULT -----------------------------
 
-.DEFAULT_GOAL := run
-
 .PHONY: run
 run:
 	$(PYTHON_MODULE)
@@ -51,7 +49,6 @@ clean:
 	find . -type d -name '__pycache__' -exec rm -rf {} +
 	find . -type d -name '.mypy_cache' -exec rm -rf {} +
 	rm -rf *.egg-info
-	rm -rf $(DATA_PROCESSED_PATH) $(DATA_OUTPUT_PATH)
 	cp $(DEFAULT_CONFIG_PATH) $(CONFIG_PATH)
 
 # ----------------------------- LINT -----------------------------
@@ -65,45 +62,13 @@ lint:
 lint-strict:
 	$(MYPY) -m src $(MYPY_FLAGS_STRICT)
 
-# ----------------------------- PUBLIC DATASETS -----------------------------
-
-.PHONY: public_code public_docs public
-
-public_code:
-	$(SEARCH_DATASET) --dataset_path $(CODE_PUBLIC_DATASET_PATH) --save_directory $(CODE_SAVE_DIRECTORY_PUBLIC_PATH) --k 10
-
-public_docs:
-	$(SEARCH_DATASET) --dataset_path $(DOCS_PUBLIC_DATASET_PATH) --save_directory $(DOCS_SAVE_DIRECTORY_PUBLIC_PATH) --k 10
-
-public: public_code public_docs
-
-# ----------------------------- RAG PIPELINE -----------------------------
-
-.PHONY: index evaluate pipeline
+.PHONY: index
 
 index:
 	$(INDEX)
 
-evaluate:
-	$(EVALUATE)
-
-pipeline: public index evaluate
-	@echo "Full RAG pipeline completed successfully!"
-
-# ----------------------------- SEARCH & ANSWER -----------------------------
-
-.PHONY: search answer answer-dataset
-
 search:
 	$(SEARCH) "$(QUERY)"
-
-answer:
-	$(ANSWER) "$(QUERY)"
-
-answer-dataset:
-	$(ANSWER_DATASET)
-
-# ----------------------------- INSTALL -----------------------------
 
 .PHONY: install
 

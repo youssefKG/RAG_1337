@@ -15,12 +15,17 @@ import os
 
 from src.core.utils import Logger, Stage, permission_checker
 from src.core.validation_models import StudentSearchResultsAndAnswer
+from pydantic import BaseModel
 
 CORPUS_PATH = "data/raw/vllm-0.10.1"
 ANSWER_DATASET_SAVE_DIRECTORY = "data/output/search_results_and_answer/"
 SEARCH_DATASET_SAVE_DIRECTORY = "data/output/search_results/"
 MAX_CHUNK_SIZE = 2000
-MAX_TOKENS = 50
+MAX_TOKENS = 100
+
+
+class Answer(BaseModel):
+    pass
 
 
 class RageAgainstMachine:
@@ -250,7 +255,7 @@ class RageAgainstMachine:
     def answer(
         self,
         query: str,
-        k: int,
+        k: int = 5,
         hybrid: str = "false",
         max_tokens: int = MAX_TOKENS
     ) -> None:
@@ -334,9 +339,13 @@ class RageAgainstMachine:
         from src.core.answer_manager import answer_manager, AnswerError
 
         try:
+            Logger.info("Generating ...", "ANSWER DATASET")
             student_search_results_and_answer: (
                 StudentSearchResultsAndAnswer
-            ) = answer_manager.answer_dataset(save_file_path, max_tokens)
+            ) = answer_manager.answer_dataset(
+                student_search_results_path,
+                max_tokens
+            )
             with open(save_file_path, "w") as save_file:
                 _ = save_file.write(
                     student_search_results_and_answer.model_dump_json(indent=4)

@@ -87,6 +87,7 @@ class AnswerParams(BaseModel):
     k: int = Field(default=5, gt=0, le=10)
     query: str = Field(min_length=3)
     is_hybrid: bool = False
+    max_tokens: int = Field(default=50, gt=10, le=10)
 
 
 class AnswerResponse(BaseModel):
@@ -215,6 +216,7 @@ class RagApi:
                     answer_params.query,
                     answer_params.k,
                     answer_params.is_hybrid,
+                    answer_params.max_tokens
                 )
                 answer_response_json = AnswerResponse(
                     query=answer_params.query, answer=answer
